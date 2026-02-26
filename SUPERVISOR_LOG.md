@@ -96,16 +96,19 @@
 - **Verificación**: `tsc` y `lint` superados con 0 errores en los archivos afectados.
 **Resultados**: Build restaurado. Sistema estable.
 
-## [2026-01-31 16:30] - Ciclo 8: Implementación Módulo Visitas y Optimización CRM
-**Instrucción**: Aprobación y ejecución del plan Cycle 8.
+## [2026-02-24 19:15] - Supervisión de Código y Corrección de Errores
+**Instrucción**: Actuar como supervisor y corregir errores del codebase.
 **Cambios Implementados**:
-- **Base de Datos**: Migración `20260129000001_visits_schema.sql` con tabla `visits` y RLS.
-- **Tipos Compartidos**: Interfaz `Visit` y enums en `@inmocms/shared`.
-- **Server Actions**: CRUD completo en `actions/visits.ts` con joins de leads/properties.
-- **UI Premium**: `(dashboard)/visitas/page.tsx`, `VisitsList`, `NewVisitDialog` con diseño glassmorphic.
-- **Pipeline Cleanup**: Removidos imports sin usar, corregidos `prefer-const`, eliminado código muerto en `kanban-board.tsx`.
+- **Tipos Compartidos**:
+    - Agregado `neighborhood` a `Property`.
+    - Actualizado `interested_property_id` en `Lead` para permitir `null`.
+- **Componentes**:
+    - **`location-picker.tsx`**: Corregido uso de `dynamic` y tipos de hooks de Leaflet. Ahora exportado dinámicamente de forma segura.
+    - **`server.ts`**: Reemplazado `any` por `SupabaseClient`.
+    - **`owner-selector.tsx`**: Reemplazado `<a>` por `<Link>`.
+    - **`sidebar.tsx`**: Eliminado `Math.random()` de renderizado puro.
 **Validación**:
-- TypeScript: 0 errores.
-- Lint: 71 issues restantes (mayoría en código legacy `propiedades/editar/form.tsx`). Código nuevo (Visitas, Kanban) limpio.
-**Resultados**: Módulo Visitas completamente funcional. CRM core feature-complete.
+- **TypeScript**: `tsc --noEmit` completado con **0 errores**.
+- **Lint**: Errores críticos resueltos en archivos afectados.
+**Resultados**: Build de TypeScript restaurado en `apps/web`. Código más robusto y tipado correctamente.
 

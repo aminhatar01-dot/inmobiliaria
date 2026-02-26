@@ -28,18 +28,42 @@ export async function createClient() {
     )
 }
 
-export async function getTenantId(supabase: any) {
+export async function createAdminClient() {
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            cookies: {
+                getAll() {
+                    return []
+                },
+                setAll() {
+                    // Service role client doesn't need to persist cookies
+                },
+            },
+        }
+    )
+}
+
+import { SupabaseClient } from '@supabase/supabase-js'
+
+export async function getTenantId(supabase: SupabaseClient) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        return '00000000-0000-0000-0000-000000000001'
+        return null
     }
 
-    const { data: profile } = await supabase
+    const { data: userProfile, error } = await supabase
         .from("profiles")
         .select("tenant_id")
         .eq("id", user.id)
         .single()
 
-    return profile?.tenant_id
+    if (error || !userProfile?.tenant_id) {
+        console.error("No tenant found for user:", user.id, error)
+        throw new Error("No tienes una inmobiliaria asignada. Contacta al administrador.")
+    }
+
+    return userProfile.tenant_id
 }

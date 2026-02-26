@@ -26,9 +26,13 @@ export type Property = {
     bedrooms?: number;
     bathrooms?: number;
     is_shared?: boolean;
+    latitude?: number;
+    longitude?: number;
+    neighborhood?: string;
     created_at: string;
     updated_at?: string;
 };
+
 
 
 export type Lead = {
@@ -44,6 +48,23 @@ export type Lead = {
     budget?: number;
     assigned_to?: string;
     created_at: string;
+    // Lead Tracking Enhancement Fields
+    interested_property_id?: string | null;
+    property_preferences?: {
+        property_type?: string;
+        min_price?: number;
+        max_price?: number;
+        location?: string;
+        rooms?: number;
+        [key: string]: any;
+    };
+    communication_channels?: {
+        whatsapp?: boolean;
+        email?: boolean;
+        phone?: boolean;
+        social?: boolean;
+    };
+    tracking_enabled?: boolean;
 };
 
 export type Task = {
@@ -312,5 +333,27 @@ export const PORTAL_LABELS: Record<keyof typeof PORTAL_NAMES, string> = {
     zonaprop: 'Zonaprop',
 };
 
+// Network types
+export type NetworkInvitation = {
+    id: string;
+    sender_tenant_id: string;
+    recipient_email: string;
+    status: 'pending' | 'accepted' | 'rejected' | 'expired';
+    token: string;
+    created_at: string;
+    updated_at: string;
+    sender?: { name: string };
+};
+
+export type TenantPartnership = {
+    id: string;
+    requester_tenant_id: string;
+    responder_tenant_id: string;
+    status: 'active' | 'blocked';
+    created_at: string;
+    updated_at: string;
+};
+
 // Export messaging types
 export * from './messaging';
+

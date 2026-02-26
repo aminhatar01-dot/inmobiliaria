@@ -12,11 +12,17 @@ export async function updateSession(request: NextRequest) {
     const pathname = request.nextUrl.pathname
 
     // Allow public routes without session check
-    if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
-        return supabaseResponse
-    }
+    const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+    const isPublicPortal = pathname.split('/').length > 1 && !isPublicRoute && !pathname.startsWith('/dashboard') && !['/agentes', '/propiedades', '/leads', '/visitas', '/marketing', '/configuracion'].some(p => pathname.startsWith(p))
 
-    // Check session for protected routes
+    // Simplification: define what is NOT protected
+    const publicPaths = ['/login', '/signup', '/auth', '/api']
+    const isPublic = publicPaths.some(path => pathname.startsWith(path))
+
+    // PROTECT: (dashboard) routes
+    const protectedRoutes = ['/agentes', '/propiedades', '/leads', '/visitas', '/marketing', '/configuracion', '/dashboard']
+    const isProtected = protectedRoutes.some(path => pathname.startsWith(path))
+
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -41,13 +47,14 @@ export async function updateSession(request: NextRequest) {
 
         const { data: { user } } = await supabase.auth.getUser()
 
-        // If trying to access dashboard without session, redirect to login
-        if (!user && (pathname.startsWith(PROTECTED_PREFIX) || pathname === '/')) {
+        // If trying to access protected routes without session, redirect to login
+        if (!user && isProtected) {
             const loginUrl = new URL('/login', request.url)
             return NextResponse.redirect(loginUrl)
         }
 
-        // If logged in and trying to access login/signup, redirect to dashboard
+        // Redirect logged-in users FROM login/signup TO dashboard
+        // We REMOVE the redirect from '/' to let everyone see the Landing Page
         if (user && (pathname === '/login' || pathname === '/signup')) {
             const dashboardUrl = new URL('/dashboard', request.url)
             return NextResponse.redirect(dashboardUrl)

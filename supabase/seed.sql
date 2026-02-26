@@ -3,17 +3,17 @@ insert into public.tenants (id, name, plan)
 values ('00000000-0000-0000-0000-000000000001', 'Agencia InmoDefault', 'premium')
 on conflict (id) do nothing;
 
--- Ensure a default user for testing (linked to the tenant)
--- Note: In a real scenario this user would come from auth.users
--- But for local development we can seed a profile
--- insert into public.profiles (id, tenant_id, name, email)
--- values (
---   '00000000-0000-0000-0000-000000000000', -- This won't work perfectly until linked to auth, but helps with FKs
---   '00000000-0000-0000-0000-000000000001',
---   'Agente Demo',
---   'demo@inmocms.com'
--- )
--- on conflict (id) do nothing;
+-- Add default roles for the default tenant
+insert into public.roles (tenant_id, name)
+values 
+  ('00000000-0000-0000-0000-000000000001', 'Administrador'),
+  ('00000000-0000-0000-0000-000000000001', 'Agente')
+on conflict do nothing;
+
+-- Add default branch for the default tenant
+insert into public.branches (tenant_id, name, address)
+values ('00000000-0000-0000-0000-000000000001', 'Casa Central', 'Oficina Principal')
+on conflict do nothing;
 
 -- Add some default properties for testing
 insert into public.properties (id, tenant_id, title, operation_type, property_type, price, currency, address, status)

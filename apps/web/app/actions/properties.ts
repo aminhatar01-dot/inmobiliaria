@@ -14,8 +14,7 @@ export async function getProperties(): Promise<Property[]> {
         .from("properties")
         .select(`
             *,
-            property_media (*),
-            leads (*)
+            property_media (*)
         `)
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
@@ -38,8 +37,7 @@ export async function getPropertyById(id: string) {
         .from("properties")
         .select(`
             *,
-            property_media (*),
-            leads (*)
+            property_media (*)
         `)
         .eq("id", id)
         .eq("tenant_id", tenantId)
@@ -69,7 +67,8 @@ export async function createProperty(formData: Partial<Property>, images: string
         .insert([{
             ...cleanData,
             tenant_id: tenantId,
-            status: "available"
+            status: cleanData.status || "available",
+            is_shared: cleanData.is_shared !== undefined ? cleanData.is_shared : true
         }])
         .select()
         .single()
@@ -83,7 +82,7 @@ export async function createProperty(formData: Partial<Property>, images: string
     if (images.length > 0 && property) {
         const mediaInserts = images.map((url, index) => ({
             property_id: property.id,
-            tenant_id: tenantId, // Added tenant_id
+            tenant_id: tenantId,
             url: url,
             type: 'image',
             order: index
@@ -95,6 +94,7 @@ export async function createProperty(formData: Partial<Property>, images: string
 
         if (mediaError) {
             console.error("Error saving media:", mediaError)
+            throw new Error(`Propiedad creada pero falló subir imágenes: ${mediaError.message}`)
         }
     }
 
@@ -151,6 +151,7 @@ export async function updateProperty(id: string, formData: Partial<Property>, im
 
             if (mediaError) {
                 console.error("Error updating media:", mediaError)
+                throw new Error(`Propiedad actualizada pero falló subir imágenes: ${mediaError.message}`)
             }
         }
     }
@@ -190,8 +191,7 @@ export async function getSharedProperties(): Promise<Property[]> {
         .from("properties")
         .select(`
             *,
-            property_media (*),
-            leads (*)
+            property_media (*)
         `)
         .eq("is_shared", true)
         .order("created_at", { ascending: false })
@@ -224,4 +224,29 @@ export async function togglePropertySharing(id: string, isShared: boolean) {
     revalidatePath("/propiedades")
     revalidatePath("/propiedades/compartidas")
     revalidatePath(`/propiedades/${id}`)
+}
+
+export async function getAllPublicProperties(): Promise<any[]> {
+    const supabase = await createClient()
+
+    // Public properties are those marked as available
+    const { data, error } = await supabase
+        .from("properties")
+        .select(`
+            *,
+            property_media (*),
+            tenant:tenants (
+                name,
+                slug
+            )
+        `)
+        .eq("status", "available")
+        .order("created_at", { ascending: false })
+
+    if (error) {
+        console.error("Error fetching all public properties:", error)
+        return []
+    }
+
+    return data
 }

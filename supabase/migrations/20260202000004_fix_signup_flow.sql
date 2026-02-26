@@ -59,7 +59,7 @@ BEGIN
   -- 3. Create Default Roles
   -- We use a loop or direct inserts to ensure they exist
   INSERT INTO public.roles (tenant_id, name)
-  VALUES (new_tenant_id, 'Admin')
+  VALUES (new_tenant_id, 'Administrador')
   RETURNING id INTO admin_role_id;
 
   INSERT INTO public.roles (tenant_id, name)

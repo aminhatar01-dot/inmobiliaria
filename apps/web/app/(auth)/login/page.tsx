@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Sparkles, Loader2, ArrowRight } from "lucide-react"
+import { Sparkles, Loader2, ArrowRight, Search, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -97,13 +97,26 @@ export default function LoginPage() {
                             </Button>
                         </form>
 
-                        <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                            <p className="text-sm text-gray-400 font-medium">
+                        <div className="mt-8 pt-6 border-t border-gray-100 space-y-4">
+                            <p className="text-sm text-gray-400 font-medium text-center">
                                 ¿No tienes cuenta?{" "}
                                 <Link href="/signup" className="text-blue-600 font-bold hover:underline underline-offset-4">
                                     Regístrate gratis
                                 </Link>
                             </p>
+
+                            <div className="bg-gray-50 p-4 rounded-2xl flex items-center justify-between group cursor-pointer hover:bg-blue-50 transition-colors" onClick={() => router.push('/portal')}>
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm">
+                                        <Search className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-700">¿Buscas una propiedad?</p>
+                                        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Acceder al Portal Público</p>
+                                    </div>
+                                </div>
+                                <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

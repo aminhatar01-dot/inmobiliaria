@@ -1,27 +1,18 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient, getTenantId } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { PortalConnection, PropertyPublication } from "@inmocms/shared"
 
-async function getTenantId(supabase: any) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
-
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("tenant_id")
-        .eq("id", user.id)
-        .single()
-
-    return profile?.tenant_id
-}
-
 export async function getPortalConnections(): Promise<PortalConnection[]> {
     const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+    if (!tenantId) return []
+
     const { data, error } = await supabase
         .from("portal_connections")
         .select("*")
+        .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
 
     if (error) {
@@ -61,10 +52,14 @@ export async function connectPortal(portalName: string, email: string) {
 
 export async function disconnectPortal(connectionId: string) {
     const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+    if (!tenantId) throw new Error("Unauthorized")
+
     const { error } = await supabase
         .from("portal_connections")
         .delete()
         .eq("id", connectionId)
+        .eq("tenant_id", tenantId)
 
     if (error) {
         console.error("Error disconnecting portal:", error)
@@ -76,10 +71,14 @@ export async function disconnectPortal(connectionId: string) {
 
 export async function getPropertyPublications(propertyId: string): Promise<PropertyPublication[]> {
     const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+    if (!tenantId) return []
+
     const { data, error } = await supabase
         .from("property_publications")
         .select("*, portal_connections(portal_name, account_email)")
         .eq("property_id", propertyId)
+        .eq("tenant_id", tenantId)
 
     if (error) {
         console.error("Error fetching publications:", error)

@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient, getTenantId } from "@/lib/supabase/server"
+import { createClient, createAdminClient, getTenantId } from "@/lib/supabase/server"
 
 export async function getAgents() {
     const supabase = await createClient()
@@ -156,10 +156,8 @@ export async function updateAgentRole(agentId: string, roleId: string) {
 
 export async function inviteAgent(data: { name: string, email: string, roleId: string, branchId: string }) {
     const supabase = await createClient()
+    const adminSupabase = await createAdminClient()
     const tenantId = await getTenantId(supabase)
-
-    console.log("DEBUG: inviteAgent - tenantId:", tenantId)
-    console.log("DEBUG: inviteAgent - data:", data)
 
     if (!tenantId) throw new Error("Unauthorized")
 
@@ -180,7 +178,40 @@ export async function inviteAgent(data: { name: string, email: string, roleId: s
     const roleId = data.roleId === "" ? null : data.roleId
     const branchId = data.branchId === "" ? null : data.branchId
 
-    const { error } = await supabase
+    // 1. Send native Supabase invitation with metadata
+    const { data: authData, error: authError } = await adminSupabase.auth.admin.inviteUserByEmail(data.email, {
+        data: {
+            tenant_id: tenantId,
+            role_id: roleId,
+            branch_id: branchId,
+            full_name: data.name
+        },
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`
+    })
+
+    if (authError) {
+        // If user already exists, check if they are already in the tenant
+        if (authError.message.includes("already been registered") || authError.status === 422) {
+            const { data: profileExists } = await supabase
+                .from("profiles")
+                .select("id")
+                .eq("email", data.email)
+                .eq("tenant_id", tenantId)
+                .maybeSingle()
+
+            if (profileExists) {
+                return { success: false, error: "Este usuario ya es parte de tu equipo" }
+            }
+
+            return { success: false, error: "Este correo ya está registrado en la plataforma. Para sumarlo a tu equipo, usa el mismo correo en la sección de Red o contacta a soporte." }
+        }
+
+        console.error("Auth Invite Error:", authError)
+        return { success: false, error: `Error al enviar invitación: ${authError.message}` }
+    }
+
+    // 2. Insert into our local invitations table for UI tracking
+    const { error: dbError } = await supabase
         .from("invitations")
         .insert({
             tenant_id: tenantId,
@@ -191,9 +222,9 @@ export async function inviteAgent(data: { name: string, email: string, roleId: s
             status: 'pending'
         })
 
-    if (error) {
-        console.error("DEBUG: inviteAgent - Supabase Error:", error)
-        throw new Error(`Error en la base de datos: ${error.message}`)
+    if (dbError) {
+        console.error("Database Error:", dbError)
+        return { success: false, error: `Error en la base de datos: ${dbError.message}` }
     }
 
     return { success: true }

@@ -17,7 +17,11 @@ import {
     ChevronRight,
     ListTodo,
     Mail,
+    LogOut,
 } from "lucide-react"
+import Link from "next/link"
+import { signOut } from "@/app/actions/auth"
+import { toast } from "sonner"
 
 import {
     Sidebar,
@@ -34,12 +38,37 @@ import {
     SidebarGroupLabel,
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { cn } from "@/lib/utils"
 
-const data = {
+interface NavItem {
+    title: string;
+    url: string;
+    icon: any;
+    isActive?: boolean;
+    isAction?: boolean;
+    badge?: string;
+    children?: { title: string; url: string }[];
+}
+
+interface NavGroup {
+    title: string;
+    items: NavItem[];
+}
+
+interface SidebarData {
+    user: {
+        name: string;
+        email: string;
+        avatar: string;
+    };
+    navMain: NavGroup[];
+}
+
+const data: SidebarData = {
     user: {
         name: "Laura Gomez",
         email: "laura@inmocms.com",
-        avatar: "/avatars/laura.jpg",
+        avatar: "",
     },
     navMain: [
         {
@@ -110,13 +139,11 @@ const data = {
                     title: "Mis Tareas",
                     url: "/tareas",
                     icon: ListTodo,
-                    badge: "6",
                 },
                 {
-                    title: "Documentos",
-                    url: "/documentos",
-                    icon: FileText,
-                    badge: "1",
+                    title: "Citas",
+                    url: "/visitas",
+                    icon: Calendar,
                 },
                 {
                     title: "Marketing",
@@ -124,26 +151,9 @@ const data = {
                     icon: Megaphone,
                 },
                 {
-                    title: "Citas",
-                    url: "/visitas",
-                    icon: Calendar,
-                    badge: "27",
-                },
-                {
-                    title: "Mis facturas",
-                    url: "/facturas",
-                    icon: FileText,
-                },
-                {
-                    title: "Editar página web",
-                    url: "/web",
-                    icon: Globe,
-                },
-                {
-                    title: "Ver Mejoras",
-                    url: "/mejoras",
-                    icon: LayoutDashboard,
-                    isAction: true,
+                    title: "Ajustes",
+                    url: "/ajustes",
+                    icon: Settings,
                 },
             ],
         },
@@ -152,29 +162,12 @@ const data = {
             items: [
                 {
                     title: "Mi cuenta",
-                    url: "/cuenta",
+                    url: "/cuenta/perfil",
                     icon: Users,
                     children: [
                         { title: "Perfil", url: "/cuenta/perfil" },
                         { title: "Suscripción", url: "/cuenta/plan" },
                     ]
-                },
-                {
-                    title: "Consultas",
-                    url: "/consultas",
-                    icon: MessageSquare,
-                    badge: "6",
-                },
-                {
-                    title: "Notificaciones",
-                    url: "/notificaciones",
-                    icon: Bell,
-                    badge: "3",
-                },
-                {
-                    title: "Ajustes",
-                    url: "/ajustes",
-                    icon: Settings,
                 },
             ],
         },
@@ -217,9 +210,9 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                                                 {item.children.map((subItem) => (
                                                     <SidebarMenuSubItem key={subItem.title}>
                                                         <SidebarMenuSubButton asChild>
-                                                            <a href={subItem.url}>
+                                                            <Link href={subItem.url}>
                                                                 <span>{subItem.title}</span>
-                                                            </a>
+                                                            </Link>
                                                         </SidebarMenuSubButton>
                                                     </SidebarMenuSubItem>
                                                 ))}
@@ -229,9 +222,12 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                                         <SidebarMenuButton
                                             asChild
                                             tooltip={item.title}
-                                            className={item.isActive ? "bg-blue-600 text-white hover:bg-blue-700" : item.isAction ? "bg-green-500 text-white hover:bg-green-600" : ""}
+                                            className={cn(
+                                                item.isActive && "bg-blue-600 text-white hover:bg-blue-700",
+                                                item.isAction && "bg-green-500 text-white hover:bg-green-600"
+                                            )}
                                         >
-                                            <a href={item.url} className="flex items-center justify-between w-full">
+                                            <Link href={item.url} className="flex items-center justify-between w-full">
                                                 <div className="flex items-center gap-2">
                                                     {item.icon && <item.icon />}
                                                     <span>{item.title}</span>
@@ -241,7 +237,7 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                                                         {item.badge}
                                                     </span>
                                                 )}
-                                            </a>
+                                            </Link>
                                         </SidebarMenuButton>
                                     )}
                                 </SidebarMenuItem>
@@ -250,16 +246,32 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                     </SidebarGroup>
                 ))}
             </SidebarContent>
-            <SidebarFooter className="p-4 border-t border-gray-100 group-data-[collapsible=icon]:hidden">
-                <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9 border border-gray-200">
-                        <AvatarImage src={userData.avatar} />
-                        <AvatarFallback className="uppercase">{userData.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-gray-700">{userData.name}</span>
-                        <span className="text-[10px] text-gray-400 truncate max-w-[150px]">{userData.email}</span>
+            <SidebarFooter className="p-4 border-t border-gray-100 group-data-[collapsible=icon]:px-2">
+                <div className="flex items-center justify-between gap-3 overflow-hidden">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                        <Avatar className="h-9 w-9 border border-gray-200">
+                            <AvatarImage src={userData.avatar} />
+                            <AvatarFallback className="uppercase bg-blue-100 text-blue-600 font-bold">{userData.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
+                            <span className="text-sm font-semibold text-gray-700 truncate">{userData.name}</span>
+                            <span className="text-[10px] text-gray-400 truncate">{userData.email}</span>
+                        </div>
                     </div>
+                    <button
+                        className="h-8 w-8 hover:bg-red-50 hover:text-red-500 text-gray-400 rounded-lg flex items-center justify-center transition-colors group-data-[collapsible=icon]:hidden"
+                        title="Cerrar Sesión"
+                        onClick={async () => {
+                            try {
+                                await signOut()
+                                toast.success("Sesión cerrada")
+                            } catch (e) {
+                                toast.error("Error al cerrar sesión")
+                            }
+                        }}
+                    >
+                        <LogOut className="h-4 w-4" />
+                    </button>
                 </div>
             </SidebarFooter>
         </Sidebar>

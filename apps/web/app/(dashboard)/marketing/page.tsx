@@ -11,7 +11,8 @@ import {
     MoreHorizontal,
     Play,
     Pause,
-    BarChart3
+    BarChart3,
+    Sparkles
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -38,6 +39,12 @@ export default async function MarketingPage() {
                         <Button variant="outline" className="rounded-2xl h-12 px-6 font-bold border-gray-200">
                             <Zap className="mr-2 h-4 w-4 text-amber-500" />
                             Automatizaciones
+                        </Button>
+                    </Link>
+                    <Link href="/marketing/ai-studio">
+                        <Button className="rounded-2xl h-12 px-6 font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-purple-500/20 text-white">
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            AI Studio
                         </Button>
                     </Link>
                     <Button className="rounded-2xl h-12 px-6 font-bold bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20 text-white">
@@ -103,7 +110,7 @@ export default async function MarketingPage() {
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <Badge className={`rounded-lg font-black text-[10px] uppercase px-2 ${campaign.status === 'active' ? 'bg-green-100 text-green-600' :
-                                                        campaign.status === 'paused' ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600'
+                                                    campaign.status === 'paused' ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600'
                                                     }`}>
                                                     {campaign.status}
                                                 </Badge>

@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 
 export async function getPublicProperties(
@@ -37,7 +37,7 @@ export async function getPublicProperties(
             )
         `)
         .eq("tenant_id", tenant.id)
-        .eq("is_shared", true)
+        .eq("status", "available")
         .order("created_at", { ascending: false })
 
     // Apply filters
@@ -90,7 +90,7 @@ export async function getPublicPropertyById(tenantSlug: string, propertyId: stri
         `)
         .eq("id", propertyId)
         .eq("tenant_id", tenant.id)
-        .eq("is_shared", true)
+        .eq("status", "available")
         .single()
 
     if (error) {
@@ -109,36 +109,37 @@ export async function createPublicLead(data: {
     propertyId?: string
     tenantSlug: string
 }) {
-    const supabase = await createClient()
+    const adminSupabase = await createAdminClient()
 
     // Get tenant ID from slug
-    const { data: tenant, error: tenantError } = await supabase
+    const { data: tenant, error: tenantError } = await adminSupabase
         .from("tenants")
         .select("id")
         .eq("slug", data.tenantSlug)
         .single()
 
     if (tenantError || !tenant) {
-        throw new Error("Inmobiliaria no encontrada")
+        console.error("Tenant not found for slug:", data.tenantSlug, tenantError)
+        throw new Error(`Inmobiliaria no encontrada: ${data.tenantSlug || 'vacío'}`)
     }
 
-    // Create lead
-    const { error } = await supabase
+    // Create lead using admin client to ensure success for public users
+    const { error: insertError } = await adminSupabase
         .from("leads")
         .insert({
             tenant_id: tenant.id,
             name: data.name,
-            email: data.email,
-            phone: data.phone,
+            email: data.email || null,
+            phone: data.phone || null,
             notes: data.message,
-            property_id: data.propertyId || null,
+            interested_property_id: data.propertyId || null,
             status: "new",
             source: "website",
             scoring: 0
         })
 
-    if (error) {
-        console.error("Error creating public lead:", error)
+    if (insertError) {
+        console.error("Error creating public lead (admin):", insertError)
         throw new Error("Error al enviar el mensaje. Intenta nuevamente.")
     }
 

@@ -11,6 +11,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { getLeads } from '@/app/actions/leads';
 import { Lead } from '@inmocms/shared';
+import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 
 interface OwnerSelectorProps {
@@ -58,7 +59,7 @@ export function OwnerSelector({ value, onChange }: OwnerSelectorProps) {
             <p className="text-[10px] text-gray-400 font-medium ml-1">
                 Selecciona un lead existente como propietario. {leads.length === 0 && (
                     <span className="text-blue-600 font-bold">
-                        <a href="/leads" className="hover:underline">Crea un lead primero</a>
+                        <Link href="/leads" className="hover:underline">Crea un lead primero</Link>
                     </span>
                 )}
             </p>

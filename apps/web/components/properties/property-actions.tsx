@@ -17,13 +17,15 @@ import {
     FileText,
     Trash2,
     Globe,
-    Rocket
+    Rocket,
+    Loader2
 } from "lucide-react"
 import Link from "next/link"
 import { PublishDialog } from "@/components/marketing/publish-dialog"
 import { PortalConnection, PropertyPublication, Property } from "@inmocms/shared"
-import { togglePropertySharing } from "@/app/actions/properties"
+import { togglePropertySharing, deleteProperty } from "@/app/actions/properties"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 interface PropertyActionsProps {
     property: Property
@@ -33,13 +35,39 @@ interface PropertyActionsProps {
 
 export function PropertyActions({ property, connections, publications }: PropertyActionsProps) {
     const [publishOpen, setPublishOpen] = useState(false)
+    const [deleting, setDeleting] = useState(false)
+    const router = useRouter()
+
+    async function handleDelete() {
+        if (!confirm(`¿Eliminar la propiedad "${property.title}"? Esta acción no se puede deshacer.`)) return;
+        setDeleting(true);
+        try {
+            await deleteProperty(property.id);
+            toast.success("Propiedad eliminada correctamente");
+            router.refresh();
+        } catch (e: any) {
+            toast.error("Error al eliminar la propiedad");
+        } finally {
+            setDeleting(false);
+        }
+    }
+
+    async function handleToggleSharing() {
+        try {
+            await togglePropertySharing(property.id, !property.is_shared);
+            toast.success(property.is_shared ? "Propiedad retirada de red compartida" : "Propiedad compartida en la red");
+            router.refresh();
+        } catch (e: any) {
+            toast.error("Error al cambiar estado de compartido");
+        }
+    }
 
     return (
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600">
-                        <MoreHorizontal className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600" disabled={deleting}>
+                        {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 rounded-2xl border-gray-100 shadow-xl overflow-hidden p-2">
@@ -69,18 +97,9 @@ export function PropertyActions({ property, connections, publications }: Propert
 
                     <DropdownMenuSeparator className="bg-gray-100" />
 
-                    <DropdownMenuSeparator className="bg-gray-100" />
-
                     <DropdownMenuItem
                         className="rounded-xl py-3 cursor-pointer group"
-                        onClick={async () => {
-                            try {
-                                await togglePropertySharing(property.id, !property.is_shared);
-                                toast.success(property.is_shared ? "Propiedad retirada de red compartida" : "Propiedad compartida en la red");
-                            } catch (e: any) {
-                                toast.error("Error al cambiar estado de compartido");
-                            }
-                        }}
+                        onClick={handleToggleSharing}
                     >
                         <Globe className={`h-4 w-4 mr-3 ${property.is_shared ? 'text-blue-600' : 'text-gray-400'} group-hover:text-blue-600 transition-colors`} />
                         <span className="font-bold text-gray-700">{property.is_shared ? "Dejar de compartir" : "Compartir en Red"}</span>
@@ -95,7 +114,10 @@ export function PropertyActions({ property, connections, publications }: Propert
 
                     <DropdownMenuSeparator className="bg-gray-100" />
 
-                    <DropdownMenuItem className="rounded-xl py-3 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 group">
+                    <DropdownMenuItem
+                        className="rounded-xl py-3 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 group"
+                        onClick={handleDelete}
+                    >
                         <Trash2 className="h-4 w-4 mr-3 text-red-400 group-hover:text-red-600 transition-colors" />
                         <span className="font-bold">Eliminar</span>
                     </DropdownMenuItem>

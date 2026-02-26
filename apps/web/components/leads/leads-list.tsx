@@ -38,6 +38,8 @@ import Link from "next/link"
 import { Lead } from "@inmocms/shared"
 import { useState } from "react"
 import { LeadDialog } from "./lead-dialog"
+import { deleteLead } from "@/app/actions/leads"
+import { toast } from "sonner"
 
 interface LeadsListProps {
     initialLeads: Lead[]
@@ -46,11 +48,57 @@ interface LeadsListProps {
 export function LeadsList({ initialLeads }: LeadsListProps) {
     const [leads, setLeads] = useState<Lead[]>(initialLeads);
     const [searchTerm, setSearchTerm] = useState("");
+    const [originFilter, setOriginFilter] = useState<string | null>(null);
+    const [scoringSort, setScoringSort] = useState<'asc' | 'desc' | null>(null);
 
-    const filteredLeads = leads.filter(lead =>
-        lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredLeads = leads
+        .filter(lead => {
+            const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                lead.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesOrigin = !originFilter || lead.source === originFilter;
+            return matchesSearch && matchesOrigin;
+        })
+        .sort((a, b) => {
+            if (!scoringSort) return 0;
+            return scoringSort === 'desc'
+                ? (b.scoring || 0) - (a.scoring || 0)
+                : (a.scoring || 0) - (b.scoring || 0);
+        });
+
+    async function handleDelete(id: string, name: string) {
+        if (!confirm(`¿Eliminar el lead "${name}"? Esta acción no se puede deshacer.`)) return;
+        try {
+            await deleteLead(id);
+            setLeads(leads.filter(l => l.id !== id));
+            toast.success("Lead eliminado correctamente");
+        } catch (e) {
+            toast.error("Error al eliminar el lead");
+        }
+    }
+
+    function handleMessage(lead: Lead) {
+        if (lead.phone) {
+            const phone = lead.phone.replace(/\D/g, '');
+            const message = encodeURIComponent(`Hola ${lead.name}, me comunico desde nuestra inmobiliaria.`);
+            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+        } else if (lead.email) {
+            window.open(`mailto:${lead.email}?subject=Contacto Inmobiliaria`, '_blank');
+        } else {
+            toast.info("Este lead no tiene teléfono ni email registrado.");
+        }
+    }
+
+    function toggleOriginFilter() {
+        const origins = ['manual', 'web', 'portal', 'referral', null];
+        const current = origins.indexOf(originFilter);
+        setOriginFilter(origins[(current + 1) % origins.length]);
+    }
+
+    function toggleScoringSort() {
+        if (!scoringSort) setScoringSort('desc');
+        else if (scoringSort === 'desc') setScoringSort('asc');
+        else setScoringSort(null);
+    }
 
     return (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl">
@@ -65,11 +113,23 @@ export function LeadsList({ initialLeads }: LeadsListProps) {
                     />
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto">
-                    <Button variant="outline" className="h-11 border-gray-100 rounded-xl font-bold flex-1 md:flex-none">
-                        <Filter className="h-4 w-4 mr-2" /> Origen
+                    <Button
+                        variant="outline"
+                        className={`h-11 border-gray-100 rounded-xl font-bold flex-1 md:flex-none transition-colors ${originFilter ? 'bg-blue-50 text-blue-600 border-blue-100' : ''}`}
+                        onClick={toggleOriginFilter}
+                        title={originFilter ? `Filtrando por: ${originFilter}` : 'Filtrar por origen'}
+                    >
+                        <Filter className="h-4 w-4 mr-2" />
+                        {originFilter ? originFilter.charAt(0).toUpperCase() + originFilter.slice(1) : 'Origen'}
                     </Button>
-                    <Button variant="outline" className="h-11 border-gray-100 rounded-xl font-bold flex-1 md:flex-none">
-                        <Star className="h-4 w-4 mr-2 text-yellow-500" /> Scoring
+                    <Button
+                        variant="outline"
+                        className={`h-11 border-gray-100 rounded-xl font-bold flex-1 md:flex-none transition-colors ${scoringSort ? 'bg-yellow-50 text-yellow-600 border-yellow-100' : ''}`}
+                        onClick={toggleScoringSort}
+                        title="Ordenar por scoring"
+                    >
+                        <Star className={`h-4 w-4 mr-2 ${scoringSort ? 'text-yellow-500' : 'text-yellow-500'}`} />
+                        {scoringSort === 'desc' ? 'Scoring ↓' : scoringSort === 'asc' ? 'Scoring ↑' : 'Scoring'}
                     </Button>
                 </div>
             </div>
@@ -90,7 +150,7 @@ export function LeadsList({ initialLeads }: LeadsListProps) {
                         {filteredLeads.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-48 text-center text-gray-400 font-medium font-bold">
-                                    No se encontraron leads.
+                                    {searchTerm || originFilter ? "No se encontraron leads con esos filtros." : "No se encontraron leads."}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -147,7 +207,13 @@ export function LeadsList({ initialLeads }: LeadsListProps) {
                                     </TableCell>
                                     <TableCell className="py-4 px-6 text-right">
                                         <div className="flex items-center justify-end gap-1">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                                                title={lead.phone ? "Enviar WhatsApp" : lead.email ? "Enviar Email" : "Contactar"}
+                                                onClick={() => handleMessage(lead)}
+                                            >
                                                 <MessageCircle className="h-4 w-4" />
                                             </Button>
                                             <DropdownMenu>
@@ -166,11 +232,16 @@ export function LeadsList({ initialLeads }: LeadsListProps) {
                                                             </div>
                                                         }
                                                     />
-                                                    <DropdownMenuItem className="py-3 cursor-pointer">
-                                                        <ArrowUpRight className="h-4 w-4 mr-3 text-gray-400" /> Mover en Pipeline
+                                                    <DropdownMenuItem className="py-3 cursor-pointer" asChild>
+                                                        <Link href="/pipeline">
+                                                            <ArrowUpRight className="h-4 w-4 mr-3 text-gray-400" /> Mover en Pipeline
+                                                        </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="py-3 cursor-pointer text-red-600">
+                                                    <DropdownMenuItem
+                                                        className="py-3 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                                                        onClick={() => handleDelete(lead.id, lead.name)}
+                                                    >
                                                         <Trash2 className="h-4 w-4 mr-3" /> Eliminar
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>

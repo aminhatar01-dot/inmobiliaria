@@ -22,6 +22,7 @@ import { createProperty } from "@/app/actions/properties"
 import { OPERATION_TYPES, PROPERTY_STATUSES, PROPERTY_TYPES, CURRENCIES, PROPERTY_TYPE_LABELS } from "@inmocms/shared"
 import { ImageUpload } from "@/components/properties/image-upload"
 import { OwnerSelector } from "@/components/properties/owner-selector"
+import LocationPicker from "@/components/properties/location-picker"
 
 export default function NewPropertyPage() {
     const router = useRouter()
@@ -35,6 +36,8 @@ export default function NewPropertyPage() {
         operation_type: "" as "sale" | "rent" | "temporary_rent" | "",
         description: "",
         address: "",
+        latitude: undefined as number | undefined,
+        longitude: undefined as number | undefined,
         surface_total: 0,
         rooms: 0,
         bedrooms: 0,
@@ -66,6 +69,8 @@ export default function NewPropertyPage() {
                 operation_type: formData.operation_type as "sale" | "rent" | "temporary_rent",
                 description: formData.description,
                 address: formData.address,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
                 surface_total: formData.surface_total,
                 rooms: formData.rooms,
                 bedrooms: formData.bedrooms,
@@ -187,15 +192,16 @@ export default function NewPropertyPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="p-8 space-y-6">
-                            <div className="space-y-3">
-                                <Label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Dirección Completa</Label>
-                                <Input
-                                    placeholder="Calle, Número, Piso, Depto..."
-                                    value={formData.address}
-                                    onChange={(e) => handleChange("address", e.target.value)}
-                                    className="h-12 bg-gray-50 border-gray-100 rounded-xl focus:bg-white transition-all"
-                                />
-                            </div>
+                            <LocationPicker
+                                address={formData.address}
+                                latitude={formData.latitude}
+                                longitude={formData.longitude}
+                                onAddressChange={(addr) => handleChange("address", addr)}
+                                onLocationChange={(lat, lng) => {
+                                    handleChange("latitude", lat)
+                                    handleChange("longitude", lng)
+                                }}
+                            />
                         </CardContent>
                     </Card>
 

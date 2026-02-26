@@ -87,8 +87,9 @@ export function ImageUpload({ onUploadComplete, maxFiles = 10, initialImages = [
             onUploadComplete(totalUploaded);
             toast.success('Imágenes subidas correctamente');
         } catch (error: any) {
-            console.error('Upload error:', error);
-            toast.error('Error al subir imágenes');
+            console.error('Upload error details:', error);
+            const errorMessage = error.message || 'Error desconocido al subir imágenes';
+            toast.error(`Error de Almacenamiento: ${errorMessage}`);
         } finally {
             setUploading(false);
         }
