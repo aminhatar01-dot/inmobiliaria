@@ -1,0 +1,140 @@
+{
+  "node": {
+    "0058814481d565d1755417476327d2f49abc2dac21": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "signOut",
+          "filename": "apps/web/app/actions/auth.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "action-browser"
+      },
+      "exportedName": "signOut",
+      "filename": "apps/web/app/actions/auth.ts"
+    },
+    "00ce39c726f28eddc3a98d5c4a86ff4102a4ca00f8": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getNotifications",
+          "filename": "apps/web/app/actions/reminders.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "action-browser"
+      },
+      "exportedName": "getNotifications",
+      "filename": "apps/web/app/actions/reminders.ts"
+    },
+    "40c587ee17fbc64f5d026c5c91d415c90a4e4033ba": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "markNotificationAsRead",
+          "filename": "apps/web/app/actions/reminders.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "action-browser"
+      },
+      "exportedName": "markNotificationAsRead",
+      "filename": "apps/web/app/actions/reminders.ts"
+    },
+    "403dfd806530b0f0596321853a27664384a9a3b0dd": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "globalSearch",
+          "filename": "apps/web/app/actions/search.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "action-browser"
+      },
+      "exportedName": "globalSearch",
+      "filename": "apps/web/app/actions/search.ts"
+    },
+    "4005e471464dad200ef5bf0c31ec8feb8bb50d6390": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteTask",
+          "filename": "apps/web/app/actions/tasks.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "action-browser"
+      },
+      "exportedName": "deleteTask",
+      "filename": "apps/web/app/actions/tasks.ts"
+    },
+    "401344b15c8f6a9a35be6d70a507f890b24b9e7a90": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createTask",
+          "filename": "apps/web/app/actions/tasks.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "action-browser"
+      },
+      "exportedName": "createTask",
+      "filename": "apps/web/app/actions/tasks.ts"
+    },
+    "4075d257123b4f6bdcee4b08b5ecbfe138083a2ba6": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getTasks",
+          "filename": "apps/web/app/actions/tasks.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "rsc"
+      },
+      "exportedName": "getTasks",
+      "filename": "apps/web/app/actions/tasks.ts"
+    },
+    "40ff3ddff86791fa8c2407f436e480ab90ae46d021": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "completeTask",
+          "filename": "apps/web/app/actions/tasks.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "action-browser"
+      },
+      "exportedName": "completeTask",
+      "filename": "apps/web/app/actions/tasks.ts"
+    },
+    "60e82a4910e2d7efa48fa354e4a6814d9018f82703": {
+      "workers": {
+        "app/(dashboard)/tareas/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/tareas/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/tasks.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateTask",
+          "filename": "apps/web/app/actions/tasks.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/tareas/page": "rsc"
+      },
+      "exportedName": "updateTask",
+      "filename": "apps/web/app/actions/tasks.ts"
+    }
+  },
+  "edge": {}
+}

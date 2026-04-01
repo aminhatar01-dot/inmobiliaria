@@ -15,9 +15,14 @@ export default async function LeadsPage() {
                     <p className="text-gray-500 text-sm font-medium">Gestiona tus contactos y oportunidades</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" className="h-12 border-gray-100 rounded-xl font-bold px-6 bg-white" asChild>
-                        <Link href="/pipeline">
+                    <Button variant="outline" className="h-12 border-gray-100 rounded-xl font-bold px-6 bg-white hover:bg-gray-50 text-gray-700" asChild>
+                        <Link href="/leads/pipeliNE">
                             Ver Pipeline Kanban
+                        </Link>
+                    </Button>
+                    <Button variant="secondary" className="h-12 rounded-xl font-black px-6 bg-purple-100/50 hover:bg-purple-100 text-purple-700 border border-purple-200" asChild>
+                        <Link href="/leads/captacion">
+                            ✨ Captación con IA
                         </Link>
                     </Button>
                     <LeadDialog

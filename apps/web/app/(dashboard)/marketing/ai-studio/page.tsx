@@ -26,9 +26,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { getProperties } from "@/app/actions/properties"
-import { generateMarketingScript, publishToSocialMedia, getAudioLibrary } from "@/app/actions/marketing-ai"
+import { 
+    generateMarketingScript, 
+    publishToSocialMedia, 
+    getAudioLibrary,
+    generateAVContent
+} from "@/app/actions/marketing-ai"
+import { AIAvatarSelector } from "@/components/marketing/ai-avatar-selector"
 import { toast } from "sonner"
 import Image from "next/image"
+import { createClient } from "@/lib/supabase/client"
 
 import {
     Music,
@@ -81,10 +88,54 @@ export default function AIStudioPage() {
     const [showPublishDialog, setShowPublishDialog] = useState(false)
     const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
     const [audioLibrary, setAudioLibrary] = useState<any[]>([])
-    const [selectedAudioUrl, setSelectedAudioUrl] = useState<string>("")
+    const [selectedMusicUrl, setSelectedMusicUrl] = useState<string>("")
+    const [selectedVoiceUrl, setSelectedVoiceUrl] = useState<string>("")
     const [isRecording, setIsRecording] = useState(false)
     const [socialAccounts, setSocialAccounts] = useState<any[]>([])
     const [isConnecting, setIsConnecting] = useState<string | null>(null)
+    const [selectedAvatarId, setSelectedAvatarId] = useState<string | null>(null)
+    const [externalMedia, setExternalMedia] = useState<string[]>([])
+    const [isSynthesizing, setIsSynthesizing] = useState(false)
+    const [finalVideo, setFinalVideo] = useState<any>(null)
+    const [isUploadingMedia, setIsUploadingMedia] = useState(false)
+    const [isUploadingAudio, setIsUploadingAudio] = useState(false)
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'media' | 'audio') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (type === 'media') setIsUploadingMedia(true);
+        else setIsUploadingAudio(true);
+
+        try {
+            const supabase = createClient();
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `properties/${fileName}`; // Reuse properties bucket for media files
+
+            const { error: uploadError } = await supabase.storage
+                .from('properties')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('properties').getPublicUrl(filePath);
+            
+            if (type === 'media') {
+                setExternalMedia(prev => [data.publicUrl, ...prev]);
+                toast.success("Archivo multimedia subido correctamente");
+            } else {
+                setSelectedVoiceUrl(data.publicUrl);
+                toast.success("Audio personalizado de voz subido correctamente");
+            }
+        } catch (error: any) {
+            console.error("Upload error:", error);
+            toast.error(error.message || "Error al subir el archivo");
+        } finally {
+            if (type === 'media') setIsUploadingMedia(false);
+            else setIsUploadingAudio(false);
+        }
+    };
 
     useEffect(() => {
         const fetchProps = async () => {
@@ -116,18 +167,49 @@ export default function AIStudioPage() {
                 selectedProperty.id,
                 contentType === 'portal' ? 'post' : contentType,
                 instructions,
-                nextVariation
+                nextVariation,
+                selectedAvatarId,
+                externalMedia
             )
             setAiResult(result.script)
             setProductionMetadata(result.productionMetadata)
-            setSelectedAudioUrl(result.productionMetadata.audioUrl)
+            setSelectedMusicUrl(result.productionMetadata.musicAudioUrl)
+            if (result.productionMetadata.voiceAudioUrl) setSelectedVoiceUrl(result.productionMetadata.voiceAudioUrl)
+            
             if (isRegenerate) setVariationCount(nextVariation)
             setStep(2)
-            toast.success(isRegenerate ? `Generada Variedad: ${result.productionMetadata.style}` : "Contenido generado con éxito")
+            
+            if (result.warning) {
+                toast.error(result.warning, { duration: 10000 });
+            } else {
+                toast.success(isRegenerate ? `Generada Variedad: ${result.productionMetadata.style}` : "Contenido generado con éxito");
+            }
         } catch (error) {
             toast.error("Error al generar contenido")
         } finally {
             setIsGenerating(false)
+        }
+    }
+
+    const handleSynthesizeVideo = async () => {
+        if (!productionMetadata) return
+        
+        setIsSynthesizing(true)
+        try {
+            const result = await generateAVContent(productionMetadata)
+            setFinalVideo(result)
+            toast.success("¡Video generado con éxito!")
+        } catch (error) {
+            toast.error("Error al sintetizar el video")
+        } finally {
+            setIsSynthesizing(false)
+        }
+    }
+
+    const handleShare = () => {
+        if (finalVideo?.shareLink) {
+            navigator.clipboard.writeText(finalVideo.shareLink)
+            toast.success("Enlace de compartición copiado al portapapeles")
         }
     }
 
@@ -321,6 +403,11 @@ export default function AIStudioPage() {
                                     />
                                 </div>
 
+                                <AIAvatarSelector 
+                                    selectedId={selectedAvatarId} 
+                                    onSelect={setSelectedAvatarId} 
+                                />
+
                                 <div className="space-y-3">
                                     <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Tipo de Contenido</Label>
                                     <div className="grid gap-2">
@@ -403,10 +490,22 @@ export default function AIStudioPage() {
                             <div className="aspect-[9/16] bg-gray-900 rounded-[3rem] overflow-hidden relative shadow-2xl border-8 border-gray-800 mx-auto max-w-[320px]">
                                 <AIVideoPlayer
                                     scenes={productionMetadata.scenes}
-                                    audioUrl={selectedAudioUrl || aiResult?.audioUrl}
+                                    musicAudioUrl={selectedMusicUrl || aiResult?.musicAudioUrl}
+                                    voiceAudioUrl={selectedVoiceUrl}
                                     title={selectedProperty?.title || "Propiedad Exclusiva"}
                                     price={selectedProperty?.price ? `${selectedProperty.currency} ${selectedProperty.price.toLocaleString()}` : ""}
+                                    videoUrl={finalVideo?.videoUrl}
+                                    variation={productionMetadata.variation || 0}
                                 />
+                                {isSynthesizing && (
+                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white p-8 text-center space-y-4">
+                                        <Loader2 className="h-10 w-10 animate-spin text-indigo-400" />
+                                        <div className="space-y-1">
+                                            <p className="font-black text-xl">Sintetizando Video...</p>
+                                            <p className="text-xs text-indigo-200 font-bold uppercase tracking-widest">Generando Avatar Humano</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
@@ -504,6 +603,21 @@ export default function AIStudioPage() {
                                         </Card>
                                     ))}
 
+                                    <div className="pt-4">
+                                        <Button
+                                            onClick={handleSynthesizeVideo}
+                                            disabled={isSynthesizing || !productionMetadata}
+                                            className="w-full h-16 rounded-3xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xl shadow-xl shadow-indigo-200"
+                                        >
+                                            {isSynthesizing ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+                                                <>
+                                                    <Video className="mr-2 h-6 w-6" />
+                                                    Generar Video Profesional
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+
                                     {aiResult?.content && (
                                         <Card className="border-none shadow-sm rounded-3xl bg-white p-8">
                                             <div className="prose prose-sm max-w-none">
@@ -553,6 +667,53 @@ export default function AIStudioPage() {
                                             </div>
                                         </button>
                                     ))}
+
+                                    <div className="pt-6 border-t border-gray-100">
+                                        <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">Media Externo</h4>
+                                        <label 
+                                            className="border-2 border-dashed border-gray-100 rounded-[2.5rem] p-10 text-center space-y-4 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group flex flex-col items-center justify-center relative"
+                                        >
+                                            <input 
+                                                type="file" 
+                                                accept="image/*,video/*" 
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                onChange={(e) => handleFileUpload(e, 'media')}
+                                                disabled={isUploadingMedia}
+                                            />
+                                            {isUploadingMedia ? (
+                                                <div className="h-16 w-16 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm">
+                                                    <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
+                                                </div>
+                                            ) : (
+                                                <div className="h-16 w-16 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm group-hover:scale-110 transition-transform">
+                                                    <Upload className="h-8 w-8 text-gray-400 group-hover:text-indigo-600" />
+                                                </div>
+                                            )}
+                                            <div>
+                                                <p className="text-gray-900 font-bold">{isUploadingMedia ? "Subiendo archivo..." : "Arrastra o sube tus propios videos/fotos"}</p>
+                                                <p className="text-xs text-gray-400 mt-1 font-medium">Soporta MP4, MOV, JPG, PNG (Max 50MB)</p>
+                                            </div>
+                                        </label>
+
+                                        {externalMedia.length > 0 && (
+                                            <div className="grid grid-cols-4 gap-2 mt-4">
+                                                {externalMedia.map((url, i) => (
+                                                    <div key={i} className="aspect-square rounded-xl overflow-hidden relative group">
+                                                        <img src={url} className="w-full h-full object-cover" />
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setExternalMedia(prev => prev.filter((_, idx) => idx !== i));
+                                                            }}
+                                                            className="absolute top-1 right-1 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <Trash2 className="h-3 w-3" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </TabsContent>
 
@@ -565,15 +726,15 @@ export default function AIStudioPage() {
                                                 <button
                                                     key={track.id}
                                                     onClick={() => {
-                                                        setSelectedAudioUrl(track.url);
+                                                        setSelectedMusicUrl(track.url);
                                                         toast.success(`Música cambiada: ${track.title}`);
                                                     }}
-                                                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all border-2 ${selectedAudioUrl === track.url
+                                                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all border-2 ${selectedMusicUrl === track.url
                                                         ? 'border-pink-500 bg-pink-50 shadow-lg shadow-pink-100/50'
                                                         : 'border-gray-50 bg-gray-50 hover:bg-gray-100'
                                                         }`}
                                                 >
-                                                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${selectedAudioUrl === track.url ? 'bg-pink-500 text-white' : 'bg-white text-gray-400'
+                                                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${selectedMusicUrl === track.url ? 'bg-pink-500 text-white' : 'bg-white text-gray-400'
                                                         }`}>
                                                         <Music className="h-5 w-5" />
                                                     </div>
@@ -581,7 +742,7 @@ export default function AIStudioPage() {
                                                         <p className="font-bold text-sm text-gray-800">{track.title}</p>
                                                         <p className="text-[10px] text-gray-400 font-medium">{track.artist}</p>
                                                     </div>
-                                                    {selectedAudioUrl === track.url && <Check className="ml-auto h-5 w-5 text-pink-500" />}
+                                                    {selectedMusicUrl === track.url && <Check className="ml-auto h-5 w-5 text-pink-500" />}
                                                 </button>
                                             ))}
                                         </div>
@@ -605,14 +766,23 @@ export default function AIStudioPage() {
                                                 <Mic className={`h-6 w-6 ${isRecording ? 'animate-pulse' : ''}`} />
                                                 <span className="text-xs font-bold">{isRecording ? "Detener" : "Grabar Voz"}</span>
                                             </Button>
-                                            <Button
-                                                variant="outline"
-                                                className="h-24 rounded-2xl flex flex-col gap-2 border-2 border-gray-100 bg-gray-50"
-                                                onClick={() => toast.info("Funcionalidad de subida de audio disponible próximamente")}
+                                            <label
+                                                className={`h-24 rounded-2xl flex flex-col items-center justify-center gap-2 border-2 border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors relative ${isUploadingAudio ? 'opacity-50' : ''}`}
                                             >
-                                                <Upload className="h-6 w-6" />
-                                                <span className="text-xs font-bold">Subir Audio</span>
-                                            </Button>
+                                                <input 
+                                                    type="file" 
+                                                    accept="audio/*" 
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    onChange={(e) => handleFileUpload(e, 'audio')}
+                                                    disabled={isUploadingAudio}
+                                                />
+                                                {isUploadingAudio ? (
+                                                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                                                ) : (
+                                                    <Upload className="h-6 w-6 text-gray-600" />
+                                                )}
+                                                <span className="text-xs font-bold text-gray-600">{isUploadingAudio ? "Subiendo..." : "Subir Audio"}</span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -638,6 +808,31 @@ export default function AIStudioPage() {
                                 onClick={() => setShowPublishDialog(true)}
                             >
                                 Publicar en Redes
+                            </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <Button
+                                variant="outline"
+                                className="rounded-2xl h-12 font-bold border-gray-200"
+                                onClick={handleShare}
+                                disabled={!finalVideo}
+                            >
+                                <Link2 className="mr-2 h-4 w-4" />
+                                Compartir Link
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="rounded-2xl h-12 font-bold border-gray-200"
+                                onClick={() => {
+                                    if(finalVideo?.videoUrl) {
+                                        window.open(finalVideo.videoUrl, '_blank');
+                                        toast.success("Iniciando descarga...");
+                                    }
+                                }}
+                                disabled={!finalVideo}
+                            >
+                                <Upload className="mr-2 h-4 w-4 rotate-180" />
+                                Descargar MP4
                             </Button>
                         </div>
                         <Button

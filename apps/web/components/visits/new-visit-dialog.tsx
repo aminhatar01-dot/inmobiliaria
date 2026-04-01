@@ -43,12 +43,23 @@ export function NewVisitDialog({ properties, leads }: Props) {
 
         startTransition(async () => {
             try {
+                const agentChannels = ['in-app']
+                if (formData.get("agent_whatsapp") === "on") agentChannels.push("whatsapp")
+                if (formData.get("agent_email") === "on") agentChannels.push("email")
+
+                const clientChannels = []
+                if (formData.get("client_whatsapp") === "on") clientChannels.push("whatsapp")
+                if (formData.get("client_email") === "on") clientChannels.push("email")
+
                 const visitData = {
                     property_id: formData.get("property_id") as string,
                     lead_id: formData.get("lead_id") as string,
                     scheduled_at: new Date(formData.get("scheduled_at") as string).toISOString(),
                     notes: formData.get("notes") as string,
-                    status: "scheduled" as const
+                    status: "scheduled" as const,
+                    reminder_hours: parseInt(formData.get("reminder_hours") as string) || 2,
+                    agent_reminder_channels: agentChannels,
+                    client_reminder_channels: clientChannels
                 }
 
                 await createVisit(visitData)
@@ -69,7 +80,7 @@ export function NewVisitDialog({ properties, leads }: Props) {
                     <Plus className="h-5 w-5 mr-3" /> Programar Visita
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px] rounded-[3rem] border-none p-10 bg-white/95 backdrop-blur-xl shadow-2xl">
+            <DialogContent className="sm:max-w-[550px] rounded-[3rem] border-none p-10 bg-white/95 backdrop-blur-xl shadow-2xl overflow-y-auto max-h-[90vh]">
                 <DialogHeader className="space-y-3">
                     <DialogTitle className="text-3xl font-black tracking-tight text-gray-900">Programar Visita</DialogTitle>
                     <DialogDescription className="text-gray-500 font-medium text-base">
@@ -78,48 +89,50 @@ export function NewVisitDialog({ properties, leads }: Props) {
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-8 pt-6">
                     <div className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="property_id" className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Propiedad</Label>
-                            <Select name="property_id" required>
-                                <SelectTrigger className="h-14 rounded-2xl bg-gray-50 border-transparent focus:ring-2 focus:ring-blue-500/20 font-bold text-gray-700">
-                                    <div className="flex items-center gap-3">
-                                        <MapPin className="h-4 w-4 text-blue-500" />
-                                        <SelectValue placeholder="Seleccionar propiedad" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-none shadow-xl">
-                                    {properties.map(p => (
-                                        <SelectItem key={p.id} value={p.id} className="rounded-xl py-3 px-4 focus:bg-blue-50">
-                                            <div className="flex flex-col">
-                                                <span className="font-bold text-gray-900">{p.title}</span>
-                                                <span className="text-[10px] text-gray-400 truncate max-w-[300px]">{p.address}</span>
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="property_id" className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Propiedad</Label>
+                                <Select name="property_id" required>
+                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 border-transparent focus:ring-2 focus:ring-blue-500/20 font-bold text-gray-700">
+                                        <div className="flex items-center gap-3">
+                                            <MapPin className="h-4 w-4 text-blue-500" />
+                                            <SelectValue placeholder="Propiedad" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-none shadow-xl">
+                                        {properties.map(p => (
+                                            <SelectItem key={p.id} value={p.id} className="rounded-xl py-3 px-4 focus:bg-blue-50">
+                                                <div className="flex flex-col text-left">
+                                                    <span className="font-bold text-gray-900 leading-none">{p.title}</span>
+                                                    <span className="text-[9px] text-gray-400 mt-1 truncate max-w-[200px]">{p.address}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="lead_id" className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Lead / Cliente</Label>
-                            <Select name="lead_id" required>
-                                <SelectTrigger className="h-14 rounded-2xl bg-gray-50 border-transparent focus:ring-2 focus:ring-blue-500/20 font-bold text-gray-700">
-                                    <div className="flex items-center gap-3">
-                                        <User className="h-4 w-4 text-purple-500" />
-                                        <SelectValue placeholder="Seleccionar cliente" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-none shadow-xl">
-                                    {leads.map(l => (
-                                        <SelectItem key={l.id} value={l.id} className="rounded-xl py-3 px-4 focus:bg-blue-50">
-                                            <div className="flex flex-col">
-                                                <span className="font-bold text-gray-900">{l.name}</span>
-                                                <span className="text-[10px] text-gray-400">{l.email || l.phone || 'Sin contacto'}</span>
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="space-y-2">
+                                <Label htmlFor="lead_id" className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Lead / Cliente</Label>
+                                <Select name="lead_id" required>
+                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 border-transparent focus:ring-2 focus:ring-blue-500/20 font-bold text-gray-700">
+                                        <div className="flex items-center gap-3">
+                                            <User className="h-4 w-4 text-purple-500" />
+                                            <SelectValue placeholder="Cliente" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-none shadow-xl">
+                                        {leads.map(l => (
+                                            <SelectItem key={l.id} value={l.id} className="rounded-xl py-3 px-4 focus:bg-blue-50">
+                                                <div className="flex flex-col text-left">
+                                                    <span className="font-bold text-gray-900 leading-none">{l.name}</span>
+                                                    <span className="text-[9px] text-gray-400 mt-1">{l.phone || l.email || 'Sin contacto'}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -136,13 +149,61 @@ export function NewVisitDialog({ properties, leads }: Props) {
                             </div>
                         </div>
 
+                        <div className="space-y-6 bg-gray-50/50 p-6 rounded-[2rem] border border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Configurar Recordatorios</Label>
+                                <div className="flex items-center gap-2">
+                                    <Input 
+                                        id="reminder_hours" 
+                                        name="reminder_hours" 
+                                        type="number" 
+                                        defaultValue={2} 
+                                        className="w-16 h-9 bg-white rounded-xl text-center font-bold text-xs" 
+                                    />
+                                    <span className="text-[10px] font-bold text-gray-400">hs antes</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="space-y-3">
+                                    <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Para el Agente</Label>
+                                    <div className="flex items-center gap-6">
+                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                            <input type="checkbox" name="agent_whatsapp" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                            <span className="text-xs font-bold text-gray-600 group-hover:text-blue-600 transition-colors">WhatsApp</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                            <input type="checkbox" name="agent_email" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                            <span className="text-xs font-bold text-gray-600 group-hover:text-blue-600 transition-colors">Email</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="h-px bg-gray-200/50 w-full" />
+
+                                <div className="space-y-3">
+                                    <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Para el Cliente (Lead)</Label>
+                                    <div className="flex items-center gap-6">
+                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                            <input type="checkbox" name="client_whatsapp" className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
+                                            <span className="text-xs font-bold text-gray-600 group-hover:text-purple-600 transition-colors">WhatsApp</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                            <input type="checkbox" name="client_email" className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
+                                            <span className="text-xs font-bold text-gray-600 group-hover:text-purple-600 transition-colors">Email</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <Label htmlFor="notes" className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Notas / Requerimientos</Label>
                             <Textarea
                                 id="notes"
                                 name="notes"
-                                placeholder="Ej: Traer llaves del balcón, el cliente viene con arquitecto..."
-                                className="min-h-[120px] rounded-3xl bg-gray-50 border-transparent focus:ring-2 focus:ring-blue-500/20 font-medium p-6 resize-none"
+                                placeholder="Ej: Traer llaves del balcón..."
+                                className="min-h-[100px] rounded-[2rem] bg-gray-50 border-transparent focus:ring-2 focus:ring-blue-500/20 font-medium p-6 resize-none"
                             />
                         </div>
                     </div>

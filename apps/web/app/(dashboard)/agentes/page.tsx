@@ -147,33 +147,43 @@ export default function AgentsPage() {
     }
 
     const handleInviteSubmit = async () => {
-        if (!inviteName || !inviteEmail || !inviteRoleId || !inviteBranchId) {
-            toast.error("Por favor completa todos los campos")
+        if (!inviteEmail) {
+            toast.error("Por favor completa el correo electrónico")
             return
         }
 
         setIsInviting(true)
         try {
-            const result = await inviteAgent({
-                name: inviteName,
-                email: inviteEmail,
-                roleId: inviteRoleId,
-                branchId: inviteBranchId
-            })
+            const { inviteToAgency } = await import("@/app/actions/subscriptions")
+            const result = await inviteToAgency(inviteEmail)
 
             if (result.success) {
-                toast.success("Invitación enviada correctamente")
+                toast.success("Invitación generada", {
+                    description: "Se ha creado el link de invitación correctamente."
+                })
+
+                // Show link in a way they can copy it (maybe another state or just toast)
+                if (result.inviteLink) {
+                    const copyToClipboard = () => {
+                        navigator.clipboard.writeText(result.inviteLink!)
+                        toast.success("Link copiado al portapapeles")
+                    }
+
+                    toast.info("Link de invitación", {
+                        action: {
+                            label: "Copiar Link",
+                            onClick: copyToClipboard
+                        },
+                        duration: 10000
+                    })
+                }
+
                 setInviteOpen(false)
-                setInviteName("")
                 setInviteEmail("")
-                setInviteRoleId("")
-                setInviteBranchId("")
                 fetchData()
-            } else {
-                toast.error(result.error || "Error al enviar invitación")
             }
         } catch (error: any) {
-            toast.error("Error de conexión al servidor")
+            toast.error("Error", { description: error.message })
         } finally {
             setIsInviting(false)
         }

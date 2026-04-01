@@ -142,3 +142,29 @@ export async function getLeadById(id: string) {
     return data
 }
 
+export async function bulkCreateLeads(leadsData: Partial<Lead>[]) {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+
+    if (!tenantId) throw new Error("Unauthorized or no tenant assigned")
+
+    const inserts = leadsData.map(lead => ({
+        ...lead,
+        tenant_id: tenantId,
+        status: lead.status || "new",
+        scoring: lead.scoring || 0
+    }))
+
+    const { data, error } = await supabase
+        .from("leads")
+        .insert(inserts)
+        .select()
+
+    if (error) {
+        console.error("Error mass creating leads:", error)
+        throw new Error(error.message)
+    }
+
+    revalidatePath("/leads")
+    return data
+}

@@ -79,13 +79,16 @@ export type Task = {
     property_id?: string;
     lead_id?: string;
     assigned_to: string;
+    reminder_hours?: number;
+    reminder_channels?: string[];
+    agent_reminder_sent?: boolean;
 };
 
 export type Contract = {
     id: string;
     tenant_id: string;
     title: string;
-    type: 'reservation' | 'rental' | 'sale' | 'other';
+    type: 'reservation' | 'rental' | 'sale' | 'receipt' | 'property_doc' | 'lead_doc' | 'other';
     status: 'draft' | 'generated' | 'signed' | 'archived';
     file_url?: string;
     property_id?: string;
@@ -255,6 +258,11 @@ export type Visit = {
     notes?: string;
     created_at: string;
     updated_at?: string;
+    reminder_hours?: number;
+    agent_reminder_channels?: string[];
+    client_reminder_channels?: string[];
+    agent_reminder_sent?: boolean;
+    client_reminder_sent?: boolean;
 };
 
 export const VISIT_STATUSES = {
@@ -277,6 +285,34 @@ export type Profile = {
     email: string;
     full_name?: string;
     avatar_url?: string;
+};
+
+export type ChannelConnection = {
+    id: string;
+    tenant_id: string;
+    channel_name: 'whatsapp' | 'instagram' | 'facebook' | 'gmail' | 'tiktok';
+    status: 'connected' | 'disconnected' | 'error' | 'pending';
+    credentials?: Record<string, any>;
+    account_info?: Record<string, any>;
+    last_sync_at?: string;
+    created_at: string;
+    updated_at: string;
+};
+
+export const CHANNEL_NAMES = {
+    whatsapp: 'whatsapp',
+    instagram: 'instagram',
+    facebook: 'facebook',
+    gmail: 'gmail',
+    tiktok: 'tiktok',
+} as const;
+
+export const CHANNEL_LABELS: Record<keyof typeof CHANNEL_NAMES, string> = {
+    whatsapp: 'WhatsApp',
+    instagram: 'Instagram',
+    facebook: 'Facebook',
+    gmail: 'Gmail',
+    tiktok: 'TikTok',
 };
 
 export type PortalConnection = {

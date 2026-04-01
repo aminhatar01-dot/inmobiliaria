@@ -6,7 +6,18 @@ export async function getDashboardStats() {
     const supabase = await createClient()
     const tenantId = await getTenantId(supabase)
 
-    if (!tenantId) throw new Error("Unauthorized")
+    if (!tenantId) {
+        return {
+            salesCount: 0,
+            rentCount: 0,
+            tempRentCount: 0,
+            totalProperties: 0,
+            leadsCount: 0,
+            visitsCount: 0,
+            salesVolume: 0,
+            funnel: { new: 0, contacted: 0, visit: 0, offer: 0, closing: 0 }
+        }
+    }
 
     // 1. Inmuebles en venta
     const { count: salesCount } = await supabase

@@ -162,7 +162,9 @@ export function LeadsList({ initialLeads }: LeadsListProps) {
                                                 <AvatarFallback className="bg-blue-50 text-blue-600 font-bold">{lead.name[0]}</AvatarFallback>
                                             </Avatar>
                                             <div className="space-y-0.5">
-                                                <h4 className="text-sm font-bold text-gray-800">{lead.name}</h4>
+                                                <Link href={`/leads/${lead.id}`} className="hover:underline decoration-blue-500 decoration-2 underline-offset-4">
+                                                    <h4 className="text-sm font-bold text-gray-800">{lead.name}</h4>
+                                                </Link>
                                                 <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
                                                     {lead.email && <span className="flex items-center gap-1"><Mail className="h-2.5 w-2.5" /> {lead.email}</span>}
                                                     {lead.phone && <span className="flex items-center gap-1"><Phone className="h-2.5 w-2.5" /> {lead.phone}</span>}

@@ -10,9 +10,9 @@ export async function signOut() {
 
     if (error) {
         console.error('Error signing out:', error)
-        throw new Error('Error al cerrar sesión')
+        return { success: false, error: error.message }
     }
 
     revalidatePath('/')
-    redirect('/login')
+    return { success: true }
 }

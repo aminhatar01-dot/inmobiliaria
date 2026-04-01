@@ -130,3 +130,83 @@ export async function deleteCampaign(id: string) {
 
     revalidatePath("/marketing/campanas")
 }
+
+export async function dispatchCampaign(
+    leadIds: string[],
+    messageContent: string,
+    channel: "email" | "whatsapp"
+) {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!tenantId || !user) throw new Error("Unauthorized")
+
+    // Import this dynamically or at the top. Let's do it directly here for simplicity if needed
+    // But better to just implement the message injection here to avoid circular logic
+    
+    let successCount = 0
+
+    for (const leadId of leadIds) {
+        try {
+            // Verify lead belongs to tenant
+            const { data: lead } = await supabase
+                .from("leads")
+                .select("id")
+                .eq("id", leadId)
+                .eq("tenant_id", tenantId)
+                .single()
+
+            if (!lead) continue
+
+            // Find or create conversation
+            const { data: existingConversation } = await supabase
+                .from("conversations")
+                .select("id")
+                .eq("lead_id", leadId)
+                .single()
+
+            let conversationId = existingConversation?.id
+
+            if (!conversationId) {
+                const { data: newConversation, error: convError } = await supabase
+                    .from("conversations")
+                    .insert({ tenant_id: tenantId, lead_id: leadId })
+                    .select()
+                    .single()
+                
+                if (convError) continue
+                conversationId = newConversation.id
+
+                // Add participant
+                await supabase
+                    .from("conversation_participants")
+                    .insert({ conversation_id: conversationId, user_id: user.id })
+            }
+            
+            if (!conversationId) continue
+
+            // Inject the system message to simulate the outgoing campaign
+            const { error: messageError } = await supabase
+                .from("messages")
+                .insert({
+                    conversation_id: conversationId,
+                    sender_id: user.id, // The agent sent it
+                    content: `[Campaña de Captación - ${channel.toUpperCase()}]\n\n${messageContent.trim()}`
+                })
+
+            if (!messageError) {
+                successCount++
+            } else {
+                console.error(`Failed to record message for lead ${leadId}`, messageError)
+            }
+        } catch (error) {
+            console.error(`Error processing lead ${leadId}`, error)
+        }
+    }
+
+    revalidatePath("/mensajes")
+    revalidatePath("/leads")
+
+    return { successCount, totalRequested: leadIds.length }
+}

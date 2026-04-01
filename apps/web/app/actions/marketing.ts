@@ -165,6 +165,10 @@ export async function createAutomationRule(formData: FormData) {
 
     if (!tenantId) throw new Error("Unauthorized")
 
+    const targetType = (formData.get("target_type") as string) || "all"
+    const targetId = formData.get("target_id") as string | null
+    const templatesRaw = formData.get("templates") as string | null
+
     const ruleData = {
         tenant_id: tenantId,
         name: formData.get("name") as string,
@@ -172,7 +176,10 @@ export async function createAutomationRule(formData: FormData) {
         trigger_condition: formData.get("trigger_condition") ? JSON.parse(formData.get("trigger_condition") as string) : {},
         action_type: formData.get("action_type") as string,
         action_config: formData.get("action_config") ? JSON.parse(formData.get("action_config") as string) : {},
-        is_active: true
+        is_active: true,
+        target_type: targetType,
+        target_id: targetType !== "all" && targetId ? targetId : null,
+        templates: templatesRaw ? JSON.parse(templatesRaw) : []
     }
 
     const { data, error } = await supabase
@@ -189,6 +196,7 @@ export async function createAutomationRule(formData: FormData) {
     revalidatePath("/marketing/automatizaciones")
     return data
 }
+
 
 export async function toggleAutomationRule(id: string, isActive: boolean) {
     const supabase = await createClient()

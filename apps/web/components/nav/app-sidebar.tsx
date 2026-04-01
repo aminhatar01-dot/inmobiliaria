@@ -18,6 +18,8 @@ import {
     ListTodo,
     Mail,
     LogOut,
+    Upload,
+    Shield,
 } from "lucide-react"
 import Link from "next/link"
 import { signOut } from "@/app/actions/auth"
@@ -113,7 +115,7 @@ const data: SidebarData = {
                 {
                     title: "Importar Datos",
                     url: "/propiedades/importar",
-                    icon: FileText,
+                    icon: Upload,
                 },
                 {
                     title: "Inmuebles compartidos",
@@ -136,6 +138,11 @@ const data: SidebarData = {
                     icon: Users,
                 },
                 {
+                    title: "Documentos",
+                    url: "/documentos",
+                    icon: FileText,
+                },
+                {
                     title: "Mis Tareas",
                     url: "/tareas",
                     icon: ListTodo,
@@ -149,6 +156,11 @@ const data: SidebarData = {
                     title: "Marketing",
                     url: "/marketing",
                     icon: Megaphone,
+                    children: [
+                        { title: "Dashboard", url: "/marketing" },
+                        { title: "Canales de Comunicación", url: "/marketing/canales" },
+                        { title: "Automatizaciones", url: "/marketing/automatizaciones" },
+                    ]
                 },
                 {
                     title: "Ajustes",
@@ -174,7 +186,7 @@ const data: SidebarData = {
     ],
 }
 
-export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar> & { user?: any }) {
+export function AppSidebar({ user, isSuperadmin, ...props }: React.ComponentProps<typeof Sidebar> & { user?: any; isSuperadmin?: boolean }) {
     const userData = {
         name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Usuario",
         email: user?.email || "",
@@ -246,7 +258,17 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                     </SidebarGroup>
                 ))}
             </SidebarContent>
-            <SidebarFooter className="p-4 border-t border-gray-100 group-data-[collapsible=icon]:px-2">
+            <SidebarFooter className="p-4 border-t border-gray-100 group-data-[collapsible=icon]:px-2 space-y-2">
+                {/* Admin Panel link — visible only to superadmin */}
+                {isSuperadmin && (
+                    <Link
+                        href="/admin"
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 transition-colors group-data-[collapsible=icon]:hidden"
+                    >
+                        <Shield className="h-4 w-4 flex-shrink-0" />
+                        <span className="text-xs font-bold">Panel Admin</span>
+                    </Link>
+                )}
                 <div className="flex items-center justify-between gap-3 overflow-hidden">
                     <div className="flex items-center gap-3 overflow-hidden">
                         <Avatar className="h-9 w-9 border border-gray-200">
@@ -262,10 +284,10 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                         className="h-8 w-8 hover:bg-red-50 hover:text-red-500 text-gray-400 rounded-lg flex items-center justify-center transition-colors group-data-[collapsible=icon]:hidden"
                         title="Cerrar Sesión"
                         onClick={async () => {
-                            try {
-                                await signOut()
-                                toast.success("Sesión cerrada")
-                            } catch (e) {
+                            const result = await signOut()
+                            if (result.success) {
+                                window.location.href = "/"
+                            } else {
                                 toast.error("Error al cerrar sesión")
                             }
                         }}

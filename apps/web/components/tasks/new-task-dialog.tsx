@@ -31,12 +31,18 @@ export function NewTaskDialog() {
     async function handleSubmit(formData: FormData) {
         setLoading(true);
         try {
+            const channels = ['in-app'];
+            if (formData.get('whatsapp') === 'on') channels.push('whatsapp');
+            if (formData.get('email') === 'on') channels.push('email');
+
             const data = {
                 title: formData.get('title') as string,
                 description: formData.get('description') as string,
                 priority: formData.get('priority') as any,
                 category: formData.get('category') as any,
                 due_date: formData.get('due_date') ? new Date(formData.get('due_date') as string).toISOString() : undefined,
+                reminder_hours: parseInt(formData.get('reminder_hours') as string) || 2,
+                reminder_channels: channels,
             };
 
             await createTask(data);
@@ -110,9 +116,30 @@ export function NewTaskDialog() {
                         <Input id="due_date" name="due_date" type="datetime-local" className="bg-gray-50 border-gray-100 rounded-xl" />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="description" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Descripción (Opcional)</Label>
-                        <Textarea id="description" name="description" placeholder="Detalles adicionales..." className="bg-gray-50 border-gray-100 rounded-xl min-h-[80px]" />
+                    <div className="space-y-3">
+                        <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Recordatorios</Label>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="whatsapp" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                <span className="text-xs font-medium text-gray-700">WhatsApp</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="email" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                <span className="text-xs font-medium text-gray-700">Email</span>
+                            </label>
+                            <div className="flex-1"></div>
+                            <div className="flex items-center gap-2">
+                                <Input 
+                                    id="reminder_hours" 
+                                    name="reminder_hours" 
+                                    type="number" 
+                                    defaultValue={2} 
+                                    className="w-16 h-8 bg-white text-xs text-center p-0" 
+                                />
+                                <span className="text-[10px] font-bold text-gray-400">hs antes</span>
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-gray-400 italic">* Recibirás siempre una notificación en el sistema.</p>
                     </div>
 
                     <div className="flex justify-end gap-3 pt-2">

@@ -1,0 +1,125 @@
+{
+  "node": {
+    "0094ea1ea62e938bc2239497f3aaa2841424d15bbb": {
+      "workers": {
+        "app/(public)/portal/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(public)/portal/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/properties.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getSharedProperties",
+          "filename": "apps/web/app/actions/properties.ts"
+        }
+      },
+      "layer": {
+        "app/(public)/portal/page": "rsc"
+      },
+      "exportedName": "getSharedProperties",
+      "filename": "apps/web/app/actions/properties.ts"
+    },
+    "009bd00912ff67b81a7559d44ba516e9a82b102dd4": {
+      "workers": {
+        "app/(public)/portal/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(public)/portal/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/properties.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getProperties",
+          "filename": "apps/web/app/actions/properties.ts"
+        }
+      },
+      "layer": {
+        "app/(public)/portal/page": "rsc"
+      },
+      "exportedName": "getProperties",
+      "filename": "apps/web/app/actions/properties.ts"
+    },
+    "00d3e6c351e1eb708e1f7c3618afb61eba6bbc9206": {
+      "workers": {
+        "app/(public)/portal/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(public)/portal/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/properties.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAllPublicProperties",
+          "filename": "apps/web/app/actions/properties.ts"
+        }
+      },
+      "layer": {
+        "app/(public)/portal/page": "rsc"
+      },
+      "exportedName": "getAllPublicProperties",
+      "filename": "apps/web/app/actions/properties.ts"
+    },
+    "4087fc5ce41a4f193d6ed8e9afcffc9d4f7612ca2e": {
+      "workers": {
+        "app/(public)/portal/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(public)/portal/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/properties.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteProperty",
+          "filename": "apps/web/app/actions/properties.ts"
+        }
+      },
+      "layer": {
+        "app/(public)/portal/page": "rsc"
+      },
+      "exportedName": "deleteProperty",
+      "filename": "apps/web/app/actions/properties.ts"
+    },
+    "40ef31a5d83ddd601630b6674d149be801d3eb9b7f": {
+      "workers": {
+        "app/(public)/portal/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(public)/portal/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/properties.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getPropertyById",
+          "filename": "apps/web/app/actions/properties.ts"
+        }
+      },
+      "layer": {
+        "app/(public)/portal/page": "rsc"
+      },
+      "exportedName": "getPropertyById",
+      "filename": "apps/web/app/actions/properties.ts"
+    },
+    "605856fa8af109200234296f2489610e86b631be9b": {
+      "workers": {
+        "app/(public)/portal/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(public)/portal/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/properties.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createProperty",
+          "filename": "apps/web/app/actions/properties.ts"
+        }
+      },
+      "layer": {
+        "app/(public)/portal/page": "rsc"
+      },
+      "exportedName": "createProperty",
+      "filename": "apps/web/app/actions/properties.ts"
+    },
+    "6062d1c535458a60f61e7224dace1c74c7fc469a43": {
+      "workers": {
+        "app/(public)/portal/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(public)/portal/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/properties.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "togglePropertySharing",
+          "filename": "apps/web/app/actions/properties.ts"
+        }
+      },
+      "layer": {
+        "app/(public)/portal/page": "rsc"
+      },
+      "exportedName": "togglePropertySharing",
+      "filename": "apps/web/app/actions/properties.ts"
+    },
+    "709f49f45058a476845a19c861e91599e94cf0aa46": {
+      "workers": {
+        "app/(public)/portal/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(public)/portal/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/properties.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateProperty",
+          "filename": "apps/web/app/actions/properties.ts"
+        }
+      },
+      "layer": {
+        "app/(public)/portal/page": "rsc"
+      },
+      "exportedName": "updateProperty",
+      "filename": "apps/web/app/actions/properties.ts"
+    }
+  },
+  "edge": {}
+}

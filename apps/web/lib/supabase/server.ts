@@ -61,8 +61,7 @@ export async function getTenantId(supabase: SupabaseClient) {
         .single()
 
     if (error || !userProfile?.tenant_id) {
-        console.error("No tenant found for user:", user.id, error)
-        throw new Error("No tienes una inmobiliaria asignada. Contacta al administrador.")
+        return null
     }
 
     return userProfile.tenant_id

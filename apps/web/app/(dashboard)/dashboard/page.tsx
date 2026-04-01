@@ -7,7 +7,17 @@ import {
 } from "lucide-react"
 import { getDashboardStats } from "@/app/actions/dashboard"
 
+import { createClient, getTenantId } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
+
 export default async function DashboardPage() {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+
+    if (!tenantId) {
+        redirect("/cuenta/plan")
+    }
+
     const stats = await getDashboardStats()
 
     return (

@@ -10,6 +10,7 @@ export interface Profile {
 export interface Conversation {
     id: string
     tenant_id: string
+    lead_id?: string
     created_at: string
     updated_at: string
 }
@@ -35,6 +36,13 @@ export interface ConversationWithDetails extends Conversation {
     last_message?: Message & { sender?: Profile }
     unread_count?: number
     other_user?: Profile // For 1-on-1 conversations
+    lead?: {
+        id: string
+        name: string
+        email?: string
+        phone?: string
+        status?: string
+    }
 }
 
 export interface MessageWithSender extends Message {

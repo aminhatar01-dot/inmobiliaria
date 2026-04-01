@@ -1,0 +1,119 @@
+
+> web@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.56.1:3000
+- Environments: .env.local
+
+✓ Starting...
+⨯ The file "./proxy.ts" must export a function, either as a default export or as a named "proxy" export.
+This function is what Next.js runs for every request handled by this proxy (previously called middleware).
+
+Why this happens:
+- You are migrating from `middleware` to `proxy`, but haven't updated the exported function.
+- The file exists but doesn't export a function.
+- The export is not a function (e.g., an object or constant).
+- There's a syntax error preventing the export from being recognized.
+
+To fix it:
+- Ensure this file has either a default or "proxy" function export.
+
+Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 1554ms
+Persisting failed: Unable to open static sorted file referenced from 00004478.meta
+
+Caused by:
+    0: Unable to open static sorted file 00004477.sst
+    1: El sistema no puede encontrar el archivo especificado. (os error 2)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+
+thread 'tokio-runtime-worker' (30620) panicked at C:\actions-runner\_work\next.js\next.js\turbopack\crates\turbo-tasks-backend\src\backend\mod.rs:1354:30:
+Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "NextConfig::modularize_imports", global_name: "next-core@next_core::next_config::NextConfig::modularize_imports", .. }, this: Some(RawVc::TaskCell(3, "next_core::next_config::NextConfig#0")), arg: () } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00000156.meta
+    1: Unable to open static sorted file 00000152.sst
+    2: El sistema no puede encontrar el archivo especificado. (os error 2)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tokio-runtime-worker' (30620) panicked at C:\actions-runner\_work\next.js\next.js\turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:156:17:
+Failed to restore task data (corrupted database or bug): Meta for <ModuleAssetContext as AssetContext>::process (TaskId 596990))
+
+Caused by:
+    0: Looking up data for TaskId 596990 from database failed
+    1: Unable to open static sorted file referenced from 00004480.meta
+    2: Unable to open static sorted file 00004476.sst
+    3: El sistema no puede encontrar el archivo especificado. (os error 2)
+
+thread 'tokio-runtime-worker' (30620) panicked at C:\actions-runner\_work\next.js\next.js\turbopack\crates\turbo-tasks-backend\src\backend\mod.rs:1354:30:
+Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(879) },) } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00000267.meta
+    1: Unable to open static sorted file 00000262.sst
+    2: El sistema no puede encontrar el archivo especificado. (os error 2)
+
+-----
+[1m[31mFATAL[39m[0m: An unexpected Turbopack error occurred. A panic log has been written to C:\Users\Amin\AppData\Local\Temp\next-panic-8ddca93c272c4be4c8941d3e516c592a.log.
+
+To help make Turbopack better, report this error by clicking here: https://github.com/vercel/next.js/discussions/new?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20lookup%20task%20id%3A%20Looking%20up%20task%20id%20for%20CachedTaskType%20%7B%20native_fn%3A%20NativeFunction%20%7B%20name%3A%20%22get_written_endpoint_with_issues_operation%22%2C%20global_name%3A%20%22next-swc-napi%40next_swc_napi%3A%3Anext_api%3A%3Aendpoint%3A%3Aget_written_endpoint_with_issues_operation%22%2C%20..%20%7D%2C%20this%3A%20None%2C%20arg%3A%20%28OperationVc%20%7B%20node%3A%20RawVc%3A%3ATaskOutput%28879%29%20%7D%2C%29%20%7D%20from%20database%20failed&body=Turbopack%20version%3A%20%60d1bd5b58%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0ATurbopack%20Error%3A%20Failed%20to%20lookup%20task%20id%3A%20Looking%20up%20task%20id%20for%20CachedTaskType%20%7B%20native_fn%3A%20NativeFunction%20%7B%20name%3A%20%22get_written_endpoint_with_issues_operation%22%2C%20global_name%3A%20%22next-swc-napi%40next_swc_napi%3A%3Anext_api%3A%3Aendpoint%3A%3Aget_written_endpoint_with_issues_operation%22%2C%20..%20%7D%2C%20this%3A%20None%2C%20arg%3A%20%28OperationVc%20%7B%20node%3A%20RawVc%3A%3ATaskOutput%28879%29%20%7D%2C%29%20%7D%20from%20database%20failed%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+
+thread 'tokio-runtime-worker' (30620) panicked at C:\actions-runner\_work\next.js\next.js\turbopack\crates\turbo-tasks-backend\src\backend\mod.rs:1354:30:
+Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(931) },) } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00000936.meta
+    1: Unable to open static sorted file 00000932.sst
+    2: El sistema no puede encontrar el archivo especificado. (os error 2)
+
+thread 'tokio-runtime-worker' (33036) panicked at C:\actions-runner\_work\next.js\next.js\turbopack\crates\turbo-tasks-backend\src\backend\mod.rs:1354:30:
+Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_source_map_rope", global_name: "next-swc-napi@next_swc_napi::next_api::project::get_source_map_rope", .. }, this: None, arg: (Vc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), "TurbopackInternalError: Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: \"get_written_endpoint_with_issues_operation\", global_name: \"next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation\", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(879) },) } from database failed") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003690.meta
+    1: Unable to open static sorted file 00003686.sst
+    2: El sistema no puede encontrar el archivo especificado. (os error 2)
+Error [TurbopackInternalError]: Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(879) },) } from database failed
+
+Debug info:
+- Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(879) },) } from database failed
+  
+  Caused by:
+      0: Unable to open static sorted file referenced from 00000267.meta
+      1: Unable to open static sorted file 00000262.sst
+      2: El sistema no puede encontrar el archivo especificado. (os error 2)
+    at <unknown> (TurbopackInternalError: Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(879) },) } from database failed) {
+  location: 'C:\\actions-runner\\_work\\next.js\\next.js\\turbopack\\crates\\turbo-tasks-backend\\src\\backend\\mod.rs:1354:30'
+}
+
+thread 'tokio-runtime-worker' (33036) panicked at C:\actions-runner\_work\next.js\next.js\turbopack\crates\turbo-tasks-backend\src\backend\mod.rs:1354:30:
+Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(931) },) } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00000936.meta
+    1: Unable to open static sorted file 00000932.sst
+    2: El sistema no puede encontrar el archivo especificado. (os error 2)
+Error [TurbopackInternalError]: Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(931) },) } from database failed
+
+Debug info:
+- Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(931) },) } from database failed
+  
+  Caused by:
+      0: Unable to open static sorted file referenced from 00000936.meta
+      1: Unable to open static sorted file 00000932.sst
+      2: El sistema no puede encontrar el archivo especificado. (os error 2)
+    at <unknown> (TurbopackInternalError: Failed to lookup task id: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_written_endpoint_with_issues_operation", global_name: "next-swc-napi@next_swc_napi::next_api::endpoint::get_written_endpoint_with_issues_operation", .. }, this: None, arg: (OperationVc { node: RawVc::TaskOutput(931) },) } from database failed) {
+  location: 'C:\\actions-runner\\_work\\next.js\\next.js\\turbopack\\crates\\turbo-tasks-backend\\src\\backend\\mod.rs:1354:30'
+}
+[?25h
+npm error Lifecycle script `dev` failed with error:
+npm error code 1
+npm error path C:\Users\Amin\OneDrive\Desktop\inmobiliaria\apps\web
+npm error workspace web@0.1.0
+npm error location C:\Users\Amin\OneDrive\Desktop\inmobiliaria\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c next dev

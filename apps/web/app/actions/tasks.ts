@@ -41,15 +41,17 @@ export async function getTasks(filters?: { assigned_to?: string; status?: string
 
 export async function createTask(data: Partial<Task>) {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
     const tenantId = await getTenantId(supabase);
 
-    if (!tenantId) throw new Error('Unauthorized');
+    if (!tenantId || !user) throw new Error('Unauthorized');
 
     const { data: task, error } = await supabase
         .from('tasks')
         .insert({
             ...data,
             tenant_id: tenantId,
+            assigned_to: data.assigned_to || user.id,
             status: data.status || 'pending',
             priority: data.priority || 'medium'
         })

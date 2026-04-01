@@ -1,0 +1,305 @@
+{
+  "node": {
+    "0058814481d565d1755417476327d2f49abc2dac21": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "signOut",
+          "filename": "apps/web/app/actions/auth.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "signOut",
+      "filename": "apps/web/app/actions/auth.ts"
+    },
+    "00ce39c726f28eddc3a98d5c4a86ff4102a4ca00f8": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getNotifications",
+          "filename": "apps/web/app/actions/reminders.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "getNotifications",
+      "filename": "apps/web/app/actions/reminders.ts"
+    },
+    "40c587ee17fbc64f5d026c5c91d415c90a4e4033ba": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "markNotificationAsRead",
+          "filename": "apps/web/app/actions/reminders.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "markNotificationAsRead",
+      "filename": "apps/web/app/actions/reminders.ts"
+    },
+    "403dfd806530b0f0596321853a27664384a9a3b0dd": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "globalSearch",
+          "filename": "apps/web/app/actions/search.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "globalSearch",
+      "filename": "apps/web/app/actions/search.ts"
+    },
+    "004c42836cbe9b34bc1b19ef6bfca3d82f2a09830b": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAgents",
+          "filename": "apps/web/app/actions/agents.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "getAgents",
+      "filename": "apps/web/app/actions/agents.ts"
+    },
+    "00bfff2f2315b3c4a9708d2ffa93c9cff96fdb8131": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getRoles",
+          "filename": "apps/web/app/actions/agents.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "getRoles",
+      "filename": "apps/web/app/actions/agents.ts"
+    },
+    "0076244f0dc260733da3acd003aed2654a4664f811": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getBranches",
+          "filename": "apps/web/app/actions/agents.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "getBranches",
+      "filename": "apps/web/app/actions/agents.ts"
+    },
+    "6026763c4d26f05958e4c531e3b5d92e9085d67746": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateAgentRole",
+          "filename": "apps/web/app/actions/agents.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "updateAgentRole",
+      "filename": "apps/web/app/actions/agents.ts"
+    },
+    "407c457a5109e97494d8366bbdb93be2321362adb5": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteAgent",
+          "filename": "apps/web/app/actions/agents.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "deleteAgent",
+      "filename": "apps/web/app/actions/agents.ts"
+    },
+    "408118bd61b89b5d829b59dd7e76fa83ba0976f18f": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "inviteNetworkAgent",
+          "filename": "apps/web/app/actions/network.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "inviteNetworkAgent",
+      "filename": "apps/web/app/actions/network.ts"
+    },
+    "00bba0568e2c37144c309296fcb021acb956fcf72d": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getNetworkStatus",
+          "filename": "apps/web/app/actions/network.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "getNetworkStatus",
+      "filename": "apps/web/app/actions/network.ts"
+    },
+    "4088efcbdf6a7fe8a76bb8e3d730f1a8fde4564465": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "acceptNetworkInvitation",
+          "filename": "apps/web/app/actions/network.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "acceptNetworkInvitation",
+      "filename": "apps/web/app/actions/network.ts"
+    },
+    "001a6e5d97930ec187df9e4cd46aa6dbecc2cd53ba": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getNetworkProperties",
+          "filename": "apps/web/app/actions/network.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "getNetworkProperties",
+      "filename": "apps/web/app/actions/network.ts"
+    },
+    "00f5f531ee1d781db67bc09951f456bd96b6dc5a63": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getUserPlanLimits",
+          "filename": "apps/web/app/actions/subscriptions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "getUserPlanLimits",
+      "filename": "apps/web/app/actions/subscriptions.ts"
+    },
+    "40f0c013da712486cf0276644960e4365927a7f881": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "checkFeatureLimit",
+          "filename": "apps/web/app/actions/subscriptions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "checkFeatureLimit",
+      "filename": "apps/web/app/actions/subscriptions.ts"
+    },
+    "4024989519a9975b2ded42a80e654925fe579fa328": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "inviteToAgency",
+          "filename": "apps/web/app/actions/subscriptions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "inviteToAgency",
+      "filename": "apps/web/app/actions/subscriptions.ts"
+    },
+    "4006b13a10088187960d78c16081f2c5990be9ac1e": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "initializeSubscription",
+          "filename": "apps/web/app/actions/subscriptions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "initializeSubscription",
+      "filename": "apps/web/app/actions/subscriptions.ts"
+    },
+    "409e46d4618791a2f05b2073dcb8c89bd1a97a9034": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getInvitationByToken",
+          "filename": "apps/web/app/actions/subscriptions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "getInvitationByToken",
+      "filename": "apps/web/app/actions/subscriptions.ts"
+    },
+    "402c1b4ed40309e8c6621313cbba172b919df223b8": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "acceptInvitation",
+          "filename": "apps/web/app/actions/subscriptions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "acceptInvitation",
+      "filename": "apps/web/app/actions/subscriptions.ts"
+    },
+    "601ea5cf1c322b9f48dc884b1904e1c673374597be": {
+      "workers": {
+        "app/(dashboard)/agentes/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/agentes/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/agents.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/network.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE5 => \"[project]/apps/web/app/actions/subscriptions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createCheckoutPreference",
+          "filename": "apps/web/app/actions/subscriptions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/agentes/page": "action-browser"
+      },
+      "exportedName": "createCheckoutPreference",
+      "filename": "apps/web/app/actions/subscriptions.ts"
+    }
+  },
+  "edge": {}
+}

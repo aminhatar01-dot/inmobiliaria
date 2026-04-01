@@ -26,7 +26,8 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
                 id,
                 tenant_id,
                 created_at,
-                updated_at
+                updated_at,
+                lead_id
             )
         `)
         .eq("user_id", user.id)
@@ -89,6 +90,17 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
 
         const otherUser = participants?.[0]?.profiles as any
 
+        // Fetch lead details if it's a client conversation
+        let leadData = null
+        if (conv.lead_id) {
+            const { data: lead } = await supabase
+                .from("leads")
+                .select("id, name, email, phone, status")
+                .eq("id", conv.lead_id)
+                .single()
+            leadData = lead
+        }
+
         conversations.push({
             ...conv,
             last_message: lastMessage ? {
@@ -96,7 +108,8 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
                 sender: lastMessage.profiles as any
             } : undefined,
             unread_count: unreadCount || 0,
-            other_user: otherUser
+            other_user: otherUser,
+            lead: leadData as any
         })
     }
 
@@ -164,7 +177,7 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
 /**
  * Enviar un mensaje a una conversación
  */
-export async function sendMessage(conversationId: string, content: string): Promise<Message | null> {
+export async function sendMessage(conversationId: string, content: string, revalidate = true): Promise<Message | null> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -181,11 +194,17 @@ export async function sendMessage(conversationId: string, content: string): Prom
         .single()
 
     if (error) {
-        console.error("Error sending message:", error)
+        console.error("DEBUG: Error sending message:", {
+            error,
+            conversationId,
+            userId: user.id
+        })
         throw new Error(error.message)
     }
 
-    revalidatePath("/mensajes")
+    if (revalidate) {
+        revalidatePath("/mensajes")
+    }
     return data
 }
 
@@ -293,4 +312,97 @@ export async function getTenantUsers() {
     }
 
     return data
+}
+
+/**
+ * Obtener lista de Leads del tenant (para iniciar conversaciones con clientes)
+ */
+export async function getLeadsForMessaging() {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+
+    if (!tenantId) return []
+
+    const { data, error } = await supabase
+        .from("leads")
+        .select("id, name, email, phone, status")
+        .eq("tenant_id", tenantId)
+        .order("name")
+
+    if (error) {
+        console.error("Error fetching leads for messaging:", error)
+        return []
+    }
+
+    return data
+}
+
+/**
+ * Obtener o crear una conversación con un Lead
+ */
+export async function getOrCreateLeadConversation(leadId: string, revalidate = true): Promise<string | null> {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!tenantId || !user) return null
+
+    // Buscar conversación existente para este Lead
+    const { data: existingConversation } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("lead_id", leadId)
+        .single()
+
+    if (existingConversation) {
+        // Asegurarse de que el usuario actual es participante
+        const { data: isParticipant } = await supabase
+            .from("conversation_participants")
+            .select("conversation_id")
+            .eq("conversation_id", existingConversation.id)
+            .eq("user_id", user.id)
+            .single()
+
+        if (!isParticipant) {
+            console.log(`DEBUG: Adding agent ${user.id} to lead conversation ${existingConversation.id}`)
+            await supabase
+                .from("conversation_participants")
+                .insert({
+                    conversation_id: existingConversation.id,
+                    user_id: user.id
+                })
+        }
+
+        return existingConversation.id
+    }
+
+    // Crear nueva conversación vinculada al Lead
+    const { data: newConversation, error: convError } = await supabase
+        .from("conversations")
+        .insert({
+            tenant_id: tenantId,
+            lead_id: leadId
+        })
+        .select()
+        .single()
+
+    if (convError) {
+        console.error("Error creating lead conversation:", convError)
+        return null
+    }
+
+    // Agregar al usuario actual como participante
+    const { error: participantError } = await supabase
+        .from("conversation_participants")
+        .insert({ conversation_id: newConversation.id, user_id: user.id })
+
+    if (participantError) {
+        console.error("Error adding participant to lead conversation:", participantError)
+        return null
+    }
+
+    if (revalidate) {
+        revalidatePath("/mensajes")
+    }
+    return newConversation.id
 }

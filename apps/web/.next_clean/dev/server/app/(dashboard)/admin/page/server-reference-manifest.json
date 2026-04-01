@@ -1,0 +1,275 @@
+{
+  "node": {
+    "00595a1441ca18875a8647cad1554eedd8e6e92fe2": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "processPendingReminders",
+          "filename": "apps/web/app/actions/reminders.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "processPendingReminders",
+      "filename": "apps/web/app/actions/reminders.ts"
+    },
+    "00ce39c726f28eddc3a98d5c4a86ff4102a4ca00f8": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getNotifications",
+          "filename": "apps/web/app/actions/reminders.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "action-browser"
+      },
+      "exportedName": "getNotifications",
+      "filename": "apps/web/app/actions/reminders.ts"
+    },
+    "40c587ee17fbc64f5d026c5c91d415c90a4e4033ba": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "markNotificationAsRead",
+          "filename": "apps/web/app/actions/reminders.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "action-browser"
+      },
+      "exportedName": "markNotificationAsRead",
+      "filename": "apps/web/app/actions/reminders.ts"
+    },
+    "0081f8378d3b06372d0c255c4394ad93f173ab978b": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getLeadsForMessaging",
+          "filename": "apps/web/app/actions/messages.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "getLeadsForMessaging",
+      "filename": "apps/web/app/actions/messages.ts"
+    },
+    "008fa5ea867711d50634039bbf9a29670ad8c7b3f0": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getTenantUsers",
+          "filename": "apps/web/app/actions/messages.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "getTenantUsers",
+      "filename": "apps/web/app/actions/messages.ts"
+    },
+    "00c913f219100b63cb187db1970b2cead36b7b9f14": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getConversations",
+          "filename": "apps/web/app/actions/messages.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "getConversations",
+      "filename": "apps/web/app/actions/messages.ts"
+    },
+    "4016ad19d4cb757c79fe4ae0612bfdd40cafb11a22": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getOrCreateConversation",
+          "filename": "apps/web/app/actions/messages.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "getOrCreateConversation",
+      "filename": "apps/web/app/actions/messages.ts"
+    },
+    "409d065115292c0d87f0f9a131a5e357f44054c45a": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "markAsRead",
+          "filename": "apps/web/app/actions/messages.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "markAsRead",
+      "filename": "apps/web/app/actions/messages.ts"
+    },
+    "40cb2d3f0a371190f0196aa0c7a3e092f01fcfe214": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMessages",
+          "filename": "apps/web/app/actions/messages.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "getMessages",
+      "filename": "apps/web/app/actions/messages.ts"
+    },
+    "60721f3812febe2cfa0c197817caa95eb02cece7ab": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getOrCreateLeadConversation",
+          "filename": "apps/web/app/actions/messages.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "getOrCreateLeadConversation",
+      "filename": "apps/web/app/actions/messages.ts"
+    },
+    "70b3f66502d73e905236ee8e0923bcf95dfea7d448": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "sendMessage",
+          "filename": "apps/web/app/actions/messages.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "sendMessage",
+      "filename": "apps/web/app/actions/messages.ts"
+    },
+    "0058814481d565d1755417476327d2f49abc2dac21": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "signOut",
+          "filename": "apps/web/app/actions/auth.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "action-browser"
+      },
+      "exportedName": "signOut",
+      "filename": "apps/web/app/actions/auth.ts"
+    },
+    "403dfd806530b0f0596321853a27664384a9a3b0dd": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "globalSearch",
+          "filename": "apps/web/app/actions/search.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "action-browser"
+      },
+      "exportedName": "globalSearch",
+      "filename": "apps/web/app/actions/search.ts"
+    },
+    "007f308640b63fd80e09b97f6bb531f9f5b6a98dc3": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "isSuperadmin",
+          "filename": "apps/web/app/actions/admin.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "isSuperadmin",
+      "filename": "apps/web/app/actions/admin.ts"
+    },
+    "0085f9783eb644e45245e14381eeefd4af44a9e3fb": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getDemoSessions",
+          "filename": "apps/web/app/actions/admin.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "action-browser"
+      },
+      "exportedName": "getDemoSessions",
+      "filename": "apps/web/app/actions/admin.ts"
+    },
+    "403864c797930a7655ffb100e34b187a27e43a8e71": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "generateDemoAccess",
+          "filename": "apps/web/app/actions/admin.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "action-browser"
+      },
+      "exportedName": "generateDemoAccess",
+      "filename": "apps/web/app/actions/admin.ts"
+    },
+    "40453ed08e14be7bca4ce64ed05e30467fedf34f6e": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "revokeDemoAccess",
+          "filename": "apps/web/app/actions/admin.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "action-browser"
+      },
+      "exportedName": "revokeDemoAccess",
+      "filename": "apps/web/app/actions/admin.ts"
+    },
+    "40aa629fc7299956233a61975086eb46bd24c299c5": {
+      "workers": {
+        "app/(dashboard)/admin/page": {
+          "moduleId": "[project]/apps/web/.next-internal/server/app/(dashboard)/admin/page/actions.js { ACTIONS_MODULE0 => \"[project]/apps/web/app/actions/reminders.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/apps/web/app/actions/messages.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/apps/web/app/actions/auth.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/apps/web/app/actions/search.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/apps/web/app/actions/admin.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "checkDemoExpiry",
+          "filename": "apps/web/app/actions/admin.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/page": "rsc"
+      },
+      "exportedName": "checkDemoExpiry",
+      "filename": "apps/web/app/actions/admin.ts"
+    }
+  },
+  "edge": {}
+}

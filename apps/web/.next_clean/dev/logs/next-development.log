@@ -1,0 +1,846 @@
+[00:00:03.685] Server  LOG     ✓ Ready in 2.8s
+[00:28:39.247] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:28:54.603] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:29:03.381] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:30:19.954] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[00:31:05.900] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[00:32:15.824] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[00:33:03.073] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[00:33:24.042] Server  LOG     Iniciando publicación en redes: {}
+[03:49:23.384] Server  ERROR   Error fetching messages: {}
+[03:49:24.468] Server  ERROR   Error fetching messages: {}
+[03:49:33.551] Server  LOG     ✓ Compiled in 2.7s
+[03:49:37.242] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[03:49:38.188] Server  ERROR   Error fetching messages: {}
+[03:49:46.592] Server  LOG     ✓ Compiled in 1603ms
+[03:55:26.783] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[03:55:27.871] Server  ERROR   Error fetching messages: {}
+[04:05:50.773] Server  LOG     ✓ Compiled in 1264ms
+[04:07:10.501] Server  LOG     ✓ Compiled in 872ms
+[04:07:12.329] Server  LOG     ✓ Compiled in 1230ms
+[04:07:14.904] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:07:47.977] Server  LOG     ✓ Compiled in 1634ms
+[03:51:07.203] Server  LOG     ✓ Compiled in 1135ms
+[04:08:14.898] Server  LOG     ✓ Compiled in 1165ms
+[04:08:15.014] Server  ERROR   Error fetching messages: {}
+[04:08:47.743] Server  LOG     ✓ Compiled in 1310ms
+[04:08:50.059] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:09:28.557] Server  LOG     ✓ Compiled in 870ms
+[04:09:32.863] Server  ERROR   Error fetching messages: {}
+[04:14:21.548] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:14:22.410] Server  ERROR   Error fetching messages: {}
+[04:15:35.120] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:16:06.289] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:33:37.805] Server  LOG     ✓ Compiled in 1046ms
+[04:33:37.826] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./node_modules/next/dist/client/image-component.js changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[04:33:41.617] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:34:29.001] Server  LOG     ✓ Compiled in 1862ms
+[04:35:20.643] Server  LOG     ✓ Compiled in 716ms
+[04:39:31.322] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:07:28.454] Server  LOG     ○ Compiling /propiedades/nuevo ...
+[05:07:34.565] Server  ERROR   Error: aborted
+[05:07:34.569] Server  ERROR   ⨯ "uncaughtException:" Error: aborted
+[05:07:34.577] Server  ERROR   ⨯ "uncaughtException: " Error: aborted
+[05:07:35.514] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:08:42.121] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[05:09:02.085] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:09:20.062] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:11:44.246] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:00:23.771] Server  LOG       Reload env: .env.local
+[05:17:31.375] Server  LOG       Reload env: .env.local
+[05:17:33.201] Server  LOG     ✓ Compiled in 183ms
+[05:17:33.226] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./node_modules/next/dist/client/image-component.js changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[05:17:37.046] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:18:13.990] Server  LOG     ✓ Compiled in 1657ms
+[05:18:45.268] Server  LOG     ✓ Compiled in 886ms
+[05:20:08.806] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:20:44.051] Server  WARN    OPENAI_API_KEY no detectada. Usando fallback...
+[05:20:45.162] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: Missing OpenAI Key
+[05:20:45.474] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[05:20:59.959] Server  WARN    OPENAI_API_KEY no detectada. Usando fallback...
+[05:21:00.427] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: Missing OpenAI Key
+[05:21:05.935] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:21:05.936] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:21:06.510] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:21:26.455] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:21:26.456] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:21:27.013] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:21:43.358] Server  WARN    OPENAI_API_KEY no detectada. Usando fallback...
+[05:21:44.100] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: Missing OpenAI Key
+[05:21:48.510] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:21:48.510] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:21:49.089] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:24:35.541] Server  LOG     ✓ Compiled in 1193ms
+[05:24:37.964] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:29:53.431] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:30:09.966] Server  WARN    OPENAI_API_KEY no detectada. Usando fallback...
+[05:30:10.540] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: Missing OpenAI Key
+[05:30:10.849] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[05:30:16.693] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:30:16.694] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:30:17.334] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:30:24.618] Server  WARN    OPENAI_API_KEY no detectada. Usando fallback...
+[05:30:25.203] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: Missing OpenAI Key
+[05:30:27.585] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:30:27.586] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:30:28.141] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:30:37.901] Server  WARN    OPENAI_API_KEY no detectada. Usando fallback...
+[05:30:38.295] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: Missing OpenAI Key
+[05:30:43.037] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:30:43.037] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:30:43.522] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:14:54.939] Server  LOG       Reload env: .env.local
+[05:32:02.541] Server  LOG       Reload env: .env.local
+[05:33:54.118] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:34:22.531] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:34:22.820] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[05:34:25.885] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:34:25.886] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:34:26.449] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:34:34.511] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:34:38.764] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:34:38.764] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:34:39.237] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:37:50.154] Server  LOG     ✓ Compiled in 1177ms
+[05:37:52.642] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:39:02.549] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:39:28.654] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:39:28.894] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[05:39:31.318] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:39:31.319] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:39:31.930] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:39:38.558] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:39:44.793] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:39:44.794] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:39:45.314] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:44:08.132] Server  LOG     ✓ Compiled in 1164ms
+[05:44:10.566] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:45:18.422] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:45:52.676] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:45:52.906] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[05:45:56.002] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:45:56.003] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:45:56.607] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:46:42.647] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:46:55.745] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:47:00.783] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:47:00.783] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:47:01.302] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:48:41.386] Server  LOG     ✓ Compiled in 1126ms
+[05:48:44.363] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:49:05.813] Server  LOG     ✓ Compiled in 1085ms
+[05:49:52.929] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:50:13.286] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:50:13.548] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[05:50:19.022] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:50:21.855] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:50:21.855] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:50:22.284] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:50:33.390] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:50:35.008] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:50:35.009] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:50:35.432] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:52:51.663] Server  LOG     ✓ Compiled in 935ms
+[05:53:21.030] Server  LOG     ✓ Compiled in 833ms
+[05:56:30.463] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:56:52.055] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:56:52.390] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[05:56:57.148] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:57:03.455] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:57:03.456] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:57:04.012] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:57:12.944] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:57:15.304] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:57:15.305] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:57:15.715] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:57:30.199] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[05:57:32.008] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[05:57:32.008] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[05:57:32.654] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[05:59:57.922] Server  LOG     ✓ Compiled in 961ms
+[05:59:59.834] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[06:00:55.704] Server  LOG     ✓ Compiled in 937ms
+[06:08:04.658] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[06:08:05.289] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[06:08:52.029] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[06:08:52.029] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[06:08:52.658] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[06:09:00.827] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[06:09:02.525] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[06:09:02.526] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[06:09:03.428] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[06:09:25.730] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[06:09:30.015] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[06:09:30.016] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[06:09:30.482] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[06:11:17.501] Server  LOG     ✓ Compiled in 779ms
+[06:12:58.704] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[06:12:58.704] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[06:12:59.504] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[06:13:12.220] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[06:13:25.660] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[06:13:25.942] Browser WARN    Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear.
+[06:13:29.561] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[06:13:29.562] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[06:13:29.912] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[06:13:36.106] Server  ERROR   Fallo al contactar OpenAI, retornando fallback simulado: Error: OpenAI API Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[06:13:38.949] Server  LOG     Iniciando síntesis de video/audio con IA: {}
+[06:13:38.950] Server  WARN    CREATOMATE_API_KEY no detectada. Usando fallback de video...
+[06:13:39.421] Server  ERROR   Fallo al contactar Creatomate, usando video fallback: Error: Missing Creatomate API Key
+[79:46:02.084] Server  LOG     ○ Compiling /propiedades/importar ...
+[79:52:09.742] Server  LOG     ✓ Compiled in 1178ms
+[79:52:43.723] Server  LOG     ✓ Compiled in 1348ms
+[79:52:48.130] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[79:55:11.661] Server  ERROR   Error AI Support: Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[79:56:25.284] Server  LOG     ✓ Compiled in 962ms
+[79:56:41.597] Server  LOG     ✓ Compiled in 828ms
+[79:56:43.323] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[79:57:55.840] Server  ERROR   Error AI Support: Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[80:01:46.175] Server  LOG     ✓ Compiled in 1333ms
+[80:01:48.438] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[80:01:49.466] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <main data-slot="sidebar-inset" className="bg-backgro...">
+      ...
+        <div className="flex items...">
+          <GlobalSearch>
+          ...
+            <DropdownMenuTrigger asChild={true}>
+              <DropdownMenuTrigger data-slot="dropdown-m..." asChild={true}>
+                <MenuAnchor asChild={true} __scopeMenu={{Menu:[...], ...}}>
+                  <PopperAnchor __scopePopper={{Menu:[...], ...}} asChild={true} ref={null}>
+                    <Primitive.div asChild={true} ref={function}>
+                      <Primitive.div.Slot ref={function}>
+                        <Primitive.div.SlotClone ref={function}>
+                          <Primitive.button type="button" id="radix-_R_1..." aria-haspopup="menu" aria-expanded={false} ...>
+                            <Primitive.button.Slot type="button" id="radix-_R_1..." aria-haspopup="menu" ...>
+                              <Primitive.button.SlotClone type="button" id="radix-_R_1..." aria-haspopup="menu" ...>
+                                <Button variant="ghost" size="icon" className="rounded-fu..." type="button" ...>
+                                  <button
+                                    data-slot="dropdown-menu-trigger"
+                                    data-variant="ghost"
+                                    data-size="icon"
+                                    className={"inline-flex items-center justify-center gap-2 whitespace-nowrap text-..."}
+                                    type="button"
++                                   id="radix-_R_19kndlb_"
+-                                   id="radix-_R_56kndlb_"
+                                    aria-haspopup="menu"
+                                    aria-expanded={false}
+                                    aria-controls={undefined}
+                                    data-state="closed"
+                                    data-disabled={undefined}
+                                    disabled={false}
+                                    onPointerDown={function handleEvent}
+                                    onKeyDown={function handleEvent}
+                                    ref={function}
+                                  >
+          ...
+            <DropdownMenuTrigger asChild={true}>
+              <DropdownMenuTrigger data-slot="dropdown-m..." asChild={true}>
+                <MenuAnchor asChild={true} __scopeMenu={{Menu:[...], ...}}>
+                  <PopperAnchor __scopePopper={{Menu:[...], ...}} asChild={true} ref={null}>
+                    <Primitive.div asChild={true} ref={function}>
+                      <Primitive.div.Slot ref={function}>
+                        <Primitive.div.SlotClone ref={function}>
+                          <Primitive.button type="button" id="radix-_R_1..." aria-haspopup="menu" aria-expanded={false} ...>
+                            <Primitive.button.Slot type="button" id="radix-_R_1..." aria-haspopup="menu" ...>
+                              <Primitive.button.SlotClone type="button" id="radix-_R_1..." aria-haspopup="menu" ...>
+                                <button
+                                  className="flex items-center gap-2 hover:bg-gray-50 p-1 pr-2 rounded-full transition..."
+                                  type="button"
++                                 id="radix-_R_1pkndlb_"
+-                                 id="radix-_R_76kndlb_"
+                                  aria-haspopup="menu"
+                                  aria-expanded={false}
+                                  aria-controls={undefined}
+                                  data-state="closed"
+                                  data-disabled={undefined}
+                                  disabled={false}
+                                  data-slot="dropdown-menu-trigger"
+                                  onPointerDown={function handleEvent}
+                                  onKeyDown={function handleEvent}
+                                  ref={function}
+                                >
+            ...
+      ...
+        <SegmentViewNode type="page" pagePath="/apps/web/...">
+          <SegmentTrieNode>
+          <AjustesPage>
+            <div className="p-8 max-w-...">
+              <div>
+              <Tabs defaultValue="agency" className="space-y-8">
+                <Tabs data-slot="tabs" className="flex flex-..." defaultValue="agency">
+                  <TabsProvider scope={undefined} baseId="radix-_R_5..." value="agency" ...>
+                    <Primitive.div dir="ltr" data-orientation="horizontal" data-slot="tabs" className="flex flex-..." ...>
+                      <div dir="ltr" data-orientation="horizontal" data-slot="tabs" className="flex flex-..." ref={null}>
+                        ...
+                          <div role="tablist" aria-orientation="horizontal" data-slot="tabs-list" ...>
+                            ...
+                              <Primitive.span.Slot tabIndex={-1} data-orientation="horizontal" ...>
+                                <Primitive.span.SlotClone tabIndex={-1} data-orientation="horizontal" ...>
+                                  <Primitive.button type="button" role="tab" aria-selected={true} ...>
+                                    <button
+                                      type="button"
+                                      role="tab"
+                                      aria-selected={true}
++                                     aria-controls="radix-_R_55esnekndlb_-content-agency"
+-                                     aria-controls="radix-_R_klritqkndlb_-content-agency"
+                                      data-state="active"
+                                      data-disabled={undefined}
+                                      disabled={false}
++                                     id="radix-_R_55esnekndlb_-trigger-agency"
+-                                     id="radix-_R_klritqkndlb_-trigger-agency"
+                                      data-slot="tabs-trigger"
+                                      className={"dark:data-[state=active]:text-foreground focus-visible:border-ring ..."}
+                                      onMouseDown={function}
+                                      onKeyDown={function}
+                                      onFocus={function}
+                                      tabIndex={-1}
+                                      data-orientation="horizontal"
+                                      data-radix-collection-item=""
+                                      ref={function}
+                                    >
+                            ...
+                              <Primitive.span.Slot tabIndex={-1} data-orientation="horizontal" ...>
+                                <Primitive.span.SlotClone tabIndex={-1} data-orientation="horizontal" ...>
+                                  <Primitive.button type="button" role="tab" aria-selected={false} ...>
+                                    <button
+                                      type="button"
+                                      role="tab"
+                                      aria-selected={false}
++                                     aria-controls="radix-_R_55esnekndlb_-content-branches"
+-                                     aria-controls="radix-_R_klritqkndlb_-content-branches"
+                                      data-state="inactive"
+                                      data-disabled={undefined}
+                                      disabled={false}
++                                     id="radix-_R_55esnekndlb_-trigger-branches"
+-                                     id="radix-_R_klritqkndlb_-trigger-branches"
+                                      data-slot="tabs-trigger"
+                                      className={"dark:data-[state=active]:text-foreground focus-visible:border-ring ..."}
+                                      onMouseDown={function}
+                                      onKeyDown={function}
+                                      onFocus={function}
+                                      tabIndex={-1}
+                                      data-orientation="horizontal"
+                                      data-radix-collection-item=""
+                                      ref={function}
+                                    >
+                            ...
+                              <Primitive.span.Slot tabIndex={-1} data-orientation="horizontal" ...>
+                                <Primitive.span.SlotClone tabIndex={-1} data-orientation="horizontal" ...>
+                                  <Primitive.button type="button" role="tab" aria-selected={false} ...>
+                                    <button
+                                      type="button"
+                                      role="tab"
+                                      aria-selected={false}
++                                     aria-controls="radix-_R_55esnekndlb_-content-security"
+-                                     aria-controls="radix-_R_klritqkndlb_-content-security"
+                                      data-state="inactive"
+                                      data-disabled={undefined}
+                                      disabled={false}
++                                     id="radix-_R_55esnekndlb_-trigger-security"
+-                                     id="radix-_R_klritqkndlb_-trigger-security"
+                                      data-slot="tabs-trigger"
+                                      className={"dark:data-[state=active]:text-foreground focus-visible:border-ring ..."}
+                                      onMouseDown={function}
+                                      onKeyDown={function}
+                                      onFocus={function}
+                                      tabIndex={-1}
+                                      data-orientation="horizontal"
+                                      data-radix-collection-item=""
+                                      ref={function}
+                                    >
+                            ...
+                              <Primitive.span.Slot tabIndex={-1} data-orientation="horizontal" ...>
+                                <Primitive.span.SlotClone tabIndex={-1} data-orientation="horizontal" ...>
+                                  <Primitive.button type="button" role="tab" aria-selected={false} ...>
+                                    <button
+                                      type="button"
+                                      role="tab"
+                                      aria-selected={false}
++                                     aria-controls="radix-_R_55esnekndlb_-content-notifications"
+-                                     aria-controls="radix-_R_klritqkndlb_-content-notifications"
+                                      data-state="inactive"
+                                      data-disabled={undefined}
+                                      disabled={false}
++                                     id="radix-_R_55esnekndlb_-trigger-notifications"
+-                                     id="radix-_R_klritqkndlb_-trigger-notifications"
+                                      data-slot="tabs-trigger"
+                                      className={"dark:data-[state=active]:text-foreground focus-visible:border-ring ..."}
+                                      onMouseDown={function}
+                                      onKeyDown={function}
+                                      onFocus={function}
+                                      tabIndex={-1}
+                                      data-orientation="horizontal"
+                                      data-radix-collection-item=""
+                                      ref={function}
+                                    >
+                        <TabsContent value="agency" className="m-0 focus-...">
+                          <TabsContent data-slot="tabs-content" className="flex-1 out..." value="agency">
+                            <Presence present={true}>
+                              <Primitive.div data-state="active" data-orientation="horizontal" role="tabpanel" ...>
+                                <div
+                                  data-state="active"
+                                  data-orientation="horizontal"
+                                  role="tabpanel"
++                                 aria-labelledby="radix-_R_55esnekndlb_-trigger-agency"
+-                                 aria-labelledby="radix-_R_klritqkndlb_-trigger-agency"
+                                  hidden={false}
++                                 id="radix-_R_55esnekndlb_-content-agency"
+-                                 id="radix-_R_klritqkndlb_-content-agency"
+                                  tabIndex={0}
+                                  data-slot="tabs-content"
+                                  className="flex-1 outline-none m-0 focus-visible:outline-none"
+                                  style={{animationDuration:"0s"}}
+                                  ref={function}
+                                >
+                                  ...
+                                    <form onSubmit={function} className="space-y-6">
+                                      <div className="grid md:gr...">
+                                        ...
+                                          <div data-slot="form-item" className="grid gap-2">
+                                            <FormLabel className="text-xs fo...">
+                                              <_c data-slot="form-label" data-error={false} className="data-[erro..." ...>
+                                                <Label ref={null} className="peer-disab..." data-slot="form-label" ...>
+                                                  <Primitive.label className="peer-disab..." data-slot="form-label" ...>
+                                                    <label
+                                                      className="peer-disabled:cursor-not-allowed peer-disabled:opacit..."
+                                                      data-slot="form-label"
+                                                      data-error={false}
++                                                     htmlFor="_R_2pd5esnekndlb_-form-item"
+-                                                     htmlFor="_R_b5klritqkndlb_-form-item"
+                                                      onMouseDown={function onMouseDown}
+                                                      ref={null}
+                                                    >
++                                                     Nombre de la Agencia
+                                            <FormControl>
+                                              <Slot.Slot data-slot="form-control" id="_R_2pd5esn..." ...>
+                                                <Slot.SlotClone data-slot="form-control" id="_R_2pd5esn..." ...>
+                                                  <div
+                                                    className="relative"
+                                                    data-slot="form-control"
++                                                   id="_R_2pd5esnekndlb_-form-item"
+-                                                   id="_R_b5klritqkndlb_-form-item"
++                                                   aria-describedby="_R_2pd5esnekndlb_-form-item-description"
+-                                                   aria-describedby="_R_b5klritqkndlb_-form-item-description"
+                                                    aria-invalid={false}
+                                                    ref={null}
+                                                  >
+                                            ...
+                                        ...
+                                          <div data-slot="form-item" className="grid gap-2">
+                                            <FormLabel className="text-xs fo...">
+                                              <_c data-slot="form-label" data-error={false} className="data-[erro..." ...>
+                                                <Label ref={null} className="peer-disab..." data-slot="form-label" ...>
+                                                  <Primitive.label className="peer-disab..." data-slot="form-label" ...>
+                                                    <label
+                                                      className="peer-disabled:cursor-not-allowed peer-disabled:opacit..."
+                                                      data-slot="form-label"
+                                                      data-error={false}
++                                                     htmlFor="_R_4pd5esnekndlb_-form-item"
+-                                                     htmlFor="_R_j5klritqkndlb_-form-item"
+                                                      onMouseDown={function onMouseDown}
+                                                      ref={null}
+                                                    >
++                                                     Email de Contacto
+                                            <FormControl>
+                                              <Slot.Slot data-slot="form-control" id="_R_4pd5esn..." ...>
+                                                <Slot.SlotClone data-slot="form-control" id="_R_4pd5esn..." ...>
+                                                  <div
+                                                    className="relative"
+                                                    data-slot="form-control"
++                                                   id="_R_4pd5esnekndlb_-form-item"
+-                                                   id="_R_j5klritqkndlb_-form-item"
++                                                   aria-describedby="_R_4pd5esnekndlb_-form-item-description"
+-                                                   aria-describedby="_R_j5klritqkndlb_-form-item-description"
+                                                    aria-invalid={false}
+                                                    ref={null}
+                                                  >
+                                            ...
+                                        ...
+                                          <div data-slot="form-item" className="grid gap-2">
+                                            <FormLabel className="text-xs fo...">
+                                              <_c data-slot="form-label" data-error={false} className="data-[erro..." ...>
+                                                <Label ref={null} className="peer-disab..." data-slot="form-label" ...>
+                                                  <Primitive.label className="peer-disab..." data-slot="form-label" ...>
+                                                    <label
+                                                      className="peer-disabled:cursor-not-allowed peer-disabled:opacit..."
+                                                      data-slot="form-label"
+                                                      data-error={false}
++                                                     htmlFor="_R_6pd5esnekndlb_-form-item"
+-                                                     htmlFor="_R_r5klritqkndlb_-form-item"
+                                                      onMouseDown={function onMouseDown}
+                                                      ref={null}
+                                                    >
++                                                     Teléfono General
+                                            <FormControl>
+                                              <Slot.Slot data-slot="form-control" id="_R_6pd5esn..." ...>
+                                                <Slot.SlotClone data-slot="form-control" id="_R_6pd5esn..." ...>
+                                                  <div
+                                                    className="relative"
+                                                    data-slot="form-control"
++                                                   id="_R_6pd5esnekndlb_-form-item"
+-                                                   id="_R_r5klritqkndlb_-form-item"
++                                                   aria-describedby="_R_6pd5esnekndlb_-form-item-description"
+-                                                   aria-describedby="_R_r5klritqkndlb_-form-item-description"
+                                                    aria-invalid={false}
+                                                    ref={null}
+                                                  >
+                                            ...
+                                        ...
+                                          <div data-slot="form-item" className="grid gap-2">
+                                            <FormLabel className="text-xs fo...">
+                                              <_c data-slot="form-label" data-error={false} className="data-[erro..." ...>
+                                                <Label ref={null} className="peer-disab..." data-slot="form-label" ...>
+                                                  <Primitive.label className="peer-disab..." data-slot="form-label" ...>
+                                                    <label
+                                                      className="peer-disabled:cursor-not-allowed peer-disabled:opacit..."
+                                                      data-slot="form-label"
+                                                      data-error={false}
++                                                     htmlFor="_R_8pd5esnekndlb_-form-item"
+-                                                     htmlFor="_R_135klritqkndlb_-form-item"
+                                                      onMouseDown={function onMouseDown}
+                                                      ref={null}
+                                                    >
++                                                     Sitio Web
+                                            <FormControl>
+                                              <Slot.Slot data-slot="form-control" id="_R_8pd5esn..." ...>
+                                                <Slot.SlotClone data-slot="form-control" id="_R_8pd5esn..." ...>
+                                                  <div
+                                                    className="relative"
+                                                    data-slot="form-control"
++                                                   id="_R_8pd5esnekndlb_-form-item"
+-                                                   id="_R_135klritqkndlb_-form-item"
++                                                   aria-describedby="_R_8pd5esnekndlb_-form-item-description"
+-                                                   aria-describedby="_R_135klritqkndlb_-form-item-description"
+                                                    aria-invalid={false}
+                                                    ref={null}
+                                                  >
+                                            ...
+                                      ...
+                                        <div data-slot="form-item" className="grid gap-2">
+                                          <FormLabel className="text-xs fo...">
+                                            <_c data-slot="form-label" data-error={false} className="data-[erro..." ...>
+                                              <Label ref={null} className="peer-disab..." data-slot="form-label" ...>
+                                                <Primitive.label className="peer-disab..." data-slot="form-label" ...>
+                                                  <label
+                                                    className="peer-disabled:cursor-not-allowed peer-disabled:opacity-..."
+                                                    data-slot="form-label"
+                                                    data-error={false}
++                                                   htmlFor="_R_19d5esnekndlb_-form-item"
+-                                                   htmlFor="_R_55klritqkndlb_-form-item"
+                                                    onMouseDown={function onMouseDown}
+                                                    ref={null}
+                                                  >
++                                                   Dirección Principal
+                                          <FormControl>
+                                            <Slot.Slot data-slot="form-control" id="_R_19d5esn..." ...>
+                                              <Slot.SlotClone data-slot="form-control" id="_R_19d5esn..." ...>
+                                                <div
+                                                  className="relative"
+                                                  data-slot="form-control"
++                                                 id="_R_19d5esnekndlb_-form-item"
+-                                                 id="_R_55klritqkndlb_-form-item"
++                                                 aria-describedby="_R_19d5esnekndlb_-form-item-description"
+-                                                 aria-describedby="_R_55klritqkndlb_-form-item-description"
+                                                  aria-invalid={false}
+                                                  ref={null}
+                                                >
+                                          ...
+                                      ...
+                        <TabsContent value="branches" className="m-0 focus-...">
+                          <TabsContent data-slot="tabs-content" className="flex-1 out..." value="branches">
+                            <Presence present={false}>
+                              <Primitive.div data-state="inactive" data-orientation="horizontal" role="tabpanel" ...>
+                                <div
+                                  data-state="inactive"
+                                  data-orientation="horizontal"
+                                  role="tabpanel"
++                                 aria-labelledby="radix-_R_55esnekndlb_-trigger-branches"
+-                                 aria-labelledby="radix-_R_klritqkndlb_-trigger-branches"
+                                  hidden={true}
++                                 id="radix-_R_55esnekndlb_-content-branches"
+-                                 id="radix-_R_klritqkndlb_-content-branches"
+                                  tabIndex={0}
+                                  data-slot="tabs-content"
+                                  className="flex-1 outline-none m-0 focus-visible:outline-none"
+                                  style={{animationDuration:undefined}}
+                                  ref={function}
+                                >
+                        <TabsContent value="security" className="m-0 focus-...">
+                          <TabsContent data-slot="tabs-content" className="flex-1 out..." value="security">
+                            <Presence present={false}>
+                              <Primitive.div data-state="inactive" data-orientation="horizontal" role="tabpanel" ...>
+                                <div
+                                  data-state="inactive"
+                                  data-orientation="horizontal"
+                                  role="tabpanel"
++                                 aria-labelledby="radix-_R_55esnekndlb_-trigger-security"
+-                                 aria-labelledby="radix-_R_klritqkndlb_-trigger-security"
+                                  hidden={true}
++                                 id="radix-_R_55esnekndlb_-content-security"
+-                                 id="radix-_R_klritqkndlb_-content-security"
+                                  tabIndex={0}
+                                  data-slot="tabs-content"
+                                  className="flex-1 outline-none m-0 focus-visible:outline-none"
+                                  style={{animationDuration:undefined}}
+                                  ref={function}
+                                >
+                        <TabsContent value="notifications" className="m-0 focus-...">
+                          <TabsContent data-slot="tabs-content" className="flex-1 out..." value="notifications">
+                            <Presence present={false}>
+                              <Primitive.div data-state="inactive" data-orientation="horizontal" role="tabpanel" ...>
+                                <div
+                                  data-state="inactive"
+                                  data-orientation="horizontal"
+                                  role="tabpanel"
++                                 aria-labelledby="radix-_R_55esnekndlb_-trigger-notifications"
+-                                 aria-labelledby="radix-_R_klritqkndlb_-trigger-notifications"
+                                  hidden={true}
++                                 id="radix-_R_55esnekndlb_-content-notifications"
+-                                 id="radix-_R_klritqkndlb_-content-notifications"
+                                  tabIndex={0}
+                                  data-slot="tabs-content"
+                                  className="flex-1 outline-none m-0 focus-visible:outline-none"
+                                  style={{animationDuration:undefined}}
+                                  ref={function}
+                                >
+        ...
+
+[80:02:51.532] Server  LOG     ✓ Compiled in 1159ms
+[80:02:52.897] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[80:30:16.230] Server  LOG     ✓ Compiled in 1734ms
+[80:33:08.212] Server  LOG     ✓ Compiled in 1235ms
+[80:33:09.464] Browser ERROR   uncaughtError: ReferenceError: metadata is not defined
+[80:34:16.262] Server  ERROR   ⨯ ReferenceError: metadata is not defined
+[80:34:16.688] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[80:34:17.031] Browser ERROR   uncaughtError: ReferenceError: metadata is not defined
+[80:35:02.276] Server  LOG     ✓ Compiled in 853ms
+[80:35:02.278] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[80:35:04.898] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[80:37:22.340] Server  ERROR   Error AI Document Revision: Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[80:39:17.610] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[124:21:04.307] Browser ERROR   uncaughtError: TypeError: network error
+[124:23:49.388] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[124:24:09.196] Server  ERROR   Error fetching messages: {}
+[124:24:09.950] Server  ERROR   Error fetching messages: {}
+[124:24:30.825] Server  ERROR   Error fetching tenant users: {}
+[124:31:20.899] Server  LOG     ✓ Compiled in 2s
+[124:31:23.622] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[124:32:44.936] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[124:32:54.358] Server  ERROR   Error AI Support: Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+
+[124:33:40.974] Server  ERROR   Error AI Support: Error: {
+    "error": {
+        "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+        "type": "insufficient_quota",
+        "param": null,
+        "code": "insufficient_quota"
+    }
+}
+

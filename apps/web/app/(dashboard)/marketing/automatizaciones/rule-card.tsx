@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { toggleAutomationRule, deleteAutomationRule } from "@/app/actions/marketing"
 import { toast } from "sonner"
-import { Zap, Mail, CheckSquare, Bell, Edit, Trash2, ArrowRight } from "lucide-react"
+import { Zap, Mail, CheckSquare, Bell, Edit, Trash2, ArrowRight, MessageCircle } from "lucide-react"
 
 const TRIGGER_ICONS = {
     lead_status_change: ArrowRight,
@@ -28,14 +28,16 @@ const ACTION_ICONS = {
     send_email: Mail,
     create_task: CheckSquare,
     send_notification: Bell,
-    update_lead_field: Edit
+    update_lead_field: Edit,
+    lead_follow_up: MessageCircle
 }
 
 const ACTION_LABELS = {
     send_email: 'Enviar Email',
     create_task: 'Crear Tarea',
     send_notification: 'Enviar Notificación',
-    update_lead_field: 'Actualizar Campo de Lead'
+    update_lead_field: 'Actualizar Campo de Lead',
+    lead_follow_up: 'Seguimiento Automático'
 }
 
 export function AutomationRuleCard({ rule }: { rule: AutomationRule }) {

@@ -67,9 +67,9 @@ export function LeadDialog({ lead, mode = 'create', children, trigger }: LeadDia
                 source: formData.get('source') as any,
                 budget: parseFloat(formData.get('budget') as string) || 0,
                 // Tracking enhancement fields
-                interested_property_id: formData.get('interested_property_id') as string || null,
+                interested_property_id: (formData.get('interested_property_id') === 'none' || !formData.get('interested_property_id')) ? null : formData.get('interested_property_id') as string,
                 property_preferences: {
-                    property_type: formData.get('pref_property_type') as string || '',
+                    property_type: (formData.get('pref_property_type') === 'none' || !formData.get('pref_property_type')) ? '' : formData.get('pref_property_type') as string,
                     min_price: parseFloat(formData.get('pref_min_price') as string) || undefined,
                     max_price: parseFloat(formData.get('pref_max_price') as string) || undefined,
                     location: formData.get('pref_location') as string || '',
@@ -186,12 +186,12 @@ export function LeadDialog({ lead, mode = 'create', children, trigger }: LeadDia
                                 {/* Property Interest */}
                                 <div className="space-y-3 bg-blue-50/50 p-4 rounded-xl">
                                     <Label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Propiedad de Interés</Label>
-                                    <Select name="interested_property_id" defaultValue={lead?.interested_property_id || ''}>
+                                    <Select name="interested_property_id" defaultValue={lead?.interested_property_id || 'none'}>
                                         <SelectTrigger className="bg-white border-gray-200 rounded-xl">
                                             <SelectValue placeholder="Seleccionar propiedad específica (opcional)" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">Sin propiedad específica</SelectItem>
+                                            <SelectItem value="none">Sin propiedad específica</SelectItem>
                                             {properties.map((prop) => (
                                                 <SelectItem key={prop.id} value={prop.id}>
                                                     {prop.title} - {prop.property_type}
@@ -207,12 +207,12 @@ export function LeadDialog({ lead, mode = 'create', children, trigger }: LeadDia
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-2">
                                             <Label htmlFor="pref_property_type" className="text-xs text-gray-600">Tipo</Label>
-                                            <Select name="pref_property_type" defaultValue={lead?.property_preferences?.property_type || ''}>
+                                            <Select name="pref_property_type" defaultValue={lead?.property_preferences?.property_type || 'none'}>
                                                 <SelectTrigger className="bg-white border-gray-200 rounded-xl">
                                                     <SelectValue placeholder="Tipo de propiedad" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="">Cualquiera</SelectItem>
+                                                    <SelectItem value="none">Cualquiera</SelectItem>
                                                     {Object.entries(PROPERTY_TYPES).map(([key, value]) => (
                                                         <SelectItem key={key} value={value}>{value}</SelectItem>
                                                     ))}
