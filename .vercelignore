@@ -1,0 +1,7 @@
+﻿node_modules
+.next
+.turbo
+.vercel
+*.zip
+*.mp4
+.next_clean
