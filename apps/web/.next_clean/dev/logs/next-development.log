@@ -9,3 +9,6 @@
 [00:12:12.091] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./node_modules/next/dist/client/image-component.js changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
 [00:12:12.120] Server  LOG     ✓ Compiled in 419ms
 [00:12:13.805] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:14:47.750] Server  ERROR   Error: EPIPE: broken pipe, write
+[01:14:47.759] Server  ERROR   ⨯ "uncaughtException:" Error: EPIPE: broken pipe, write
+[01:14:47.765] Server  ERROR   ⨯ "uncaughtException: " Error: EPIPE: broken pipe, write
