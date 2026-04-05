@@ -1,7 +1,5 @@
-﻿node_modules
-.next
+node_modules
 .turbo
-.vercel
 *.zip
 *.mp4
 .next_clean
