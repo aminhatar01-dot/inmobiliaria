@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { User, Mail, Phone, Save, Loader2, Camera } from "lucide-react"
+import { useState, useRef } from "react"
+import { User, Mail, Phone, Save, Loader2, Camera, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
 import { updateProfile } from "@/app/actions/account"
+import { createClient } from "@/lib/supabase/client"
 
 interface ProfileFormProps {
     user: any
@@ -15,10 +16,59 @@ interface ProfileFormProps {
 
 export function ProfileForm({ user }: ProfileFormProps) {
     const [loading, setLoading] = useState(false)
+    const [uploading, setUploading] = useState(false)
     const [name, setName] = useState(user?.name || user?.user_metadata?.full_name || "")
     const [email, setEmail] = useState(user?.email || "")
-    const [phone, setPhone] = useState(user?.phone || "")
+    const [phone, setPhone] = useState(user?.user_metadata?.phone || "")
     const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || user?.user_metadata?.avatar_url || "")
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Client-side validation
+        if (!file.type.startsWith("image/")) {
+            toast.error("Solo se permiten imágenes (JPG, PNG, WEBP, GIF)")
+            return
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("La imagen no puede superar los 5MB")
+            return
+        }
+
+        setUploading(true)
+        try {
+            const supabase = createClient()
+            const { data: { user: currentUser } } = await supabase.auth.getUser()
+            if (!currentUser) throw new Error("No autenticado")
+
+            const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+            const filePath = `${currentUser.id}/${Date.now()}.${ext}`
+
+            // Upload directly from browser — no Server Action file size limits
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, { upsert: true, contentType: file.type })
+
+            if (uploadError) throw new Error(uploadError.message)
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath)
+
+            // Persist the URL to metadata via Server Action 
+            await updateProfile({ name, email, phone, avatar_url: publicUrl })
+            setAvatarUrl(publicUrl)
+            toast.success("Foto de perfil actualizada correctamente")
+        } catch (err: any) {
+            toast.error(err.message || "Error al subir la foto")
+        } finally {
+            setUploading(false)
+            if (fileInputRef.current) fileInputRef.current.value = ""
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -38,26 +88,60 @@ export function ProfileForm({ user }: ProfileFormProps) {
             <div className="flex flex-col md:flex-row gap-8 items-start">
                 <Card className="w-full md:w-80 border-none shadow-sm rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl">
                     <CardContent className="p-8 flex flex-col items-center space-y-4">
+                        {/* Avatar with upload overlay */}
                         <div className="relative group">
                             <Avatar className="h-32 w-32 border-4 border-white shadow-xl">
                                 <AvatarImage src={avatarUrl} />
-                                <AvatarFallback className="bg-blue-600 text-white text-4xl font-black">{name[0] || "U"}</AvatarFallback>
+                                <AvatarFallback className="bg-blue-600 text-white text-4xl font-black">
+                                    {name[0]?.toUpperCase() || "U"}
+                                </AvatarFallback>
                             </Avatar>
-                            <button
-                                type="button"
-                                className="absolute bottom-0 right-0 h-10 w-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-500 hover:text-blue-600 transition-colors border border-gray-100"
-                                onClick={() => {
-                                    const url = prompt("Introduce la URL de tu nuevo avatar:")
-                                    if (url) setAvatarUrl(url)
-                                }}
-                            >
-                                <Camera className="h-5 w-5" />
-                            </button>
+
+                            {/* Uploading spinner overlay */}
+                            {uploading && (
+                                <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                                    <Loader2 className="h-8 w-8 text-white animate-spin" />
+                                </div>
+                            )}
+
+                            {/* Camera icon button */}
+                            {!uploading && (
+                                <button
+                                    type="button"
+                                    className="absolute bottom-0 right-0 h-10 w-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-500 hover:text-blue-600 hover:scale-110 transition-all border border-gray-100"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    title="Cambiar foto de perfil"
+                                >
+                                    <Camera className="h-5 w-5" />
+                                </button>
+                            )}
+
+                            {/* Hidden file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                className="hidden"
+                                onChange={handleFileChange}
+                            />
                         </div>
-                        <div className="text-center">
+
+                        <div className="text-center space-y-1">
                             <h3 className="text-xl font-bold text-gray-800">{name || "Usuario"}</h3>
-                            <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mt-1">{"Agente"}</p>
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">Agente</p>
                         </div>
+
+                        {/* Upload button */}
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Upload className="h-3.5 w-3.5" />
+                            {uploading ? "Subiendo foto..." : "Subir desde archivos"}
+                        </button>
+                        <p className="text-[10px] text-gray-400 text-center">JPG, PNG, WEBP · Máx. 5MB</p>
                     </CardContent>
                 </Card>
 
@@ -101,7 +185,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                         value={phone}
                                         onChange={e => setPhone(e.target.value)}
                                         className="pl-11 h-12 bg-gray-50 border-gray-100 rounded-xl focus:bg-white transition-all text-sm"
-                                        placeholder="+34 600 000 000"
+                                        placeholder="+54 9 11 0000 0000"
                                     />
                                 </div>
                             </div>
@@ -111,7 +195,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             <Button
                                 type="submit"
                                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl px-8 h-12 shadow-lg shadow-blue-500/20"
-                                disabled={loading}
+                                disabled={loading || uploading}
                             >
                                 {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
                                 Guardar Cambios

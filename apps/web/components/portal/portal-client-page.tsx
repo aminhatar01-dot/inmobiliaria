@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Search, MapPin, Home, Bed, Bath, Maximize, ArrowRight, Building2, Sparkles } from "lucide-react"
+import { Search, MapPin, Home, Bed, Bath, Maximize, ArrowRight, Building2, Sparkles, Menu } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import Link from "next/link"
 
 interface PortalClientPageProps {
@@ -15,6 +16,7 @@ interface PortalClientPageProps {
 export function PortalClientPage({ properties }: PortalClientPageProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [operationType, setOperationType] = useState<string | null>(null)
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     const filteredProperties = useMemo(() => {
         return properties.filter(p => {
@@ -42,6 +44,7 @@ export function PortalClientPage({ properties }: PortalClientPageProps) {
                         <span className="text-xl font-black text-gray-900 tracking-tighter">InmoPortal</span>
                     </Link>
 
+                    {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-6">
                         <Button variant="ghost" className="font-bold text-gray-500 hover:text-blue-600" onClick={() => setOperationType('sale')}>Venta</Button>
                         <Button variant="ghost" className="font-bold text-gray-500 hover:text-blue-600" onClick={() => setOperationType('rent')}>Alquiler</Button>
@@ -51,20 +54,51 @@ export function PortalClientPage({ properties }: PortalClientPageProps) {
                             <Link href="/login">Publicar Propiedad</Link>
                         </Button>
                     </div>
+
+                    {/* Mobile Navigation */}
+                    <div className="md:hidden">
+                        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-gray-900">
+                                    <Menu className="h-6 w-6" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="right" className="w-[300px] sm:w-[350px] p-6 bg-white flex flex-col gap-8">
+                                <SheetHeader className="text-left">
+                                    <SheetTitle className="flex items-center gap-2 border-b border-gray-100 pb-4">
+                                        <div className="h-8 w-8 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                                            <Sparkles className="h-4 w-4" />
+                                        </div>
+                                        <span className="text-xl font-black text-gray-900 tracking-tighter">InmoPortal</span>
+                                    </SheetTitle>
+                                </SheetHeader>
+                                <div className="flex flex-col gap-4">
+                                    <Button variant="ghost" className={`justify-start font-bold ${operationType === 'sale' ? 'text-blue-600 bg-blue-50' : 'text-gray-500'}`} onClick={() => { setOperationType('sale'); setMobileMenuOpen(false); }}>Venta</Button>
+                                    <Button variant="ghost" className={`justify-start font-bold ${operationType === 'rent' ? 'text-blue-600 bg-blue-50' : 'text-gray-500'}`} onClick={() => { setOperationType('rent'); setMobileMenuOpen(false); }}>Alquiler</Button>
+                                    <Button variant="ghost" className={`justify-start font-bold ${operationType === null ? 'text-blue-600 bg-blue-50' : 'text-gray-500'}`} onClick={() => { setOperationType(null); setMobileMenuOpen(false); }}>Todas</Button>
+                                </div>
+                                <div className="mt-auto pt-6 border-t border-gray-100">
+                                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl h-12" asChild>
+                                        <Link href="/login">Publicar Propiedad</Link>
+                                    </Button>
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
                 </div>
             </header>
 
             {/* Hero Search */}
-            <section className="bg-blue-600 py-20 px-4 relative overflow-hidden">
+            <section className="bg-blue-600 py-16 md:py-20 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-indigo-800" />
                 <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
 
-                <div className="max-w-4xl mx-auto relative text-center space-y-8">
+                <div className="max-w-4xl mx-auto relative text-center space-y-6 md:space-y-8">
                     <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-tight">
-                        Encuentra el lugar donde <br /> quieres <span className="text-blue-200 underline decoration-blue-300/30">vivir.</span>
+                        Encuentra el lugar donde <br className="hidden md:block" /> quieres <span className="text-blue-200 underline decoration-blue-300/30">vivir.</span>
                     </h1>
 
-                    <div className="bg-white p-2 md:p-3 rounded-[2rem] shadow-2xl flex flex-col md:flex-row gap-2">
+                    <div className="bg-white p-2 md:p-3 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl flex flex-col md:flex-row gap-2">
                         <div className="flex-1 relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                             <Input

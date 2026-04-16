@@ -43,7 +43,7 @@ export async function updateProfile(formData: { name: string, email: string, pho
 
     // Update Auth Metadata
     const { error: authError } = await supabase.auth.updateUser({
-        data: { full_name: formData.name, avatar_url: formData.avatar_url }
+        data: { full_name: formData.name, avatar_url: formData.avatar_url, phone: formData.phone }
     })
 
     if (authError) throw new Error(authError.message)
@@ -53,9 +53,7 @@ export async function updateProfile(formData: { name: string, email: string, pho
         .from('profiles')
         .update({
             name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            avatar_url: formData.avatar_url
+            email: formData.email
         })
         .eq('id', user.id)
 
@@ -83,6 +81,45 @@ export async function getSubscription() {
     }
 
     return tenant
+}
+
+export async function uploadAvatar(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Unauthorized')
+
+    const file = formData.get('avatar') as File
+    if (!file || file.size === 0) throw new Error('No se seleccionó ningún archivo')
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) throw new Error('El archivo supera el límite de 5MB')
+
+    // Build a unique path: userId/timestamp.ext
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const filePath = `${user.id}/${Date.now()}.${ext}`
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true, contentType: file.type })
+
+    if (uploadError) throw new Error(`Error al subir imagen: ${uploadError.message}`)
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+    // Persist to auth metadata so DashboardHeader and ProfileForm pick it up immediately
+    const { error: metaError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+    })
+
+    if (metaError) throw new Error(metaError.message)
+
+    revalidatePath('/cuenta/perfil')
+    return { success: true, url: publicUrl }
 }
 
 export async function updateSubscription(plan: string) {

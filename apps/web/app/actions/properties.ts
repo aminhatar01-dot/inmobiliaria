@@ -57,6 +57,19 @@ export async function createProperty(formData: Partial<Property>, images: string
 
     if (!tenantId) throw new Error("Unauthorized or no tenant assigned")
 
+     // Validación de datos esenciales
+    if (!formData.title || typeof formData.title !== "string" || formData.title.trim() === "") {
+        throw new Error("Property title is required and must be a non-empty string")
+    }
+
+    if (!formData.status || !["available", "sold", "rented"].includes(formData.status)) {
+        throw new Error("Invalid property status. Must be 'available', 'sold', or 'rented'")
+    }
+
+    if (formData.price !== undefined && (isNaN(formData.price) || formData.price < 0)) {
+        throw new Error("Price must be a valid positive number")
+    }
+
     // Remove undefined values
     const cleanData = Object.fromEntries(
         Object.entries(formData).filter(([_, v]) => v !== undefined && v !== "")
@@ -68,7 +81,8 @@ export async function createProperty(formData: Partial<Property>, images: string
             ...cleanData,
             tenant_id: tenantId,
             status: cleanData.status || "available",
-            is_shared: cleanData.is_shared !== undefined ? cleanData.is_shared : true
+            is_shared: cleanData.is_shared !== undefined ? cleanData.is_shared : true,
+            is_verified: false // Nuevas propiedades empiezan como no verificadas
         }])
         .select()
         .single()
@@ -107,6 +121,19 @@ export async function updateProperty(id: string, formData: Partial<Property>, im
     const tenantId = await getTenantId(supabase)
 
     if (!tenantId) throw new Error("Unauthorized")
+
+     // Validación adicional para campos editados
+    if (formData.title?.trim() === "") {
+        throw new Error("Property title cannot be empty")
+    }
+
+    if (formData.status && !["available", "sold", "rented"].includes(formData.status)) {
+        throw new Error("Invalid property status. Must be 'available', 'sold', or 'rented'")
+    }
+
+    if (formData.price !== undefined && (isNaN(formData.price) || formData.price < 0)) {
+        throw new Error("Price must be a valid positive number")
+    }
 
     // Remove undefined values
     const cleanData = Object.fromEntries(

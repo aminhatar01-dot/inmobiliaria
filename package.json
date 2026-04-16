@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "npm run build --prefix apps/web",
+    "build": "npm run build --workspace=@inmocms/shared && npm run build --workspace=web",
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rimraf apps/web/.next && rimraf apps/web/.next_clean"
   },
@@ -14,5 +14,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.103.0",
+    "dotenv": "^17.4.2"
+  }
 }
