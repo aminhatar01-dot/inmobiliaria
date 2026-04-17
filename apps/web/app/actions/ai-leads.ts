@@ -12,16 +12,16 @@ export async function generateLeadOutreach(params: {
     const supabase = await createClient()
 
     // 1. Verify User and Tenant
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error("No autenticado")
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) throw new Error("No autenticado")
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('tenant_id')
         .eq('id', user.id)
         .single()
 
-    if (!profile?.tenant_id) throw new Error("No pertenece a ninguna inmobiliaria")
+    if (profileError || !profile?.tenant_id) throw new Error("No pertenece a ninguna inmobiliaria")
 
     // 2. Gather context
     let contextStr = ""
@@ -71,6 +71,10 @@ Mantén un tono profesional pero moderno y cercano.
 `
 
     try {
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error("Clave de Gemini no configurada en variables de entorno");
+        }
+
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: systemPrompt,
@@ -90,8 +94,9 @@ Mantén un tono profesional pero moderno y cercano.
         
         return JSON.parse(cleanedJson);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error generating outreach content:", error);
-        throw new Error("No se pudo generar el contenido con IA. Revisa tu configuración o intenta más tarde.");
+        // Re-throw con error original para debugging en logs
+        throw error;
     }
 }
