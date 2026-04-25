@@ -107,11 +107,17 @@ export function PublishDialog({
                                                 </div>
                                             ) : (
                                                 <Button
-                                                    onClick={() => handlePublish(conn.id)}
+                                                    onClick={async () => {
+                                                        if (conn.portal_name === 'mercadolibre') {
+                                                            window.open('https://www.mercadolibre.com.ar/vender/inmuebles', '_blank')
+                                                            toast.info("Copia los datos de tu propiedad y pégalos en Mercado Libre.")
+                                                        }
+                                                        handlePublish(conn.id)
+                                                    }}
                                                     disabled={!!isPublishing}
                                                     className="bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-xl font-black text-xs px-6 h-10 shadow-sm"
                                                 >
-                                                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "PUBLICAR"}
+                                                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : conn.portal_name === 'mercadolibre' ? 'PUBLICAR (ABRIR ML)' : "PUBLICAR"}
                                                 </Button>
                                             )}
                                         </div>
