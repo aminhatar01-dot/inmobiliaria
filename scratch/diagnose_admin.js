@@ -24,7 +24,7 @@ async function run() {
     const { data: users, error: listError } = await adminClient.auth.admin.listUsers();
     
     if (listError) {
-        console.error("Error listing users:", listError);
+        console.error("Error listing users:", listError.message, { timestamp: new Date().toISOString() });
         return;
     }
 
@@ -45,7 +45,7 @@ async function run() {
         });
 
         if (createError) {
-            console.error("Failed to create admin:", createError);
+            console.error("Error creating admin user:", createError.message, { timestamp: new Date().toISOString() });
             return;
         }
         
@@ -57,7 +57,7 @@ async function run() {
     const { data: profile, error: profileError } = await adminClient.from('profiles').select('*').eq('id', adminUser.id).single();
     
     if (profileError || !profile) {
-        console.error("Profile is MISSING! The trigger must have failed. Error:", profileError);
+        console.error("Error: Profile is missing – possible trigger failure:", profileError.message, { timestamp: new Date().toISOString() });
         console.log("Attempting manual profile creation...");
         
         // 1. Create Tenant

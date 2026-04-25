@@ -8,7 +8,7 @@ async function run() {
 
     const { data, error } = await adminClient.from('profiles').select().limit(1);
     if (error) {
-         console.error('Error:', error);
+         console.error('Error fetching profiles:', error.message, { timestamp: new Date().toISOString() });
     } else {
          console.log('Columns:', Object.keys(data[0] || {}));
     }

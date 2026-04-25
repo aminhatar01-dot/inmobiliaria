@@ -2,8 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
+import fs from 'fs'
+import path from 'path'
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+// Initialization moved into the function for robustness
+
 
 export async function generateLeadOutreach(params: {
     targetAudience?: string;
@@ -63,18 +66,37 @@ Tu respuesta DEBE ser un objeto JSON estrictamente válido con la siguiente estr
     "Gancho 2 enfocado en curiosidad o problema",
     "Gancho 3 enfocado en una oportunidad única"
   ],
-  "emailTemplate": "Asunto: [Asunto llamativo]\\n\\nHola [Nombre],\\n\\nCuerpo del email corto, persuasivo, que genere valor antes de vender...\\n\\nLlamado a la acción (CTA).\\n\\nFirma",
-  "whatsappScript": "Hola [Nombre] 👋 Mensaje corto para WhatsApp. Tono amigable y consultivo. No más de 3-4 líneas. Termina con una pregunta abierta."
+  "emailTemplate": "Asunto: [Asunto llamativo]\\n\\nHola (nombre),\\n\\nCuerpo del email corto, persuasivo, que genere valor antes de vender...\\n\\nLlamado a la acción (CTA).\\n\\nFirma",
+  "whatsappScript": "Hola (nombre) 👋 Mensaje corto para WhatsApp. Tono amigable y consultivo. No más de 3-4 líneas. Termina con una pregunta abierta."
 }
 
 Mantén un tono profesional pero moderno y cercano.
 `
 
-    try {
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error("Clave de Gemini no configurada en variables de entorno");
-        }
+    // 3. Dynamic Environment and AI Initialization
+    let finalKey = process.env.GEMINI_API_KEY;
 
+    // Direct read fallback for environments where process.env might be stale
+    if (!finalKey) {
+        try {
+            const envPath = path.join(process.cwd(), '.env.local');
+            if (fs.existsSync(envPath)) {
+                const envContent = fs.readFileSync(envPath, 'utf8');
+                const match = envContent.match(/GEMINI_API_KEY\s*=\s*["']?([^"'\s]+)["']?/);
+                if (match) finalKey = match[1].trim();
+            }
+        } catch (e) {
+            console.error("No se pudo leer .env.local de forma dinámica:", e);
+        }
+    }
+
+    if (!finalKey) {
+        throw new Error("Clave de Gemini (GEMINI_API_KEY) no configurada en el servidor.");
+    }
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: finalKey });
+        
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: systemPrompt,

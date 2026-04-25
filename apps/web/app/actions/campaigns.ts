@@ -131,6 +131,9 @@ export async function deleteCampaign(id: string) {
     revalidatePath("/marketing/campanas")
 }
 
+
+import nodemailer from "nodemailer"
+
 export async function dispatchCampaign(
     leadIds: string[],
     messageContent: string,
@@ -142,24 +145,112 @@ export async function dispatchCampaign(
 
     if (!tenantId || !user) throw new Error("Unauthorized")
 
-    // Import this dynamically or at the top. Let's do it directly here for simplicity if needed
-    // But better to just implement the message injection here to avoid circular logic
-    
+    // Fetch communication settings
+    const { data: commSettings } = await supabase
+        .from("tenant_communication_settings")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .single()
+
     let successCount = 0
+    const results: any[] = []
+
+
+
+    // Helper to personalize message
+    const personalize = (text: string, name: string) => {
+        if (!text) return ""
+        const cleanName = name || 'Cliente'
+        
+        // Supports [nombre], (nombre), {nombre}, <nombre>, and variations with spaces or capital letters
+        // Also supports the literal string "Nombre" if surrounded by non-alphanumeric chars
+        return text
+            .replace(/[\(\[\{\<]\s*nombre\s*[\)\]\}\>]/gi, cleanName)
+            .replace(/\[\s*Nombre del Lead\s*\]/gi, cleanName)
+            .replace(/\[\s*Nombre\s*\]/gi, cleanName)
+    }
+
+    // Update results to include personalized messages for each lead
+    if (channel === 'whatsapp' && (!commSettings || commSettings.whatsapp_mode === 'link')) {
+        const { data: leads } = await supabase
+            .from("leads")
+            .select("id, name, phone")
+            .in("id", leadIds)
+            .eq("tenant_id", tenantId)
+
+        return { 
+            mode: 'sequential', 
+            channel: 'whatsapp',
+            leads: leads?.map(l => ({
+                id: l.id,
+                name: l.name,
+                phone: l.phone,
+                message: personalize(messageContent, l.name)
+            })) || []
+        }
+    }
+
+    // For Email or automated WhatsApp
+    const transport = channel === 'email' && commSettings?.smtp_host ? nodemailer.createTransport({
+        host: commSettings.smtp_host,
+        port: commSettings.smtp_port,
+        secure: commSettings.smtp_port === 465,
+        auth: {
+            user: commSettings.smtp_user,
+            pass: commSettings.smtp_pass
+        }
+    }) : null
 
     for (const leadId of leadIds) {
         try {
-            // Verify lead belongs to tenant
             const { data: lead } = await supabase
                 .from("leads")
-                .select("id")
+                .select("id, name, email, phone")
                 .eq("id", leadId)
                 .eq("tenant_id", tenantId)
                 .single()
 
             if (!lead) continue
 
-            // Find or create conversation
+            const personalizedMessage = personalize(messageContent, lead.name)
+            let sent = false
+
+            if (channel === 'email' && transport && lead.email) {
+                try {
+                    await transport.sendMail({
+                        from: `"${commSettings?.smtp_from_name || 'Agencia Inmobiliaria'}" <${commSettings?.smtp_from_email || commSettings?.smtp_user}>`,
+                        to: lead.email,
+                        subject: "Información de Interés - Inmobiliaria",
+                        text: personalizedMessage,
+                        html: personalizedMessage.replace(/\n/g, '<br/>')
+                    })
+                    sent = true
+                } catch (err) {
+                    console.error(`Failed to send email to ${lead.email}:`, err)
+                }
+            } else if (channel === 'email' && commSettings?.resend_api_key && lead.email) {
+                // Fallback to Resend API if configured
+                try {
+                    const res = await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${commSettings.resend_api_key}`
+                        },
+                        body: JSON.stringify({
+                            from: commSettings.smtp_from_email || 'onboarding@resend.dev',
+                            to: lead.email,
+                            subject: "Información de Interés",
+                            text: personalizedMessage
+                        })
+                    })
+                    if (res.ok) sent = true
+                } catch (err) {
+                    console.error("Resend API failed:", err)
+                }
+            }
+
+            // Record in CRM
             const { data: existingConversation } = await supabase
                 .from("conversations")
                 .select("id")
@@ -175,30 +266,28 @@ export async function dispatchCampaign(
                     .select()
                     .single()
                 
-                if (convError) continue
-                conversationId = newConversation.id
-
-                // Add participant
-                await supabase
-                    .from("conversation_participants")
-                    .insert({ conversation_id: conversationId, user_id: user.id })
+                if (!convError) {
+                    conversationId = newConversation.id
+                    await supabase
+                        .from("conversation_participants")
+                        .insert({ conversation_id: conversationId, user_id: user.id })
+                }
             }
             
-            if (!conversationId) continue
-
-            // Inject the system message to simulate the outgoing campaign
-            const { error: messageError } = await supabase
-                .from("messages")
-                .insert({
-                    conversation_id: conversationId,
-                    sender_id: user.id, // The agent sent it
-                    content: `[Campaña de Captación - ${channel.toUpperCase()}]\n\n${messageContent.trim()}`
-                })
-
-            if (!messageError) {
-                successCount++
-            } else {
-                console.error(`Failed to record message for lead ${leadId}`, messageError)
+            if (conversationId) {
+                await supabase
+                    .from("messages")
+                    .insert({
+                        conversation_id: conversationId,
+                        sender_id: user.id,
+                        content: `[Campaña de Captación - ${channel.toUpperCase()}]\n\n${personalizedMessage.trim()}`
+                    })
+                
+                if (channel === 'email') {
+                    successCount += sent ? 1 : 0
+                } else {
+                    successCount++ 
+                }
             }
         } catch (error) {
             console.error(`Error processing lead ${leadId}`, error)
@@ -208,5 +297,5 @@ export async function dispatchCampaign(
     revalidatePath("/mensajes")
     revalidatePath("/leads")
 
-    return { successCount, totalRequested: leadIds.length }
+    return { successCount, totalRequested: leadIds.length, mode: 'direct' }
 }

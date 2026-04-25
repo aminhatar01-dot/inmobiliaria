@@ -9,7 +9,7 @@ async function debug() {
     const { data: plans, error } = await supabase.from('subscription_plans').select('id, name')
 
     if (error) {
-        console.error("Error fetching plans:", error)
+        console.error("Error fetching subscription plans:", error.message, { timestamp: new Date().toISOString() });
     } else {
         console.log("Plans found in DB:", JSON.stringify(plans, null, 2))
     }

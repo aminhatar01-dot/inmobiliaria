@@ -16,7 +16,7 @@ export default async function LeadsPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0">
                     <Button variant="outline" className="h-12 border-gray-100 rounded-xl font-bold px-6 bg-white hover:bg-gray-50 text-gray-700" asChild>
-                        <Link href="/leads/pipeline">
+                        <Link href="/pipeline">
                             Ver Pipeline Kanban
                         </Link>
                     </Button>

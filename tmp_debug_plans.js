@@ -11,7 +11,7 @@ async function debug() {
         .select('*')
 
     if (plansError) {
-        console.error("Error fetching plans:", plansError)
+        console.error("Error fetching plans during debug:", plansError.message, { timestamp: new Date().toISOString() });
     } else {
         console.log("Plans found:", JSON.stringify(plans, null, 2))
     }

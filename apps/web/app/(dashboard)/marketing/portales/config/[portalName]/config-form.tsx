@@ -53,6 +53,21 @@ export function PortalConfigForm({ portalName, portalLabel, initialConfig }: Por
                 <CardDescription className="text-gray-500 font-medium text-sm mt-2">
                     Ingresa las llaves proporcionadas por el panel de desarrolladores de {portalLabel} para habilitar la publicación automática de tus inmuebles.
                 </CardDescription>
+                
+                {portalName === 'mercadolibre' && (
+                    <div className="mt-6 p-4 bg-amber-50 rounded-2xl border border-amber-100 space-y-3">
+                        <div className="flex items-center gap-2 text-amber-800 font-black text-xs uppercase tracking-widest">
+                            <ShieldCheck className="h-4 w-4" />
+                            Instrucciones de Configuración
+                        </div>
+                        <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                            Para que el sistema funcione, debes crear una "Aplicación" en <a href="https://developers.mercadolibre.com.ar/dev-center" target="_blank" className="font-black underline">Mercado Libre Dev Center</a> y configurar la siguiente <b>Redirect URI</b>:
+                        </p>
+                        <div className="bg-white p-3 rounded-xl border border-amber-200 font-mono text-[10px] text-amber-900 break-all">
+                            {typeof window !== 'undefined' ? window.location.origin : '...'}/api/auth/callback/mercadolibre
+                        </div>
+                    </div>
+                )}
             </CardHeader>
             <CardContent className="p-8">
                 <form onSubmit={handleSave} className="space-y-8">

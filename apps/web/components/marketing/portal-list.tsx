@@ -98,14 +98,37 @@ export function PortalList({ initialConnections }: PortalListProps) {
                                 {conn ? (
                                     <div className="space-y-4">
                                         <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between">
-                                            <div>
+                                            <div className="overflow-hidden">
                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cuenta</p>
-                                                <p className="text-sm font-bold text-gray-900">{conn.account_email}</p>
+                                                <p className="text-sm font-bold text-gray-900 truncate">{conn.account_email}</p>
                                             </div>
-                                            <div className="h-8 w-8 rounded-xl bg-green-100 flex items-center justify-center text-green-600">
+                                            <div className="h-8 w-8 rounded-xl bg-green-100 flex items-center justify-center text-green-600 shrink-0">
                                                 <CheckCircle2 className="h-4 w-4" />
                                             </div>
                                         </div>
+
+                                        {(key === 'argenprop' || key === 'zonaprop') && (conn.credentials as any)?.feed_url && (
+                                            <div className="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Feed XML Activo</p>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        className="h-6 px-2 text-[10px] font-bold text-indigo-600 hover:bg-indigo-100"
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText((conn.credentials as any).feed_url)
+                                                            toast.success("Feed URL copiada")
+                                                        }}
+                                                    >
+                                                        COPIAR URL
+                                                    </Button>
+                                                </div>
+                                                <p className="text-[10px] font-mono text-indigo-800 break-all line-clamp-1 opacity-70">
+                                                    {(conn.credentials as any).feed_url}
+                                                </p>
+                                            </div>
+                                        )}
+
                                         <div className="flex gap-2">
                                             <Button
                                                 variant="outline"
@@ -120,15 +143,17 @@ export function PortalList({ initialConnections }: PortalListProps) {
                                                 {isDisconnecting === conn.id ? <Loader2 className="h-4 w-4 animate-spin text-red-500" /> : <Trash2 className="h-4 w-4 mr-2" />}
                                                 DESVINCULAR
                                             </Button>
-                                            <Button
-                                                className="flex-1 rounded-xl font-black text-xs h-11 bg-gray-900 text-white hover:bg-black"
-                                                asChild
-                                            >
-                                                <Link href={`/marketing/portales/config/${key}`}>
-                                                    <Settings className="h-4 w-4 mr-2" />
-                                                    CONFIGURAR
-                                                </Link>
-                                            </Button>
+                                            {key === 'mercadolibre' && (
+                                                <Button
+                                                    className="flex-1 rounded-xl font-black text-xs h-11 bg-gray-900 text-white hover:bg-black"
+                                                    asChild
+                                                >
+                                                    <Link href={`/marketing/portales/config/${key}`}>
+                                                        <Settings className="h-4 w-4 mr-2" />
+                                                        CONFIGURAR
+                                                    </Link>
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 ) : (
