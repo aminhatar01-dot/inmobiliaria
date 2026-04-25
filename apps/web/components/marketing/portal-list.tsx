@@ -95,7 +95,21 @@ export function PortalList({ initialConnections }: PortalListProps) {
                                     <p className="text-sm text-gray-500 font-medium mt-1">{meta.description}</p>
                                 </div>
 
-                                {conn ? (
+                                {key === 'mercadolibre' ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-100">
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            ¡App Maestra Conectada y Lista!
+                                        </div>
+                                        <Button
+                                            disabled
+                                            className={`w-full rounded-2xl font-black h-14 ${meta.color} ${meta.textColor} shadow-lg shadow-${key}-500/20 active:scale-95 transition-all opacity-80`}
+                                        >
+                                            <CheckCircle2 className="mr-2 h-5 w-5" />
+                                            NATIVO DE INMOCMS
+                                        </Button>
+                                    </div>
+                                ) : conn ? (
                                     <div className="space-y-4">
                                         <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between">
                                             <div className="overflow-hidden">
@@ -143,24 +157,13 @@ export function PortalList({ initialConnections }: PortalListProps) {
                                                 {isDisconnecting === conn.id ? <Loader2 className="h-4 w-4 animate-spin text-red-500" /> : <Trash2 className="h-4 w-4 mr-2" />}
                                                 DESVINCULAR
                                             </Button>
-                                            {key === 'mercadolibre' && (
-                                                <Button
-                                                    className="flex-1 rounded-xl font-black text-xs h-11 bg-gray-900 text-white hover:bg-black"
-                                                    asChild
-                                                >
-                                                    <Link href={`/marketing/portales/config/${key}`}>
-                                                        <Settings className="h-4 w-4 mr-2" />
-                                                        CONFIGURAR
-                                                    </Link>
-                                                </Button>
-                                            )}
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-3 text-sm font-medium text-gray-400 bg-gray-50/50 rounded-2xl p-6 border-2 border-dashed border-gray-100 italic">
-                                            <Lock className="h-4 w-4" />
-                                            Requiere autorización OAuth
+                                            <Globe className="h-4 w-4" />
+                                            Requiere vinculación para Feed
                                         </div>
                                         <Button
                                             onClick={() => {
