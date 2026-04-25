@@ -121,7 +121,8 @@ export async function connectPortal(portalName: string, email: string, config?: 
         // Use the origin passed from the client if available, otherwise fallback to env
         const baseUrl = origin || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
         const redirectUri = encodeURIComponent(`${baseUrl}/api/auth/callback/mercadolibre`)
-        const authUrl = `https://auth.mercadolibre.com.ar/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`
+        const stateStr = Math.random().toString(36).substring(7)
+        const authUrl = `https://auth.mercadolibre.com.ar/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${stateStr}`
         
         return { type: 'redirect', url: authUrl }
     }
@@ -153,6 +154,54 @@ export async function connectPortal(portalName: string, email: string, config?: 
 
     revalidatePath("/marketing/portales")
     return { type: 'success', data, feedUrl }
+}
+
+export async function connectPortalManualToken(portalName: string, email: string, accessToken: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("Debes iniciar sesión.")
+
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("tenant_id")
+        .eq("id", user.id)
+        .single()
+
+    if (!profile?.tenant_id) throw new Error("No tienes una inmobiliaria vinculada.")
+
+    // Only for Mercado Libre manual bypass
+    if (portalName !== "mercadolibre") throw new Error("Solo válido para Mercado Libre")
+
+    // Get current global config to keep client_id if present
+    const { data: existing } = await supabase
+        .from("portal_connections")
+        .select("credentials")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("portal_name", "mercadolibre")
+        .maybeSingle()
+
+    const creds = existing?.credentials as any || {}
+
+    const { error: upsertError } = await supabase
+        .from("portal_connections")
+        .upsert({
+            tenant_id: profile.tenant_id,
+            user_id: user.id,
+            portal_name: "mercadolibre",
+            account_email: email,
+            status: "connected",
+            credentials: {
+                ...creds,
+                access_token: accessToken,
+                connected_at: new Date().toISOString()
+            },
+            updated_at: new Date().toISOString()
+        }, { onConflict: "user_id,portal_name" })
+
+    if (upsertError) throw upsertError
+
+    revalidatePath("/marketing/portales")
+    return { success: true }
 }
 
 export async function disconnectPortal(connectionId: string) {

@@ -12,9 +12,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { connectPortal, getGlobalPortalConfig } from "@/app/actions/portals"
-import { Link2, Loader2, Mail, ExternalLink, Copy, Check, ChevronRight, Info, ShieldCheck, KeyRound } from "lucide-react"
-import { useEffect } from "react"
+import { connectPortal, getGlobalPortalConfig, connectPortalManualToken } from "@/app/actions/portals"
+import { Link2, Loader2, Mail, ExternalLink, Copy, Check, ChevronRight, Info, ShieldCheck, KeyRound, AlertTriangle } from "lucide-react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { PORTAL_LABELS } from "@inmocms/shared"
 import { useRouter } from "next/navigation"
@@ -41,6 +41,10 @@ export function ConnectPortalDialog({
     const [isCopied, setIsCopied] = useState(false)
     const [hasGlobalConfig, setHasGlobalConfig] = useState(true)
     const [isChecking, setIsChecking] = useState(true)
+    
+    // Manual token fallback
+    const [isManualMode, setIsManualMode] = useState(false)
+    const [manualToken, setManualToken] = useState("")
 
     useEffect(() => {
         if (open && portalName === 'mercadolibre') {
@@ -102,6 +106,20 @@ export function ConnectPortalDialog({
 
         setIsLoading(true)
         try {
+            if (isManualMode && portalName === 'mercadolibre') {
+                if (!manualToken) {
+                    toast.error("Ingresa el Access Token")
+                    return
+                }
+                await connectPortalManualToken(portalName, email, manualToken)
+                
+                // Simulate success payload
+                setFeedUrl("Conectado Manualmente con éxito")
+                setStep(2)
+                toast.success("Cuenta conectada manualmente")
+                return
+            }
+
             const configParams = !hasGlobalConfig ? { clientId, clientSecret } : undefined
             const origin = typeof window !== 'undefined' ? window.location.origin : undefined
             const result = await connectPortal(portalName, email, configParams, origin)
@@ -339,15 +357,17 @@ export function ConnectPortalDialog({
                                     <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-gray-400">
                                         Tu Correo en {PORTAL_LABELS[portalName as keyof typeof PORTAL_LABELS]}
                                     </Label>
-                                    {portalName === 'mercadolibre' && (
-                                        <button 
-                                            type="button" 
-                                            onClick={handleResetConfig}
-                                            className="text-[10px] font-black text-indigo-600 hover:underline"
-                                        >
-                                            EDITAR CONFIGURACIÓN TÉCNICA
-                                        </button>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        {portalName === 'mercadolibre' && (
+                                            <button 
+                                                type="button" 
+                                                onClick={handleResetConfig}
+                                                className="text-[10px] font-black text-indigo-600 hover:underline"
+                                            >
+                                                CONFIGURACIÓN TÉCNICA
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="relative">
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -361,27 +381,58 @@ export function ConnectPortalDialog({
                                         required
                                     />
                                 </div>
+                            </div>
+                            
+                            {isManualMode && portalName === 'mercadolibre' ? (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Label className="text-xs font-black uppercase tracking-widest text-orange-500 flex items-center gap-1">
+                                                <AlertTriangle className="h-4 w-4" /> Alternativa de Emergencia Activa
+                                            </Label>
+                                            <button type="button" onClick={() => setIsManualMode(false)} className="text-[10px] text-gray-400 hover:text-gray-900 font-bold underline">
+                                                Volver al modo normal
+                                            </button>
+                                        </div>
+                                        <Input
+                                            type="password"
+                                            placeholder="APP_USR-3084357364371106-..."
+                                            value={manualToken}
+                                            onChange={(e) => setManualToken(e.target.value)}
+                                            className="h-14 rounded-xl border-orange-200 bg-orange-50 focus:ring-orange-500 focus:border-orange-500 font-mono text-sm"
+                                        />
+                                        <p className="text-[10px] text-gray-500 font-medium">Ve al DevCenter de ML > Tus Aplicaciones > Credenciales y pega el Access Token.</p>
+                                    </div>
+                                </div>
+                            ) : (
                                 <div className="flex gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100 italic">
                                     <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                                    <p className="text-xs text-blue-800 font-medium leading-relaxed">
-                                        {portalName === 'mercadolibre' 
-                                            ? "Al continuar, serás redirigido a Mercado Libre para autorizar el acceso de forma segura."
-                                            : "Generaremos un enlace único XML que deberás proporcionar a tu portal para la sincronización."}
-                                    </p>
+                                    <div className="space-y-2 w-full">
+                                        <p className="text-xs text-blue-800 font-medium leading-relaxed">
+                                            {portalName === 'mercadolibre' 
+                                                ? "Serás redirigido a Mercado Libre para autorizar de forma segura."
+                                                : "Generaremos un enlace único XML automático."}
+                                        </p>
+                                        {portalName === 'mercadolibre' && (
+                                            <button type="button" onClick={() => setIsManualMode(true)} className="text-[9px] uppercase tracking-widest font-black text-rose-500 hover:text-rose-700 block w-full text-left pt-2 border-t border-blue-200/50 mt-2">
+                                                ¿Mercado Libre te da Error 500? Usa conexión alternativa
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="flex flex-col gap-4">
                                 <Button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-full h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/20 text-lg group"
+                                    className={`w-full h-16 text-white rounded-2xl font-black shadow-xl text-lg group ${isManualMode ? 'bg-orange-600 hover:bg-orange-700 shadow-orange-500/20' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20'}`}
                                 >
                                     {isLoading ? (
                                         <Loader2 className="h-6 w-6 animate-spin mr-2" />
                                     ) : (
                                         <>
-                                            {portalName === 'mercadolibre' ? 'IR A MERCADO LIBRE' : 'SIGUIENTE PASO'}
+                                            {isManualMode ? 'CONECTAR FORZOSAMENTE' : portalName === 'mercadolibre' ? 'IR A MERCADO LIBRE' : 'SIGUIENTE PASO'}
                                             <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
@@ -404,29 +455,35 @@ export function ConnectPortalDialog({
                                         <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center text-white">
                                             <Check className="h-5 w-5" />
                                         </div>
-                                        <h3 className="font-black text-lg">Enlace Generado</h3>
+                                        <h3 className="font-black text-lg">
+                                            {isManualMode ? '¡Cuenta Conectada!' : 'Enlace Generado'}
+                                        </h3>
                                     </div>
                                     <p className="text-sm font-medium opacity-80 leading-relaxed">
-                                        Copia el siguiente enlace y envíalo a tu asesor comercial de {PORTAL_LABELS[portalName as keyof typeof PORTAL_LABELS]} para completar la vinculación.
+                                        {isManualMode 
+                                            ? `Tu cuenta de ${PORTAL_LABELS[portalName as keyof typeof PORTAL_LABELS]} ha sido vinculada mediante Token exitosamente.` 
+                                            : `Copia el siguiente enlace y envíalo a tu asesor comercial de ${PORTAL_LABELS[portalName as keyof typeof PORTAL_LABELS]} para completar la vinculación.`}
                                     </p>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Tu URL de Integración XML</Label>
-                                    <div className="flex gap-2">
-                                        <div className="flex-1 bg-gray-900 text-green-400 p-4 rounded-2xl font-mono text-xs overflow-x-auto whitespace-nowrap self-center border border-gray-800">
-                                            {feedUrl}
+                                {!isManualMode && (
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Tu URL de Integración XML</Label>
+                                        <div className="flex gap-2">
+                                            <div className="flex-1 bg-gray-900 text-green-400 p-4 rounded-2xl font-mono text-xs overflow-x-auto whitespace-nowrap self-center border border-gray-800">
+                                                {feedUrl}
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={copyToClipboard}
+                                                className="h-12 w-12 rounded-2xl shrink-0 border-gray-100 hover:bg-gray-50 bg-white"
+                                            >
+                                                {isCopied ? <Check className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5 text-gray-500" />}
+                                            </Button>
                                         </div>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={copyToClipboard}
-                                            className="h-12 w-12 rounded-2xl shrink-0 border-gray-100 hover:bg-gray-50 bg-white"
-                                        >
-                                            {isCopied ? <Check className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5 text-gray-500" />}
-                                        </Button>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             <Button
