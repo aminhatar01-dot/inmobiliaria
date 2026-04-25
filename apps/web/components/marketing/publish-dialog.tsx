@@ -32,6 +32,8 @@ interface PublishDialogProps {
     onOpenChange: (open: boolean) => void
 }
 
+import { useRouter } from "next/navigation"
+
 export function PublishDialog({
     propertyId,
     propertyName,
@@ -40,11 +42,18 @@ export function PublishDialog({
     open,
     onOpenChange
 }: PublishDialogProps) {
+    const router = useRouter()
     const [isPublishing, setIsPublishing] = useState<string | null>(null)
 
-    const handlePublish = async (connectionId: string) => {
+    const handlePublish = async (connectionId: string, isNativeML: boolean = false) => {
         setIsPublishing(connectionId)
         try {
+            if (isNativeML) {
+                // In native ML mode we simulate the connection using a pseudo ID
+                await publishToPortal(propertyId, connectionId)
+                toast.success("¡Propiedad marcada como publicada!")
+                return
+            }
             await publishToPortal(propertyId, connectionId)
             toast.success("¡Propiedad publicada exitosamente!")
         } catch (error: any) {
@@ -53,6 +62,8 @@ export function PublishDialog({
             setIsPublishing(null)
         }
     }
+
+    const mlPub = existingPublications.find(p => p.portal_connection_id === 'native-ml-assistant')
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,8 +84,44 @@ export function PublishDialog({
 
                 <div className="p-8 space-y-6">
                     <div className="space-y-3">
-                        {connections.length > 0 ? (
-                            connections.map((conn) => {
+                        {/* Always show Mercado Libre purely native without needing connection */}
+                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-yellow-50 to-white rounded-3xl border border-yellow-200 group transition-all relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-yellow-400"></div>
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-2xl bg-yellow-400 shadow-sm flex items-center justify-center font-black text-gray-900">
+                                    ML
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-gray-900">Mercado Libre</h4>
+                                    <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-widest flex items-center gap-1">
+                                        <AlertCircle className="h-3 w-3" /> ASISTENTE MANUAL
+                                    </p>
+                                </div>
+                            </div>
+                            <div>
+                                {mlPub ? (
+                                    <Badge className="bg-green-100 text-green-600 border-none px-3 py-1 font-black text-[10px]">
+                                        PUBLICADA
+                                    </Badge>
+                                ) : (
+                                    <Button
+                                        onClick={async () => {
+                                            window.open('https://www.mercadolibre.com.ar/vender/inmuebles', '_blank')
+                                            toast.info("Copia los datos de tu propiedad y pégalos en Mercado Libre.")
+                                            handlePublish('native-ml-assistant', true)
+                                        }}
+                                        disabled={isPublishing === 'native-ml-assistant'}
+                                        className="bg-gray-900 hover:bg-black text-white border border-gray-800 rounded-xl font-black text-[10px] px-4 h-10 shadow-sm whitespace-nowrap"
+                                    >
+                                        {isPublishing === 'native-ml-assistant' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'PUBLICAR Y ABRIR'}
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Standard Connected Portals minus ML since it's now native */}
+                        {connections.length > 0 && connections.filter(c => c.portal_name !== 'mercadolibre').length > 0 ? (
+                            connections.filter(c => c.portal_name !== 'mercadolibre').map((conn) => {
                                 const pub = existingPublications.find(p => p.portal_connection_id === conn.id)
                                 const isLoading = isPublishing === conn.id
 
@@ -107,33 +154,36 @@ export function PublishDialog({
                                                 </div>
                                             ) : (
                                                 <Button
-                                                    onClick={async () => {
-                                                        if (conn.portal_name === 'mercadolibre') {
-                                                            window.open('https://www.mercadolibre.com.ar/vender/inmuebles', '_blank')
-                                                            toast.info("Copia los datos de tu propiedad y pégalos en Mercado Libre.")
-                                                        }
-                                                        handlePublish(conn.id)
-                                                    }}
+                                                    onClick={() => handlePublish(conn.id)}
                                                     disabled={!!isPublishing}
                                                     className="bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-xl font-black text-xs px-6 h-10 shadow-sm"
                                                 >
-                                                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : conn.portal_name === 'mercadolibre' ? 'PUBLICAR (ABRIR ML)' : "PUBLICAR"}
+                                                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "PUBLICAR"}
                                                 </Button>
                                             )}
                                         </div>
                                     </div>
                                 )
                             })
-                        ) : (
-                            <div className="text-center py-8 space-y-4">
+                        ) : null}
+
+                        {connections.length === 0 && (
+                            <div className="text-center py-8 space-y-4 border-t border-gray-100 pt-10 mt-6">
                                 <div className="h-16 w-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto text-gray-300">
                                     <Globe className="h-8 w-8" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-gray-900">No hay portales vinculados</p>
-                                    <p className="text-xs text-gray-500 max-w-[250px] mx-auto mt-1">Conecta tus cuentas en Marketing Studio para comenzar a publicar.</p>
+                                    <p className="text-sm font-bold text-gray-900">Configura más portales</p>
+                                    <p className="text-[11px] text-gray-500 max-w-[250px] mx-auto mt-1 leading-relaxed">Conecta cuentas como Zonaprop o Argenprop para sincronización automática XML.</p>
                                 </div>
-                                <Button variant="outline" className="rounded-xl font-black text-xs h-10 px-6">
+                                <Button 
+                                    variant="outline" 
+                                    className="rounded-xl font-black text-xs h-10 px-6"
+                                    onClick={() => {
+                                        onOpenChange(false)
+                                        router.push('/marketing/portales')
+                                    }}
+                                >
                                     IR A CONFIGURACIÓN
                                 </Button>
                             </div>
