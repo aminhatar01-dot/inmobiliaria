@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { connectPortal, getGlobalPortalConfig, connectPortalManualToken } from "@/app/actions/portals"
 import { Link2, Loader2, Mail, ExternalLink, Copy, Check, ChevronRight, Info, ShieldCheck, KeyRound } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { toast } from "sonner"
 import { PORTAL_LABELS } from "@inmocms/shared"
 import { useRouter } from "next/navigation"
@@ -228,7 +228,7 @@ export function ConnectPortalDialog({
                                             <Check className="h-5 w-5" />
                                         </div>
                                         <h3 className="font-black text-lg">
-                                            {isManualMode ? '¡Cuenta Conectada!' : 'Enlace Generado'}
+                                            {portalName === 'mercadolibre' ? '¡Cuenta Conectada!' : 'Enlace Generado'}
                                         </h3>
                                     </div>
                                     <p className="text-sm font-medium opacity-80 leading-relaxed">
