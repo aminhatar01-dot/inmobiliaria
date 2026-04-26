@@ -39,6 +39,8 @@ export async function getTasks(filters?: { assigned_to?: string; status?: string
     return data;
 }
 
+import { createGoogleCalendarEvent } from '@/lib/services/calendar';
+
 export async function createTask(data: Partial<Task>) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -62,6 +64,29 @@ export async function createTask(data: Partial<Task>) {
         console.error('Error creating task:', error);
         throw new Error(error.message);
     }
+
+    // -- INICIO SINCRONIZACIÓN GOOGLE CALENDAR --
+    if (task.due_date) {
+        const { data: settings } = await supabase
+            .from('tenant_communication_settings')
+            .select('google_access_token')
+            .eq('tenant_id', tenantId)
+            .maybeSingle();
+
+        if (settings?.google_access_token) {
+            // Un evento que dura 1 hora por defecto si no hay end_date
+            const startDate = new Date(task.due_date);
+            const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+            
+            await createGoogleCalendarEvent(settings.google_access_token, {
+                summary: `[InmoCMS] ${task.title}`,
+                description: task.description || 'Tarea generada desde InmoCMS',
+                start: { dateTime: startDate.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
+                end: { dateTime: endDate.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' }
+            });
+        }
+    }
+    // -- FIN SINCRONIZACIÓN GOOGLE CALENDAR --
 
     revalidatePath('/tasks');
     if (data.lead_id) revalidatePath(`/leads/${data.lead_id}`);

@@ -28,6 +28,8 @@ export async function getVisits(): Promise<any[]> {
     return data
 }
 
+import { createGoogleCalendarEvent } from '@/lib/services/calendar';
+
 export async function createVisit(formData: Partial<Visit>) {
     const supabase = await createClient()
     const tenantId = await getTenantId(supabase)
@@ -43,8 +45,8 @@ export async function createVisit(formData: Partial<Visit>) {
         }])
         .select(`
             *,
-            lead:leads(name),
-            property:properties(title)
+            lead:leads(name, email),
+            property:properties(title, address)
         `)
         .single()
 
@@ -52,6 +54,41 @@ export async function createVisit(formData: Partial<Visit>) {
         console.error("Error creating visit:", error)
         throw new Error(error.message)
     }
+
+    // -- INICIO SINCRONIZACIÓN GOOGLE CALENDAR --
+    if (data.scheduled_at) {
+        const { data: settings } = await supabase
+            .from('tenant_communication_settings')
+            .select('google_access_token')
+            .eq('tenant_id', tenantId)
+            .maybeSingle();
+
+        if (settings?.google_access_token) {
+            const startDate = new Date(data.scheduled_at);
+            const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hora por defecto
+            
+            const leadName = data.lead?.name ? ` con ${data.lead.name}` : '';
+            const propTitle = data.property?.title ? ` - ${data.property.title}` : '';
+            
+            const eventDesc = [
+                `Visita gestionada desde InmoCMS.`,
+                data.lead?.name ? `Cliente: ${data.lead.name}` : '',
+                data.lead?.email ? `Email: ${data.lead.email}` : '',
+                data.property?.title ? `Propiedad: ${data.property.title}` : '',
+                data.notes ? `\nNotas: ${data.notes}` : ''
+            ].filter(Boolean).join('\n');
+
+            await createGoogleCalendarEvent(settings.google_access_token, {
+                summary: `[InmoCMS] Visita${leadName}${propTitle}`,
+                description: eventDesc,
+                location: data.property?.address || undefined,
+                start: { dateTime: startDate.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
+                end: { dateTime: endDate.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
+                attendees: data.lead?.email ? [{ email: data.lead.email }] : undefined
+            });
+        }
+    }
+    // -- FIN SINCRONIZACIÓN GOOGLE CALENDAR --
 
     revalidatePath("/visitas")
     revalidatePath("/tareas") // Visitas might show up in agenda

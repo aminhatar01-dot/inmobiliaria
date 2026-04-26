@@ -83,7 +83,7 @@ export async function processAutomationRules(
                         phoneNumberId: settings.whatsapp_phone_id
                     }, recipientPhone, message);
                 } 
-                else if (actionType === 'email' && recipientEmail && (settings?.smtp_host || settings?.resend_api_key)) {
+                else if (actionType === 'email' && recipientEmail && (settings?.smtp_host || settings?.resend_api_key || settings?.google_access_token)) {
                     const html = buildReminderEmailHtml({
                         title: rule.name || 'Notificación automática',
                         greeting: `Hola ${vars.nombre}`,
@@ -96,7 +96,8 @@ export async function processAutomationRules(
                         pass: settings.smtp_pass || undefined,
                         fromName: settings.smtp_from_name || 'InmoCMS',
                         fromEmail: settings.smtp_from_email || 'no-reply@inmocms.com',
-                        resendApiKey: settings.resend_api_key || undefined
+                        resendApiKey: settings.resend_api_key || undefined,
+                        googleAccessToken: settings.google_access_token || undefined
                     }, recipientEmail, rule.name || 'Notificación', html);
                 }
                 else {

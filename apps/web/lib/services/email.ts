@@ -15,6 +15,7 @@ export interface SMTPConfig {
     fromName: string;
     fromEmail: string;
     resendApiKey?: string;
+    googleAccessToken?: string;
 }
 
 export interface EmailSendResult {
@@ -24,14 +25,7 @@ export interface EmailSendResult {
 }
 
 /**
- * Envía un correo electrónico usando la API de Resend o la configuración SMTP proporcionada.
- * 
- * @param config Configuración SMTP o Resend
- * @param to Dirección de correo del destinatario
- * @param subject Asunto del correo
- * @param htmlBody Cuerpo del correo en HTML
- * @param textBody Cuerpo del correo en texto plano (fallback)
- * @returns Resultado del envío
+ * Envía un correo electrónico usando la API de Google, Resend o la configuración SMTP proporcionada.
  */
 export async function sendEmail(
     config: SMTPConfig,
@@ -40,7 +34,47 @@ export async function sendEmail(
     htmlBody: string,
     textBody?: string
 ): Promise<EmailSendResult> {
-    // Si tiene Resend API Key configurada, priorizamos usar Resend (es más rápido y no requiere Nodemailer)
+    // Si tiene Google Access Token, lo usamos primero
+    if (config.googleAccessToken) {
+        try {
+            const rawMessage = [
+                `To: ${to}`,
+                `Subject: =?utf-8?B?${Buffer.from(subject).toString('base64')}?=`,
+                'Content-Type: text/html; charset=utf-8',
+                '',
+                htmlBody
+            ].join('\n');
+
+            const encodedMessage = Buffer.from(rawMessage).toString('base64url');
+
+            const response = await fetch('https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${config.googleAccessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    raw: encodedMessage
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Posible token expirado u otro error de Google
+                throw new Error(data.error?.message || `Google API Error: ${response.status}`);
+            }
+
+            console.log(`[EMAIL-GMAIL] ✅ Correo enviado a ${to}. ID: ${data.id}`);
+            return { success: true, messageId: data.id };
+        } catch (error: any) {
+            console.error('[EMAIL-GMAIL] Error sending email via Gmail API:', error);
+            // Fallback a siguientes métodos si falla? O fallar directamente.
+            return { success: false, error: `Error Gmail: ${error.message}` };
+        }
+    }
+
+    // Si tiene Resend API Key configurada, priorizamos usar Resend
     if (config.resendApiKey) {
         try {
             const response = await fetch('https://api.resend.com/emails', {
