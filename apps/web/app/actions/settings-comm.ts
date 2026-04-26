@@ -48,6 +48,8 @@ export async function updateCommunicationSettings(formData: FormData) {
         whatsapp_mode: formData.get("whatsapp_mode") as string || 'link',
         whatsapp_api_token: formData.get("whatsapp_api_token") as string || null,
         whatsapp_phone_id: formData.get("whatsapp_phone_id") as string || null,
+        evolution_api_url: formData.get("evolution_api_url") as string || null,
+        evolution_api_key: formData.get("evolution_api_key") as string || null,
         updated_at: new Date().toISOString()
     }
 

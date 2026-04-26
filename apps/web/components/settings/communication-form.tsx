@@ -24,7 +24,9 @@ const commSchema = z.object({
     resend_api_key: z.string().optional(),
     whatsapp_mode: z.enum(['link', 'api', 'webhook']),
     whatsapp_api_token: z.string().optional(),
-    whatsapp_phone_id: z.string().optional()
+    whatsapp_phone_id: z.string().optional(),
+    evolution_api_url: z.string().optional(),
+    evolution_api_key: z.string().optional()
 })
 
 type CommFormValues = z.infer<typeof commSchema>
@@ -47,9 +49,11 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
             smtp_from_name: initialData?.smtp_from_name || "",
             smtp_from_email: initialData?.smtp_from_email || "",
             resend_api_key: initialData?.resend_api_key || "",
-            whatsapp_mode: (initialData?.whatsapp_mode as 'link' | 'api') || "link",
+            whatsapp_mode: (initialData?.whatsapp_mode as 'link' | 'api' | 'webhook') || "link",
             whatsapp_api_token: initialData?.whatsapp_api_token || "",
-            whatsapp_phone_id: initialData?.whatsapp_phone_id || ""
+            whatsapp_phone_id: initialData?.whatsapp_phone_id || "",
+            evolution_api_url: initialData?.evolution_api_url || "",
+            evolution_api_key: initialData?.evolution_api_key || ""
         }
     })
 
@@ -312,17 +316,20 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                         <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                                         <div className="space-y-2">
                                             <p className="text-xs font-bold text-blue-900 leading-relaxed">
-                                                Configuración segura en Supabase
+                                                Configuración de la API
                                             </p>
                                             <p className="text-xs font-medium text-blue-800 leading-relaxed">
-                                                Las credenciales (URL y API Key) de esta API externa se configuran directamente como variables de entorno seguras en la base de datos para no exponerlas en la vista.
+                                                Ingresa la URL completa hacia donde enviaremos la solicitud POST (ej. tu instancia de Evolution API) y la clave secreta o token.
                                             </p>
-                                            <p className="text-xs font-bold text-blue-900 mt-2">Ejecuta esto en el Editor SQL de Supabase:</p>
-                                            <code className="block bg-white/50 p-2 rounded text-[10px] text-blue-800 font-mono select-all">
-                                                ALTER DATABASE postgres SET app.evolution_api_url = 'https://tu-api.com/message/send';<br/>
-                                                ALTER DATABASE postgres SET app.evolution_api_key = 'tu_api_key';
-                                            </code>
                                         </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-black uppercase tracking-widest text-gray-400">URL del Webhook (Evolution API)</Label>
+                                        <Input {...form.register("evolution_api_url")} placeholder="https://tu-api.com/message/sendText/instancia" className="rounded-xl border-gray-100 bg-white/50 h-11 text-xs font-mono" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-black uppercase tracking-widest text-gray-400">API Key / Token de Autorización</Label>
+                                        <Input {...form.register("evolution_api_key")} type="password" placeholder="••••••••••••" className="rounded-xl border-gray-100 bg-white/50 h-11 text-xs font-mono" />
                                     </div>
                                 </div>
                             )}
