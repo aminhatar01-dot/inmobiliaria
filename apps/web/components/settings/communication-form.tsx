@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Mail, MessageCircle, Server, Key, Send, CheckCircle2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
-import { updateCommunicationSettings, testSMTP, testWhatsApp } from "@/app/actions/settings-comm"
+import { updateCommunicationSettings, testSMTP, testWhatsApp, testResend } from "@/app/actions/settings-comm"
 
 const commSchema = z.object({
     smtp_host: z.string().optional(),
@@ -73,6 +73,18 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
         setTesting(true)
         try {
             const res = await testSMTP()
+            toast.success(res.message)
+        } catch (error: any) {
+            toast.error(error.message)
+        } finally {
+            setTesting(false)
+        }
+    }
+
+    async function handleTestResend() {
+        setTesting(true)
+        try {
+            const res = await testResend()
             toast.success(res.message)
         } catch (error: any) {
             toast.error(error.message)
@@ -163,6 +175,17 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                 <div className="space-y-2">
                                     <Label className="text-xs font-black uppercase tracking-widest text-gray-400">API Key de Resend</Label>
                                     <Input {...form.register("resend_api_key")} placeholder="re_123..." className="rounded-xl border-gray-100 bg-white/50 h-11 text-xs font-mono" />
+                                </div>
+                                <div className="pt-4 flex gap-3">
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        onClick={handleTestResend}
+                                        disabled={testing}
+                                        className="rounded-xl border-2 font-bold h-11 flex-1 border-orange-100 text-orange-600 hover:bg-orange-50"
+                                    >
+                                        {testing ? "Probando..." : "Probar Conexión Resend"}
+                                    </Button>
                                 </div>
                             </TabsContent>
                         </Tabs>

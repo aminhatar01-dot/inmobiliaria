@@ -87,6 +87,39 @@ export async function testSMTP() {
     }
 }
 
+export async function testResend() {
+    const settings = await getCommunicationSettings()
+    if (!settings || !settings.resend_api_key) throw new Error("API Key de Resend no configurada")
+    if (!settings.smtp_from_email) throw new Error("Debes configurar el 'Email Remitente' para enviar el mensaje de prueba")
+
+    try {
+        const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${settings.resend_api_key}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                from: `${settings.smtp_from_name || 'InmoCMS'} <${settings.smtp_from_email}>`,
+                to: [settings.smtp_from_email], // Envía una copia al propio remitente
+                subject: 'InmoCMS: Prueba de conexión Resend exitosa ✅',
+                html: '<strong>¡Felicitaciones!</strong> Tu conexión con Resend está funcionando correctamente.'
+            })
+        });
+
+        const data = await response.json()
+
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP ${response.status}`)
+        }
+
+        return { success: true, message: "Conexión Resend exitosa y correo de prueba enviado" }
+    } catch (error: any) {
+        console.error("Resend Test failed:", error)
+        throw new Error(`Error de conexión Resend: ${error.message}`)
+    }
+}
+
 export async function testWhatsApp() {
     const settings = await getCommunicationSettings()
     if (!settings || !settings.whatsapp_api_token || !settings.whatsapp_phone_id) {
