@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Mail, MessageCircle, Server, Key, Send, CheckCircle2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import { updateCommunicationSettings, testSMTP, testWhatsApp, testResend } from "@/app/actions/settings-comm"
+import { createWhatsAppInstance, getWhatsAppQR, checkWhatsAppConnection, disconnectWhatsApp } from "@/app/actions/whatsapp-evolution"
 
 const commSchema = z.object({
     smtp_host: z.string().optional(),
@@ -38,6 +39,12 @@ interface CommunicationFormProps {
 export function CommunicationForm({ initialData }: CommunicationFormProps) {
     const [loading, setLoading] = useState(false)
     const [testing, setTesting] = useState(false)
+    const [qrCode, setQrCode] = useState<string | null>(null)
+    const [isConnecting, setIsConnecting] = useState(false)
+    const [waStatus, setWaStatus] = useState<string | null>(initialData?.evolution_api_url ? 'connected' : null)
+    
+    // Asumimos que initialData.tenant_id viene del backend
+    const tenantId = initialData?.tenant_id || "default_tenant"
 
     const form = useForm<CommFormValues>({
         resolver: zodResolver(commSchema),
@@ -133,6 +140,65 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
             toast.error(error.message)
         } finally {
             setTesting(false)
+        }
+    }
+
+    async function handleConnectWhatsApp() {
+        setIsConnecting(true)
+        setQrCode(null)
+        try {
+            toast.info("Generando código QR, por favor espera...")
+            const createRes = await createWhatsAppInstance(tenantId)
+            if (!createRes.success) throw new Error(createRes.error)
+            
+            // Pausa breve para que Evolution API inicie el bailey y genere el QR
+            await new Promise(r => setTimeout(r, 2000))
+            
+            const qrRes = await getWhatsAppQR(tenantId)
+            if (qrRes.success && qrRes.base64) {
+                setQrCode(qrRes.base64)
+                setWaStatus('pending')
+                toast.success("QR Generado. Escanéalo con tu WhatsApp.")
+                
+                // Empezar a verificar si ya escaneó
+                const checkInterval = setInterval(async () => {
+                    const statusRes = await checkWhatsAppConnection(tenantId)
+                    if (statusRes.success && statusRes.state === 'open') {
+                        setWaStatus('connected')
+                        setQrCode(null)
+                        clearInterval(checkInterval)
+                        toast.success("¡WhatsApp Conectado exitosamente!")
+                        form.setValue('whatsapp_mode', 'webhook')
+                    }
+                }, 5000)
+                
+                // Limpiar intervalo después de 2 minutos (timeout)
+                setTimeout(() => clearInterval(checkInterval), 120000)
+            } else {
+                throw new Error(qrRes.error || "No se pudo obtener el QR")
+            }
+        } catch (error: any) {
+            toast.error(error.message)
+            setWaStatus(null)
+        } finally {
+            setIsConnecting(false)
+        }
+    }
+
+    async function handleDisconnectWhatsApp() {
+        if (!confirm("¿Seguro que deseas desconectar tu cuenta de WhatsApp?")) return;
+        setIsConnecting(true)
+        try {
+            await disconnectWhatsApp(tenantId)
+            setWaStatus(null)
+            setQrCode(null)
+            form.setValue('evolution_api_url', '')
+            form.setValue('evolution_api_key', '')
+            toast.success("WhatsApp desconectado")
+        } catch (error: any) {
+            toast.error("Error al desconectar")
+        } finally {
+            setIsConnecting(false)
         }
     }
 
@@ -311,26 +377,73 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                             </div>
 
                             {form.watch("whatsapp_mode") === 'webhook' && (
-                                <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
-                                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex gap-3 mb-4">
-                                        <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                                        <div className="space-y-2">
-                                            <p className="text-xs font-bold text-blue-900 leading-relaxed">
-                                                Configuración de la API
-                                            </p>
-                                            <p className="text-xs font-medium text-blue-800 leading-relaxed">
-                                                Ingresa la URL completa hacia donde enviaremos la solicitud POST (ej. tu instancia de Evolution API) y la clave secreta o token.
-                                            </p>
-                                        </div>
+                                <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
+                                    <div className="bg-blue-50 border border-blue-100 p-6 rounded-3xl flex flex-col items-center justify-center text-center gap-4">
+                                        
+                                        {!waStatus && !qrCode && (
+                                            <>
+                                                <div className="bg-blue-100 p-4 rounded-full">
+                                                    <MessageCircle className="h-8 w-8 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-sm font-black text-blue-900 mb-1">WhatsApp no conectado</h4>
+                                                    <p className="text-xs font-medium text-blue-800/80">
+                                                        Vincula tu WhatsApp escaneando un código QR. Tus mensajes automáticos saldrán directamente desde tu propio número.
+                                                    </p>
+                                                </div>
+                                                <Button 
+                                                    type="button" 
+                                                    onClick={handleConnectWhatsApp}
+                                                    disabled={isConnecting}
+                                                    className="rounded-xl mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 px-8"
+                                                >
+                                                    {isConnecting ? "Conectando..." : "Vincular mi WhatsApp"}
+                                                </Button>
+                                            </>
+                                        )}
+
+                                        {qrCode && (
+                                            <div className="flex flex-col items-center space-y-4">
+                                                <div className="bg-white p-4 rounded-2xl shadow-sm border border-blue-100">
+                                                    <img src={qrCode} alt="WhatsApp QR Code" className="w-48 h-48" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-sm font-black text-blue-900 mb-1">Escanea el Código QR</h4>
+                                                    <p className="text-xs font-medium text-blue-800/80 max-w-xs">
+                                                        Abre WhatsApp en tu teléfono, ve a Dispositivos Vinculados y apunta tu cámara a este código.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {waStatus === 'connected' && (
+                                            <>
+                                                <div className="bg-green-100 p-4 rounded-full">
+                                                    <CheckCircle2 className="h-8 w-8 text-green-600" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-sm font-black text-green-900 mb-1">¡WhatsApp Conectado!</h4>
+                                                    <p className="text-xs font-medium text-green-800/80">
+                                                        Tu cuenta está vinculada y lista para enviar mensajes automáticos.
+                                                    </p>
+                                                </div>
+                                                <Button 
+                                                    type="button" 
+                                                    onClick={handleDisconnectWhatsApp}
+                                                    variant="outline"
+                                                    disabled={isConnecting}
+                                                    className="rounded-xl mt-2 border-red-200 text-red-600 hover:bg-red-50 font-bold h-11 px-8"
+                                                >
+                                                    Desconectar WhatsApp
+                                                </Button>
+                                            </>
+                                        )}
+
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-black uppercase tracking-widest text-gray-400">URL del Webhook (Evolution API)</Label>
-                                        <Input {...form.register("evolution_api_url")} placeholder="https://tu-api.com/message/sendText/instancia" className="rounded-xl border-gray-100 bg-white/50 h-11 text-xs font-mono" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-black uppercase tracking-widest text-gray-400">API Key / Token de Autorización</Label>
-                                        <Input {...form.register("evolution_api_key")} type="password" placeholder="••••••••••••" className="rounded-xl border-gray-100 bg-white/50 h-11 text-xs font-mono" />
-                                    </div>
+                                    
+                                    {/* Mantenemos los inputs ocultos para que React Hook Form los envíe al backend cuando se guarde, aunque el Server Action ya los guardó en la DB */}
+                                    <input type="hidden" {...form.register("evolution_api_url")} />
+                                    <input type="hidden" {...form.register("evolution_api_key")} />
                                 </div>
                             )}
 
