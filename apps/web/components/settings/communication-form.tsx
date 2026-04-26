@@ -73,7 +73,11 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
         setTesting(true)
         try {
             const res = await testSMTP()
-            toast.success(res.message)
+            if (res.success) {
+                toast.success(res.message)
+            } else {
+                toast.error(res.error)
+            }
         } catch (error: any) {
             toast.error(error.message)
         } finally {
@@ -85,7 +89,11 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
         setTesting(true)
         try {
             const res = await testResend()
-            toast.success(res.message)
+            if (res.success) {
+                toast.success(res.message)
+            } else {
+                toast.error(res.error)
+            }
         } catch (error: any) {
             toast.error(error.message)
         } finally {
@@ -97,7 +105,11 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
         setTesting(true)
         try {
             const res = await testWhatsApp()
-            toast.success(res.message)
+            if (res.success) {
+                toast.success(res.message)
+            } else {
+                toast.error(res.error)
+            }
         } catch (error: any) {
             toast.error(error.message)
         } finally {
@@ -251,6 +263,21 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
 
                             {form.watch("whatsapp_mode") === 'api' && (
                                 <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+                                    <div className="bg-green-50 border border-green-100 p-4 rounded-2xl flex gap-3 mb-4">
+                                        <AlertCircle className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold text-green-900 leading-relaxed">
+                                                ¿Cómo obtener estos datos?
+                                            </p>
+                                            <ol className="text-xs font-medium text-green-800 list-decimal list-inside space-y-1">
+                                                <li>Ingresa a <a href="https://developers.facebook.com/apps/" target="_blank" className="font-black underline text-green-700">Meta for Developers</a>.</li>
+                                                <li>Crea una app tipo "Empresa" y añade "WhatsApp".</li>
+                                                <li>Ve a <strong>WhatsApp {'>'} Configuración de la API</strong>.</li>
+                                                <li>Copia el <strong>Token de acceso temporal</strong> y el <strong>Identificador del número de teléfono</strong>.</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
                                         <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Token de Acceso Temporal/Permanente</Label>
                                         <Input {...form.register("whatsapp_api_token")} placeholder="EAA..." className="rounded-xl border-gray-100 bg-white/50 h-11 text-xs font-mono" />

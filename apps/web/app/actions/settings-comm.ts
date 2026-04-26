@@ -66,7 +66,7 @@ export async function updateCommunicationSettings(formData: FormData) {
 
 export async function testSMTP() {
     const settings = await getCommunicationSettings()
-    if (!settings || !settings.smtp_host) throw new Error("Configuración SMTP no encontrada")
+    if (!settings || !settings.smtp_host) return { success: false, error: "Configuración SMTP no encontrada" }
 
     const transporter = nodemailer.createTransport({
         host: settings.smtp_host,
@@ -83,14 +83,14 @@ export async function testSMTP() {
         return { success: true, message: "Conexión SMTP exitosa" }
     } catch (error: any) {
         console.error("SMTP Test failed:", error)
-        throw new Error(`Error de conexión SMTP: ${error.message}`)
+        return { success: false, error: `Error de conexión SMTP: ${error.message}` }
     }
 }
 
 export async function testResend() {
     const settings = await getCommunicationSettings()
-    if (!settings || !settings.resend_api_key) throw new Error("API Key de Resend no configurada")
-    if (!settings.smtp_from_email) throw new Error("Debes configurar el 'Email Remitente' para enviar el mensaje de prueba")
+    if (!settings || !settings.resend_api_key) return { success: false, error: "API Key de Resend no configurada" }
+    if (!settings.smtp_from_email) return { success: false, error: "Debes configurar el 'Email Remitente' para enviar el mensaje de prueba" }
 
     try {
         const response = await fetch('https://api.resend.com/emails', {
@@ -110,20 +110,20 @@ export async function testResend() {
         const data = await response.json()
 
         if (!response.ok) {
-            throw new Error(data.message || `HTTP ${response.status}`)
+            return { success: false, error: data.message || `HTTP ${response.status}` }
         }
 
         return { success: true, message: "Conexión Resend exitosa y correo de prueba enviado" }
     } catch (error: any) {
         console.error("Resend Test failed:", error)
-        throw new Error(`Error de conexión Resend: ${error.message}`)
+        return { success: false, error: `Error de conexión Resend: ${error.message}` }
     }
 }
 
 export async function testWhatsApp() {
     const settings = await getCommunicationSettings()
     if (!settings || !settings.whatsapp_api_token || !settings.whatsapp_phone_id) {
-        throw new Error("Configuración de WhatsApp API incompleta")
+        return { success: false, error: "Configuración de WhatsApp API incompleta" }
     }
 
     const { sendWhatsAppMessage } = await import("@/lib/services/whatsapp")
@@ -136,7 +136,7 @@ export async function testWhatsApp() {
     }, "5491112345678", "InmoCMS: Prueba de conexión exitosa ✅")
 
     if (!result.success) {
-        throw new Error(result.error || "Error al enviar mensaje de prueba")
+        return { success: false, error: result.error || "Error al enviar mensaje de prueba" }
     }
 
     return { success: true, message: "Conexión de WhatsApp Cloud API exitosa" }
