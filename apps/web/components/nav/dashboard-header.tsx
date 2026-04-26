@@ -87,24 +87,56 @@ export function DashboardHeader({ user }: { user?: { email?: string, user_metada
                         </div>
                         <div className="max-h-[400px] overflow-y-auto">
                             {notifications.length > 0 ? (
-                                notifications.map((n) => (
-                                    <div 
-                                        key={n.id} 
-                                        className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!n.read ? 'bg-blue-50/30' : ''}`}
-                                        onClick={() => handleMarkAsRead(n.id)}
-                                    >
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-bold text-gray-800">{n.title}</span>
-                                                {!n.read && <span className="h-2 w-2 rounded-full bg-blue-500"></span>}
+                                notifications.map((n) => {
+                                    let displayMessage = n.message;
+                                    let actionUrl = null;
+                                    try {
+                                        const parsed = JSON.parse(n.message);
+                                        if (parsed && typeof parsed === 'object' && parsed.text) {
+                                            displayMessage = parsed.text;
+                                            actionUrl = parsed.url;
+                                        }
+                                    } catch(e) {
+                                        // Es texto plano normal
+                                    }
+
+                                    return (
+                                        <div 
+                                            key={n.id} 
+                                            className={`p-4 border-b border-gray-50 transition-colors ${!n.read ? 'bg-blue-50/30' : 'hover:bg-gray-50'}`}
+                                        >
+                                            <div className="flex flex-col gap-1">
+                                                <div 
+                                                    className="flex items-center justify-between cursor-pointer"
+                                                    onClick={() => handleMarkAsRead(n.id)}
+                                                >
+                                                    <span className="text-xs font-bold text-gray-800">{n.title}</span>
+                                                    {!n.read && <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0"></span>}
+                                                </div>
+                                                <span 
+                                                    className="text-[11px] text-gray-600 leading-tight cursor-pointer"
+                                                    onClick={() => handleMarkAsRead(n.id)}
+                                                >
+                                                    {displayMessage}
+                                                </span>
+                                                {actionUrl && (
+                                                    <a 
+                                                        href={actionUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="mt-2 inline-flex items-center justify-center rounded-lg bg-green-500 px-3 py-1.5 text-[10px] font-bold text-white transition-colors hover:bg-green-600 w-fit"
+                                                        onClick={() => handleMarkAsRead(n.id)}
+                                                    >
+                                                        Enviar WhatsApp
+                                                    </a>
+                                                )}
+                                                <span className="text-[9px] text-gray-400 mt-1">
+                                                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: es })}
+                                                </span>
                                             </div>
-                                            <span className="text-[11px] text-gray-600 leading-tight">{n.message}</span>
-                                            <span className="text-[9px] text-gray-400 mt-1">
-                                                {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: es })}
-                                            </span>
                                         </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             ) : (
                                 <div className="p-8 flex flex-col items-center justify-center text-center space-y-3">
                                     <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center text-green-500">

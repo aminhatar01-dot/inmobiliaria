@@ -101,11 +101,22 @@ export async function processAutomationRules(
                 }
                 else {
                     // Fallback a notificación interna si no hay canales directos o modo es 'link'
+                    let notificationMessage = message;
+                    
+                    if (actionType === 'whatsapp' && recipientPhone) {
+                        const cleanPhone = recipientPhone.replace(/\D/g, '');
+                        const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+                        notificationMessage = JSON.stringify({
+                            text: message,
+                            url: waUrl
+                        });
+                    }
+
                     await supabase.from('notifications').insert({
                         tenant_id: tenantId,
                         user_id: context.agent?.id || recipientProfile.id,
-                        title: rule.name,
-                        message: message,
+                        title: rule.name || (actionType === 'whatsapp' ? 'Mensaje de WhatsApp pendiente' : 'Notificación'),
+                        message: notificationMessage,
                         type: 'automation'
                     });
                 }

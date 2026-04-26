@@ -64,17 +64,21 @@ export async function updateCommunicationSettings(formData: FormData) {
     return { success: true }
 }
 
-export async function testSMTP() {
-    const settings = await getCommunicationSettings()
-    if (!settings || !settings.smtp_host) return { success: false, error: "Configuración SMTP no encontrada" }
+export async function testSMTP(formData: FormData) {
+    const host = formData.get("smtp_host") as string;
+    const port = parseInt(formData.get("smtp_port") as string) || 587;
+    const user = formData.get("smtp_user") as string;
+    const pass = formData.get("smtp_pass") as string;
+
+    if (!host) return { success: false, error: "Debes ingresar el Servidor (Host) antes de probar" }
 
     const transporter = nodemailer.createTransport({
-        host: settings.smtp_host,
-        port: settings.smtp_port,
-        secure: settings.smtp_port === 465,
+        host: host,
+        port: port,
+        secure: port === 465,
         auth: {
-            user: settings.smtp_user,
-            pass: settings.smtp_pass
+            user: user,
+            pass: pass
         }
     })
 
@@ -92,21 +96,24 @@ export async function testSMTP() {
     }
 }
 
-export async function testResend() {
-    const settings = await getCommunicationSettings()
-    if (!settings || !settings.resend_api_key) return { success: false, error: "API Key de Resend no configurada" }
-    if (!settings.smtp_from_email) return { success: false, error: "Debes configurar el 'Email Remitente' para enviar el mensaje de prueba" }
+export async function testResend(formData: FormData) {
+    const apiKey = formData.get("resend_api_key") as string;
+    const fromEmail = formData.get("smtp_from_email") as string;
+    const fromName = formData.get("smtp_from_name") as string;
+
+    if (!apiKey) return { success: false, error: "Debes ingresar la API Key de Resend antes de probar" }
+    if (!fromEmail) return { success: false, error: "Debes configurar el 'Email Remitente' para enviar el mensaje de prueba" }
 
     try {
         const response = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${settings.resend_api_key}`,
+                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                from: `${settings.smtp_from_name || 'InmoCMS'} <${settings.smtp_from_email}>`,
-                to: [settings.smtp_from_email], // Envía una copia al propio remitente
+                from: `${fromName || 'InmoCMS'} <${fromEmail}>`,
+                to: [fromEmail], // Envía una copia al propio remitente
                 subject: 'InmoCMS: Prueba de conexión Resend exitosa ✅',
                 html: '<strong>¡Felicitaciones!</strong> Tu conexión con Resend está funcionando correctamente.'
             })
@@ -134,18 +141,20 @@ export async function testResend() {
     }
 }
 
-export async function testWhatsApp() {
-    const settings = await getCommunicationSettings()
-    if (!settings || !settings.whatsapp_api_token || !settings.whatsapp_phone_id) {
-        return { success: false, error: "Configuración de WhatsApp API incompleta" }
+export async function testWhatsApp(formData: FormData) {
+    const apiToken = formData.get("whatsapp_api_token") as string;
+    const phoneId = formData.get("whatsapp_phone_id") as string;
+
+    if (!apiToken || !phoneId) {
+        return { success: false, error: "Debes ingresar el Token de Acceso y el ID de Teléfono antes de probar" }
     }
 
     const { sendWhatsAppMessage } = await import("@/lib/services/whatsapp")
     
     // Enviar un mensaje de prueba al propio número o un número genérico
     const result = await sendWhatsAppMessage({
-        apiToken: settings.whatsapp_api_token,
-        phoneNumberId: settings.whatsapp_phone_id
+        apiToken: apiToken,
+        phoneNumberId: phoneId
     }, "5491112345678", "InmoCMS: Prueba de conexión exitosa ✅")
 
     if (!result.success) {

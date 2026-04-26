@@ -72,7 +72,12 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
     async function handleTestSMTP() {
         setTesting(true)
         try {
-            const res = await testSMTP()
+            const formData = new FormData()
+            const values = form.getValues()
+            Object.entries(values).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) formData.append(key, value.toString())
+            })
+            const res = await testSMTP(formData)
             if (res.success) {
                 toast.success(res.message)
             } else {
@@ -88,7 +93,12 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
     async function handleTestResend() {
         setTesting(true)
         try {
-            const res = await testResend()
+            const formData = new FormData()
+            const values = form.getValues()
+            Object.entries(values).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) formData.append(key, value.toString())
+            })
+            const res = await testResend(formData)
             if (res.success) {
                 toast.success(res.message)
             } else {
@@ -104,7 +114,12 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
     async function handleTestWhatsApp() {
         setTesting(true)
         try {
-            const res = await testWhatsApp()
+            const formData = new FormData()
+            const values = form.getValues()
+            Object.entries(values).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) formData.append(key, value.toString())
+            })
+            const res = await testWhatsApp(formData)
             if (res.success) {
                 toast.success(res.message)
             } else {
