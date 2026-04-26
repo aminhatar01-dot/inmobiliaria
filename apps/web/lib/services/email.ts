@@ -8,12 +8,13 @@
 import nodemailer from 'nodemailer';
 
 export interface SMTPConfig {
-    host: string;
-    port: number;
-    user: string;
-    pass: string;
+    host?: string;
+    port?: number;
+    user?: string;
+    pass?: string;
     fromName: string;
     fromEmail: string;
+    resendApiKey?: string;
 }
 
 export interface EmailSendResult {
@@ -23,9 +24,9 @@ export interface EmailSendResult {
 }
 
 /**
- * Envía un correo electrónico usando la configuración SMTP proporcionada.
+ * Envía un correo electrónico usando la API de Resend o la configuración SMTP proporcionada.
  * 
- * @param config Configuración SMTP
+ * @param config Configuración SMTP o Resend
  * @param to Dirección de correo del destinatario
  * @param subject Asunto del correo
  * @param htmlBody Cuerpo del correo en HTML
@@ -39,10 +40,43 @@ export async function sendEmail(
     htmlBody: string,
     textBody?: string
 ): Promise<EmailSendResult> {
+    // Si tiene Resend API Key configurada, priorizamos usar Resend (es más rápido y no requiere Nodemailer)
+    if (config.resendApiKey) {
+        try {
+            const response = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${config.resendApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    from: `${config.fromName || 'InmoCMS'} <${config.fromEmail}>`,
+                    to: [to],
+                    subject,
+                    html: htmlBody,
+                    text: textBody || htmlBody.replace(/<[^>]*>/g, '')
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP ${response.status}`);
+            }
+
+            console.log(`[EMAIL-RESEND] ✅ Correo enviado a ${to}. ID: ${data.id}`);
+            return { success: true, messageId: data.id };
+        } catch (error: any) {
+            console.error('[EMAIL-RESEND] Error sending email via Resend:', error);
+            return { success: false, error: `Error Resend: ${error.message}` };
+        }
+    }
+
+    // Si no tiene Resend, usamos SMTP tradicional con Nodemailer
     if (!config.host || !config.user || !config.pass) {
         return {
             success: false,
-            error: 'Configuración SMTP incompleta. Configura el servidor SMTP en Ajustes → Comunicaciones.'
+            error: 'Configuración de correo incompleta. Configura Resend o SMTP en Ajustes.'
         };
     }
 
@@ -65,14 +99,14 @@ export async function sendEmail(
             html: htmlBody,
         });
 
-        console.log(`[EMAIL] ✅ Correo enviado a ${to}. ID: ${info.messageId}`);
+        console.log(`[EMAIL-SMTP] ✅ Correo enviado a ${to}. ID: ${info.messageId}`);
 
         return { success: true, messageId: info.messageId };
     } catch (error: any) {
-        console.error('[EMAIL] Error sending email:', error);
+        console.error('[EMAIL-SMTP] Error sending email:', error);
         return {
             success: false,
-            error: `Error al enviar correo: ${error.message}`
+            error: `Error al enviar correo SMTP: ${error.message}`
         };
     }
 }

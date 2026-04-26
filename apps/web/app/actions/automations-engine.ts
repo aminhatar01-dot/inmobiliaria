@@ -83,19 +83,20 @@ export async function processAutomationRules(
                         phoneNumberId: settings.whatsapp_phone_id
                     }, recipientPhone, message);
                 } 
-                else if (actionType === 'email' && recipientEmail && settings?.smtp_host) {
+                else if (actionType === 'email' && recipientEmail && (settings?.smtp_host || settings?.resend_api_key)) {
                     const html = buildReminderEmailHtml({
                         title: rule.name || 'Notificación automática',
                         greeting: `Hola ${vars.nombre}`,
                         body: message
                     });
                     await sendEmail({
-                        host: settings.smtp_host,
-                        port: settings.smtp_port,
-                        user: settings.smtp_user,
-                        pass: settings.smtp_pass,
-                        fromName: settings.smtp_from_name,
-                        fromEmail: settings.smtp_from_email
+                        host: settings.smtp_host || undefined,
+                        port: settings.smtp_port || undefined,
+                        user: settings.smtp_user || undefined,
+                        pass: settings.smtp_pass || undefined,
+                        fromName: settings.smtp_from_name || 'InmoCMS',
+                        fromEmail: settings.smtp_from_email || 'no-reply@inmocms.com',
+                        resendApiKey: settings.resend_api_key || undefined
                     }, recipientEmail, rule.name || 'Notificación', html);
                 }
                 else {
