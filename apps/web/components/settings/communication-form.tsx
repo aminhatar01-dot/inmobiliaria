@@ -12,17 +12,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Mail, MessageCircle, Server, Key, Send, CheckCircle2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
-import { updateCommunicationSettings, testSMTP } from "@/app/actions/settings-comm"
+import { updateCommunicationSettings, testSMTP, testWhatsApp } from "@/app/actions/settings-comm"
 
 const commSchema = z.object({
     smtp_host: z.string().optional(),
     smtp_port: z.string().optional(),
-    smtp_user: z.string().email("Email inválido").optional().or(z.literal('')),
+    smtp_user: z.string().optional().or(z.literal('')),
     smtp_pass: z.string().optional(),
     smtp_from_name: z.string().optional(),
-    smtp_from_email: z.string().email("Email inválido").optional().or(z.literal('')),
+    smtp_from_email: z.string().optional().or(z.literal('')),
     resend_api_key: z.string().optional(),
-    whatsapp_mode: z.enum(['link', 'api'])
+    whatsapp_mode: z.enum(['link', 'api']),
+    whatsapp_api_token: z.string().optional(),
+    whatsapp_phone_id: z.string().optional()
 })
 
 type CommFormValues = z.infer<typeof commSchema>
@@ -45,7 +47,9 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
             smtp_from_name: initialData?.smtp_from_name || "",
             smtp_from_email: initialData?.smtp_from_email || "",
             resend_api_key: initialData?.resend_api_key || "",
-            whatsapp_mode: (initialData?.whatsapp_mode as 'link' | 'api') || "link"
+            whatsapp_mode: (initialData?.whatsapp_mode as 'link' | 'api') || "link",
+            whatsapp_api_token: initialData?.whatsapp_api_token || "",
+            whatsapp_phone_id: initialData?.whatsapp_phone_id || ""
         }
     })
 
@@ -54,7 +58,7 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
         try {
             const formData = new FormData()
             Object.entries(values).forEach(([key, value]) => {
-                if (value) formData.append(key, value)
+                if (value !== undefined && value !== null) formData.append(key, value.toString())
             })
             await updateCommunicationSettings(formData)
             toast.success("Configuración guardada correctamente")
@@ -69,6 +73,18 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
         setTesting(true)
         try {
             const res = await testSMTP()
+            toast.success(res.message)
+        } catch (error: any) {
+            toast.error(error.message)
+        } finally {
+            setTesting(false)
+        }
+    }
+
+    async function handleTestWhatsApp() {
+        setTesting(true)
+        try {
+            const res = await testWhatsApp()
             toast.success(res.message)
         } catch (error: any) {
             toast.error(error.message)
@@ -176,7 +192,7 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                     <MessageCircle className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-black">WhatsApp</CardTitle>
+                                    <CardTitle className="text-2xl font-black">WhatsApp Business</CardTitle>
                                     <CardDescription className="text-green-100 font-medium">Configura cómo interactúas con tus prospectos</CardDescription>
                                 </div>
                             </div>
@@ -196,15 +212,43 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                     </p>
                                 </div>
 
-                                <div className="p-4 rounded-2xl border-2 border-dashed border-gray-100 opacity-60">
+                                <div 
+                                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${form.watch("whatsapp_mode") === 'api' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200'}`}
+                                    onClick={() => form.setValue("whatsapp_mode", "api")}
+                                >
                                     <div className="flex items-center justify-between mb-2">
-                                        <h5 className="font-black text-gray-400">Automatización API (Próximamente)</h5>
+                                        <h5 className="font-black text-gray-900">Automatización API (Cloud API)</h5>
+                                        {form.watch("whatsapp_mode") === 'api' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
                                     </div>
-                                    <p className="text-[10px] text-gray-400 font-medium leading-relaxed uppercase tracking-widest">
-                                        Disponible para cuenta Enterprise
+                                    <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                                        Envío 100% automático sin intervención del agente. Requiere cuenta en Meta for Developers.
                                     </p>
                                 </div>
                             </div>
+
+                            {form.watch("whatsapp_mode") === 'api' && (
+                                <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Token de Acceso Temporal/Permanente</Label>
+                                        <Input {...form.register("whatsapp_api_token")} placeholder="EAA..." className="rounded-xl border-gray-100 bg-white/50 h-11 text-xs font-mono" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-black uppercase tracking-widest text-gray-400">ID de Teléfono (Phone ID)</Label>
+                                        <Input {...form.register("whatsapp_phone_id")} placeholder="123456789..." className="rounded-xl border-gray-100 bg-white/50 h-11 text-xs font-mono" />
+                                    </div>
+                                    <div className="pt-2">
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            onClick={handleTestWhatsApp}
+                                            disabled={testing}
+                                            className="w-full rounded-xl border-2 font-bold h-11 border-green-100 text-green-600 hover:bg-green-50"
+                                        >
+                                            {testing ? "Probando..." : "Probar Conexión WhatsApp"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 

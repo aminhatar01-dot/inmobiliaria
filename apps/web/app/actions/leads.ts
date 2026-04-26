@@ -46,6 +46,17 @@ export async function createLead(formData: Partial<Lead>) {
         throw new Error(error.message)
     }
 
+    // Trigger automation rules for new lead
+    try {
+        const { processAutomationRules } = await import("./automations-engine");
+        // No esperamos (await) para no bloquear la UI, pero capturamos errores
+        processAutomationRules('new_lead', tenantId, { lead: data }).catch(err => {
+            console.error("[LEADS] Automation trigger failed:", err);
+        });
+    } catch (autoErr) {
+        console.error("[LEADS] Could not import automation rules engine:", autoErr);
+    }
+
     revalidatePath("/leads")
     return data
 }
@@ -67,6 +78,16 @@ export async function updateLeadStatus(id: string, status: string) {
     if (error) {
         console.error(`Error updating lead status ${id}:`, error)
         throw new Error(error.message)
+    }
+
+    // Trigger automation rules for lead status change
+    try {
+        const { processAutomationRules } = await import("./automations-engine");
+        processAutomationRules('lead_status_change', tenantId, { lead: data }).catch(err => {
+            console.error("[LEADS] Status change automation failed:", err);
+        });
+    } catch (autoErr) {
+        console.error("[LEADS] Could not trigger status change automation:", autoErr);
     }
 
     revalidatePath("/leads")

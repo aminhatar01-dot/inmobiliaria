@@ -2,11 +2,12 @@
 
 import { createClient, getTenantId } from '@/lib/supabase/server';
 import { sendMessage, getOrCreateLeadConversation } from './messages';
+import { sendWhatsAppMessage, WhatsAppConfig } from '@/lib/services/whatsapp';
+import { sendEmail, SMTPConfig, buildReminderEmailHtml } from '@/lib/services/email';
+import { replaceTemplateVariables, buildVisitTemplateVars, buildTaskTemplateVars } from '@/lib/services/templates';
 
 /**
  * Main entry point for processing all pending reminders.
- * Runs task and visit reminders for the current tenant.
- * Designed to be called fire-and-forget: processPendingReminders().catch(console.error)
  */
 export async function processPendingReminders() {
     try {
@@ -14,17 +15,23 @@ export async function processPendingReminders() {
         const tenantId = await getTenantId(supabase);
         if (!tenantId) return;
 
+        // Fetch communication settings once for the tenant
+        const { data: settings } = await supabase
+            .from('tenant_communication_settings')
+            .select('*')
+            .eq('tenant_id', tenantId)
+            .maybeSingle();
+
         await Promise.allSettled([
-            processTaskReminders(supabase, tenantId),
-            processVisitReminders(supabase, tenantId),
+            processTaskReminders(supabase, tenantId, settings),
+            processVisitReminders(supabase, tenantId, settings),
         ]);
     } catch (err) {
-        // Never throw from background processes – just log.
         console.error('[REMINDERS] Fatal error in processPendingReminders:', err);
     }
 }
 
-async function processTaskReminders(supabase: any, tenantId: string) {
+async function processTaskReminders(supabase: any, tenantId: string, settings: any) {
     const now = new Date();
 
     const { data: tasks, error } = await supabase
@@ -51,36 +58,71 @@ async function processTaskReminders(supabase: any, tenantId: string) {
             if (now < reminderTime) continue;
 
             const channels = task.reminder_channels ?? ['in-app'];
+            const timeStr = dueDate.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = dueDate.toLocaleDateString('es-AR');
 
+            // Get agent info for replacement
+            const { data: agentProfile } = await supabase
+                .from('profiles')
+                .select('phone, full_name, email')
+                .eq('id', task.assigned_to)
+                .single();
+
+            const vars = buildTaskTemplateVars({
+                agentName: agentProfile?.full_name,
+                taskTitle: task.title,
+                dueDate: dateStr,
+                dueTime: timeStr
+            });
+
+            const baseMsg = "Hola {nombre}, te recordamos la tarea: {propiedad} para el {fecha} a las {hora}.";
+            const message = replaceTemplateVariables(baseMsg, vars);
+
+            // 1. In-App Notification
             if (channels.includes('in-app') && task.assigned_to) {
                 await createNotification(supabase, tenantId, task.assigned_to, {
                     title: 'Recordatorio de Tarea',
-                    message: `Tienes la tarea "${task.title}" programada para las ${dueDate.toLocaleTimeString('es-AR')}.`,
+                    message,
                     type: 'task_reminder',
                     related_id: task.id,
                 });
             }
 
-            if (channels.includes('whatsapp') || channels.includes('email')) {
-                console.log(`[REMINDERS][TASK] ${task.title} → agent ${task.assigned_to} via ${channels.filter((c: string) => c !== 'in-app').join(', ')}`);
+            // 2. Automated WhatsApp
+            if (channels.includes('whatsapp') && agentProfile?.phone && settings?.whatsapp_api_token) {
+                const waConfig: WhatsAppConfig = {
+                    apiToken: settings.whatsapp_api_token,
+                    phoneNumberId: settings.whatsapp_phone_id
+                };
+                await sendWhatsAppMessage(waConfig, agentProfile.phone, message);
             }
 
-            // Mark as sent (best-effort)
-            const { error: updateError } = await supabase
-                .from('tasks')
-                .update({ agent_reminder_sent: true })
-                .eq('id', task.id);
-
-            if (updateError) {
-                console.error(`[REMINDERS] Could not mark task ${task.id} as sent:`, updateError.message);
+            // 3. Automated Email
+            if (channels.includes('email') && agentProfile?.email && settings?.smtp_host) {
+                const smtpConfig: SMTPConfig = {
+                    host: settings.smtp_host,
+                    port: settings.smtp_port,
+                    user: settings.smtp_user,
+                    pass: settings.smtp_pass,
+                    fromName: settings.smtp_from_name,
+                    fromEmail: settings.smtp_from_email
+                };
+                const html = buildReminderEmailHtml({
+                    title: 'Recordatorio de Tarea',
+                    greeting: `Hola ${agentProfile.full_name}`,
+                    body: message
+                });
+                await sendEmail(smtpConfig, agentProfile.email, 'Recordatorio de Tarea', html);
             }
+
+            await supabase.from('tasks').update({ agent_reminder_sent: true }).eq('id', task.id);
         } catch (taskErr) {
-            console.error(`[REMINDERS] Error processing task reminder for ${task.id}:`, taskErr);
+            console.error(`[REMINDERS] Error processing task reminder ${task.id}:`, taskErr);
         }
     }
 }
 
-async function processVisitReminders(supabase: any, tenantId: string) {
+async function processVisitReminders(supabase: any, tenantId: string, settings: any) {
     const now = new Date();
 
     const { data: visits, error } = await supabase
@@ -89,8 +131,8 @@ async function processVisitReminders(supabase: any, tenantId: string) {
             id, scheduled_at, reminder_hours,
             agent_id, agent_reminder_sent, agent_reminder_channels,
             client_reminder_sent, client_reminder_channels,
-            lead:leads(id, name),
-            property:properties(title)
+            lead:leads(id, name, phone, email),
+            property:properties(title, address, price)
         `)
         .eq('tenant_id', tenantId)
         .eq('status', 'scheduled');
@@ -110,125 +152,115 @@ async function processVisitReminders(supabase: any, tenantId: string) {
 
             if (now < reminderTime) continue;
 
-            const leadName = visit.lead?.name ?? 'Lead desconocido';
-            const propertyTitle = visit.property?.title ?? 'Propiedad';
-            const timeStr = scheduledAt.toLocaleTimeString('es-AR');
+            const timeStr = scheduledAt.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = scheduledAt.toLocaleDateString('es-AR');
 
-            // 1. Agent Notification
-            if (!visit.agent_reminder_sent) {
+            const { data: agentProfile } = await supabase
+                .from('profiles')
+                .select('full_name, phone, email')
+                .eq('id', visit.agent_id)
+                .single();
+
+            // 1. Process Agent Reminders
+            if (!visit.agent_reminder_sent && visit.agent_id) {
                 const agentChannels = visit.agent_reminder_channels ?? ['in-app'];
+                
+                // Variables para el agente: {nombre} es el Agente
+                const agentVars = buildVisitTemplateVars({
+                    leadName: visit.lead?.name, // El cliente sigue estando disponible como {agente} si se quiere, pero por ahora lo dejamos así
+                    propertyTitle: visit.property?.title,
+                    scheduledDate: dateStr,
+                    scheduledTime: timeStr,
+                    agentName: agentProfile?.full_name
+                });
+                // Sobrescribimos nombre para que sea el agente
+                agentVars.nombre = agentProfile?.full_name || 'Agente';
+                // Añadimos cliente como variable extra
+                agentVars.cliente = visit.lead?.name || 'Cliente';
 
-                if (agentChannels.includes('in-app') && visit.agent_id) {
+                const agentMsg = replaceTemplateVariables("Hola {nombre}, recordá tu visita con el cliente {cliente} por la propiedad {propiedad} hoy a las {hora}.", agentVars);
+
+                if (agentChannels.includes('in-app')) {
                     await createNotification(supabase, tenantId, visit.agent_id, {
                         title: 'Recordatorio de Visita',
-                        message: `Tienes una visita con ${leadName} para "${propertyTitle}" a las ${timeStr}.`,
+                        message: agentMsg,
                         type: 'visit_reminder',
                         related_id: visit.id,
                     });
                 }
 
-                if (agentChannels.includes('whatsapp') || agentChannels.includes('email')) {
-                    console.log(`[REMINDERS][VISIT] ${propertyTitle} → agent ${visit.agent_id} via ${agentChannels.filter((c: string) => c !== 'in-app').join(', ')}`);
+                if (agentChannels.includes('whatsapp') && agentProfile?.phone && settings?.whatsapp_api_token) {
+                    await sendWhatsAppMessage({
+                        apiToken: settings.whatsapp_api_token,
+                        phoneNumberId: settings.whatsapp_phone_id
+                    }, agentProfile.phone, agentMsg);
                 }
 
                 await supabase.from('visits').update({ agent_reminder_sent: true }).eq('id', visit.id);
             }
 
-            // 2. Client Notification via messaging system
-            if (!visit.client_reminder_sent) {
+            // 2. Process Client Reminders
+            if (!visit.client_reminder_sent && visit.lead) {
                 const clientChannels = visit.client_reminder_channels ?? [];
+                
+                // Variables para el cliente: {nombre} es el Lead
+                const clientVars = buildVisitTemplateVars({
+                    leadName: visit.lead.name,
+                    propertyTitle: visit.property?.title,
+                    scheduledDate: dateStr,
+                    scheduledTime: timeStr,
+                    agentName: agentProfile?.full_name
+                });
+                // nombre ya es leadName por defecto en buildVisitTemplateVars
 
-                if (clientChannels.length > 0 && visit.lead?.id) {
-                    const msg = `Hola ${leadName}, te recordamos tu visita para "${propertyTitle}" hoy a las ${timeStr}. ¡Te esperamos!`;
-                    try {
-                        const conversationId = await getOrCreateLeadConversation(visit.lead.id, false);
-                        if (conversationId) {
-                            await sendMessage(conversationId, msg, false);
-                        }
-                    } catch (msgErr) {
-                        console.error('[REMINDERS] Could not send client message:', msgErr);
-                    }
+                const clientMsg = replaceTemplateVariables("Hola {nombre}, te recordamos tu visita para la propiedad {propiedad} hoy a las {hora}. ¡Te esperamos!", clientVars);
+
+                if (clientChannels.includes('whatsapp') && visit.lead.phone && settings?.whatsapp_api_token) {
+                    await sendWhatsAppMessage({
+                        apiToken: settings.whatsapp_api_token,
+                        phoneNumberId: settings.whatsapp_phone_id
+                    }, visit.lead.phone, clientMsg);
+                }
+
+                if (clientChannels.includes('email') && visit.lead.email && settings?.smtp_host) {
+                    const html = buildReminderEmailHtml({
+                        title: 'Recordatorio de Visita',
+                        greeting: `Hola ${visit.lead.name}`,
+                        body: clientMsg
+                    });
+                    await sendEmail({
+                        host: settings.smtp_host,
+                        port: settings.smtp_port,
+                        user: settings.smtp_user,
+                        pass: settings.smtp_pass,
+                        fromName: settings.smtp_from_name,
+                        fromEmail: settings.smtp_from_email
+                    }, visit.lead.email, 'Recordatorio de Visita', html);
                 }
 
                 await supabase.from('visits').update({ client_reminder_sent: true }).eq('id', visit.id);
             }
-        } catch (visitErr) {
-            console.error(`[REMINDERS] Error processing visit reminder for ${visit.id}:`, visitErr);
+        } catch (err) {
+            console.error(`[REMINDERS] Error processing visit reminder ${visit.id}:`, err);
         }
     }
 }
 
-/**
- * Creates a notification record. Silently fails if the table is unavailable
- * so that a schema issue doesn't break the entire reminder pipeline.
- */
-async function createNotification(supabase: any, tenantId: string, userId: string, data: {
-    title: string;
-    message: string;
-    type?: string;
-    related_id?: string;
-}) {
-    if (!userId) {
-        console.warn('[REMINDERS] createNotification called without userId – skipping.');
-        return;
-    }
-
+async function createNotification(supabase: any, tenantId: string, userId: string, data: any) {
     const { error } = await supabase
         .from('notifications')
         .insert({ tenant_id: tenantId, user_id: userId, ...data });
-
-    if (error) {
-        // Log but never throw – a missing table or RLS issue should not crash reminders.
-        console.error('[REMINDERS] Error creating notification:', error.message);
-    }
+    if (error) console.error('[REMINDERS] Notification error:', error.message);
 }
 
-// ---------------------------------------------------------------------------
-// Public API for the dashboard notification UI
-// ---------------------------------------------------------------------------
-
 export async function getNotifications() {
-    try {
-        const supabase = await createClient();
-        const tenantId = await getTenantId(supabase);
-        if (!tenantId) return [];
-
-        const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .order('created_at', { ascending: false })
-            .limit(20);
-
-        if (error) {
-            // Table may not exist yet – return empty gracefully.
-            console.warn('[NOTIFICATIONS] Could not fetch notifications:', error.message);
-            return [];
-        }
-
-        return data ?? [];
-    } catch (err) {
-        console.error('[NOTIFICATIONS] Unexpected error in getNotifications:', err);
-        return [];
-    }
+    const supabase = await createClient();
+    const { data } = await supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(20);
+    return data ?? [];
 }
 
 export async function markNotificationAsRead(id: string) {
-    try {
-        const supabase = await createClient();
-        const { error } = await supabase
-            .from('notifications')
-            .update({ read: true })
-            .eq('id', id);
-
-        if (error) {
-            console.error('[NOTIFICATIONS] Error marking as read:', error.message);
-            return { success: false };
-        }
-
-        return { success: true };
-    } catch (err) {
-        console.error('[NOTIFICATIONS] Unexpected error in markNotificationAsRead:', err);
-        return { success: false };
-    }
+    const supabase = await createClient();
+    await supabase.from('notifications').update({ read: true }).eq('id', id);
+    return { success: true };
 }

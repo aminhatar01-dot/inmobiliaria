@@ -63,7 +63,7 @@ export function PublishDialog({
         }
     }
 
-    const mlPub = existingPublications.find(p => p.portal_connection_id === 'native-ml-assistant')
+    const mlPub = existingPublications.find(p => (p as any).portal_connections?.portal_name === 'mercadolibre')
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

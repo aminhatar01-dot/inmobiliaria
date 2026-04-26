@@ -8,7 +8,8 @@ import {
     Lock,
     Loader2,
     Trash2,
-    Settings
+    Settings,
+    Globe
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"

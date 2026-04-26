@@ -194,11 +194,16 @@ export async function sendMessage(conversationId: string, content: string, reval
         .single()
 
     if (error) {
-        console.error("DEBUG: Error sending message:", {
+        console.error("Error sending message:", {
             error,
             conversationId,
             userId: user.id
         })
+        // When called from background processes (revalidate=false), don't throw
+        // to avoid crashing the entire reminder pipeline
+        if (!revalidate) {
+            return null
+        }
         throw new Error(error.message)
     }
 

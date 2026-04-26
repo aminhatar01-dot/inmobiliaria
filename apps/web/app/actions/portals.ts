@@ -5,21 +5,26 @@ import { revalidatePath } from "next/cache"
 import { PortalConnection, PropertyPublication } from "@inmocms/shared"
 
 export async function getPortalConnections(): Promise<PortalConnection[]> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return []
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return []
 
-    const { data, error } = await supabase
-        .from("portal_connections")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
+        const { data, error } = await supabase
+            .from("portal_connections")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
 
-    if (error) {
-        console.error("Error fetching portal connections:", error)
+        if (error) {
+            console.error("Error fetching portal connections:", error)
+            return []
+        }
+        return data || []
+    } catch (err) {
+        console.error("[PORTALS] Unexpected error in getPortalConnections:", err)
         return []
     }
-    return data || []
 }
 
 export type PortalConnectResult = 
@@ -27,43 +32,48 @@ export type PortalConnectResult =
     | { type: 'success', data: any, feedUrl: string }
 
 export async function getGlobalPortalConfig(portalName: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return null
 
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("tenant_id")
-        .eq("id", user.id)
-        .single()
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("tenant_id")
+            .eq("id", user.id)
+            .single()
 
-    if (!profile?.tenant_id) return null
+        if (!profile?.tenant_id) return null
 
-    const { data } = await supabase
-        .from("portal_connections")
-        .select("credentials")
-        .eq("tenant_id", profile.tenant_id)
-        .eq("portal_name", portalName)
-        .maybeSingle()
+        const { data } = await supabase
+            .from("portal_connections")
+            .select("credentials")
+            .eq("tenant_id", profile.tenant_id)
+            .eq("portal_name", portalName)
+            .maybeSingle()
 
-    const creds = data?.credentials as any
-    
-    // If tenant has no config, check for PLATFORM DEFAULT in environment variables
-    if (!creds?.client_id || creds.client_id === "PLACEHOLDER_ID") {
-        const platformId = process.env.ML_CLIENT_ID
-        const platformSecret = process.env.ML_CLIENT_SECRET
+        const creds = data?.credentials as any
         
-        if (platformId && platformId !== "PLACEHOLDER_ID" && platformId.length > 5) {
-            return {
-                client_id: platformId,
-                client_secret: platformSecret,
-                is_platform_default: true
+        // If tenant has no config, check for PLATFORM DEFAULT in environment variables
+        if (!creds?.client_id || creds.client_id === "PLACEHOLDER_ID") {
+            const platformId = process.env.ML_CLIENT_ID
+            const platformSecret = process.env.ML_CLIENT_SECRET
+            
+            if (platformId && platformId !== "PLACEHOLDER_ID" && platformId.length > 5) {
+                return {
+                    client_id: platformId,
+                    client_secret: platformSecret,
+                    is_platform_default: true
+                }
             }
+            return null
         }
+
+        return creds || null
+    } catch (err) {
+        console.error("[PORTALS] Unexpected error in getGlobalPortalConfig:", err)
         return null
     }
-
-    return creds || null
 }
 
 export async function connectPortal(portalName: string, email: string, config?: { clientId: string, clientSecret: string }, origin?: string): Promise<PortalConnectResult> {
@@ -129,31 +139,56 @@ export async function connectPortal(portalName: string, email: string, config?: 
 
     // Standard handling for XML-based portals (Zonaprop/Argenprop)
     const baseUrl = origin || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-    const feedUrl = `${baseUrl}/api/feeds/${user.id}/zonaprop`
+    const feedUrl = `${baseUrl}/api/feeds/${user.id}/${portalName}`
 
-    const { data, error } = await supabase
+    // Fixed Server Error: Manual select/insert avoids Postgres unique constraint violation on per-agent fields
+    const { data: existingConnection } = await supabase
         .from("portal_connections")
-        .upsert({
-            tenant_id: profile.tenant_id,
-            user_id: user.id,
-            portal_name: portalName as any,
-            account_email: email,
-            status: 'connected',
-            credentials: {
-                feed_url: feedUrl,
-                connected_at: new Date().toISOString()
-            }
-        }, { onConflict: 'user_id,portal_name' })
-        .select()
-        .single()
+        .select("id")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("user_id", user.id)
+        .eq("portal_name", portalName)
+        .maybeSingle()
 
-    if (error) {
-        console.error("Error connecting portal:", error)
-        throw new Error(error.message)
+    let connectionError;
+    if (existingConnection) {
+        const { error } = await supabase
+            .from("portal_connections")
+            .update({
+                account_email: email,
+                status: 'connected',
+                credentials: {
+                    feed_url: feedUrl,
+                    connected_at: new Date().toISOString()
+                },
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", existingConnection.id)
+        connectionError = error;
+    } else {
+        const { error } = await supabase
+            .from("portal_connections")
+            .insert({
+                tenant_id: profile.tenant_id,
+                user_id: user.id,
+                portal_name: portalName as any,
+                account_email: email,
+                status: 'connected',
+                credentials: {
+                    feed_url: feedUrl,
+                    connected_at: new Date().toISOString()
+                }
+            })
+        connectionError = error;
+    }
+
+    if (connectionError) {
+        console.error("Error creating portal connection:", connectionError)
+        throw new Error(connectionError.message)
     }
 
     revalidatePath("/marketing/portales")
-    return { type: 'success', data, feedUrl }
+    return { type: 'success', data: null, feedUrl }
 }
 
 export async function connectPortalManualToken(portalName: string, email: string, accessToken: string) {
@@ -182,21 +217,48 @@ export async function connectPortalManualToken(portalName: string, email: string
 
     const creds = existing?.credentials as any || {}
 
-    const { error: upsertError } = await supabase
+    // Use manual select/insert to avoid constraint mismatch with upsert
+    const { data: existingConn } = await supabase
         .from("portal_connections")
-        .upsert({
-            tenant_id: profile.tenant_id,
-            user_id: user.id,
-            portal_name: "mercadolibre",
-            account_email: email,
-            status: "connected",
-            credentials: {
-                ...creds,
-                access_token: accessToken,
-                connected_at: new Date().toISOString()
-            },
-            updated_at: new Date().toISOString()
-        }, { onConflict: "user_id,portal_name" })
+        .select("id")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("user_id", user.id)
+        .eq("portal_name", "mercadolibre")
+        .maybeSingle()
+
+    let upsertError;
+    if (existingConn) {
+        const { error } = await supabase
+            .from("portal_connections")
+            .update({
+                account_email: email,
+                status: "connected",
+                credentials: {
+                    ...creds,
+                    access_token: accessToken,
+                    connected_at: new Date().toISOString()
+                },
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", existingConn.id)
+        upsertError = error;
+    } else {
+        const { error } = await supabase
+            .from("portal_connections")
+            .insert({
+                tenant_id: profile.tenant_id,
+                user_id: user.id,
+                portal_name: "mercadolibre",
+                account_email: email,
+                status: "connected",
+                credentials: {
+                    ...creds,
+                    access_token: accessToken,
+                    connected_at: new Date().toISOString()
+                }
+            })
+        upsertError = error;
+    }
 
     if (upsertError) throw upsertError
 
@@ -224,21 +286,26 @@ export async function disconnectPortal(connectionId: string) {
 }
 
 export async function getPropertyPublications(propertyId: string): Promise<PropertyPublication[]> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return []
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return []
 
-    const { data, error } = await supabase
-        .from("property_publications")
-        .select("*, portal_connections(portal_name, account_email)")
-        .eq("property_id", propertyId)
-        .eq("user_id", user.id)
+        const { data, error } = await supabase
+            .from("property_publications")
+            .select("*, portal_connections(portal_name, account_email)")
+            .eq("property_id", propertyId)
+            .eq("user_id", user.id)
 
-    if (error) {
-        console.error("Error fetching publications:", error)
+        if (error) {
+            console.error("Error fetching publications:", error)
+            return []
+        }
+        return data || []
+    } catch (err) {
+        console.error("[PORTALS] Unexpected error in getPropertyPublications:", err)
         return []
     }
-    return data || []
 }
 
 export async function publishToPortal(propertyId: string, connectionId: string) {
@@ -257,60 +324,134 @@ export async function publishToPortal(propertyId: string, connectionId: string) 
     // Simulated network delay
     await new Promise(resolve => setTimeout(resolve, 1500))
 
+    // Intercept native Mercado Libre manual connection
+    let realConnectionId = connectionId;
+    let portalName = "";
+    
+    if (connectionId === 'native-ml-assistant') {
+        portalName = "mercadolibre";
+        const { data: existingConnection } = await supabase
+            .from("portal_connections")
+            .select("id")
+            .eq("tenant_id", profile.tenant_id)
+            .eq("user_id", user.id)
+            .eq("portal_name", "mercadolibre")
+            .maybeSingle()
+
+        if (existingConnection) {
+            realConnectionId = existingConnection.id;
+        } else {
+            // Auto-create native connection entry
+            const { data: newConnection, error: createError } = await supabase
+                .from("portal_connections")
+                .insert({
+                    tenant_id: profile.tenant_id,
+                    user_id: user.id,
+                    portal_name: "mercadolibre",
+                    account_email: user.email || "native@inmocms.com",
+                    status: 'connected',
+                    credentials: { native_integration: true }
+                })
+                .select("id")
+                .single()
+            
+            if (createError) throw new Error("No se pudo iniciar la conexión nativa: " + createError.message)
+            realConnectionId = newConnection.id;
+        }
+    } else {
+        const { data: conn } = await supabase
+            .from("portal_connections")
+            .select("portal_name")
+            .eq("id", realConnectionId)
+            .single()
+
+        if (!conn) throw new Error("No se encontró la conexión.")
+        portalName = conn.portal_name;
+    }
+
     const externalId = `EXT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
     let externalUrl = ""
 
-    const { data: conn } = await supabase
-        .from("portal_connections")
-        .select("portal_name")
-        .eq("id", connectionId)
-        .single()
-
-    if (!conn) throw new Error("No se encontró la conexión.")
-
-    if (conn.portal_name === 'mercadolibre') {
+    if (portalName === 'mercadolibre') {
         externalUrl = `https://www.mercadolibre.com.ar/inmuebles/MLA-${externalId}`
-    } else if (conn.portal_name === 'argenprop') {
+    } else if (portalName === 'argenprop') {
         externalUrl = `https://www.argenprop.com/propiedad-${externalId}`
-    } else if (conn.portal_name === 'zonaprop') {
+    } else if (portalName === 'zonaprop') {
         externalUrl = `https://www.zonaprop.com.ar/propiedades/zp-${externalId}.html`
     }
 
-    const { data, error } = await supabase
+    // Manual select/insert for publication to bypass Postgres unique constraint errors
+    const { data: existingPub } = await supabase
         .from("property_publications")
-        .upsert({
-            tenant_id: profile.tenant_id,
-            user_id: user.id,
-            property_id: propertyId,
-            portal_connection_id: connectionId,
-            status: 'published',
-            external_id: externalId,
-            external_url: externalUrl,
-            last_published_at: new Date().toISOString()
-        }, { onConflict: 'property_id,portal_connection_id' })
-        .select()
-        .single()
+        .select("id")
+        .eq("property_id", propertyId)
+        .eq("portal_connection_id", realConnectionId)
+        .maybeSingle()
 
-    if (error) {
-        console.error("Error publishing property:", error)
-        throw new Error(error.message)
+    let pubError;
+    if (existingPub) {
+        const { error } = await supabase
+            .from("property_publications")
+            .update({
+                status: 'published',
+                external_id: externalId,
+                external_url: externalUrl,
+                last_published_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", existingPub.id)
+        pubError = error;
+    } else {
+        const { error } = await supabase
+            .from("property_publications")
+            .insert({
+                tenant_id: profile.tenant_id,
+                user_id: user.id,
+                property_id: propertyId,
+                portal_connection_id: realConnectionId,
+                status: 'published',
+                external_id: externalId,
+                external_url: externalUrl,
+                last_published_at: new Date().toISOString()
+            })
+        pubError = error;
     }
 
-    revalidatePath("/propiedades")
-    return data
+    if (pubError) {
+        console.error("Error publishing property:", pubError)
+        throw new Error(pubError.message)
+    }
+
+    // Trigger automation
+    try {
+        const { processAutomationRules } = await import("./automations-engine");
+        const { data: property } = await supabase.from('properties').select('*').eq('id', propertyId).single();
+        processAutomationRules('property_published', profile.tenant_id, { property }).catch(err => {
+            console.error("[PORTALS] Automation trigger failed:", err);
+        });
+    } catch (err) {
+        console.error("[PORTALS] Could not trigger automation:", err);
+    }
+
+    revalidatePath("/marketing/portales")
+    revalidatePath(`/propiedades/${propertyId}`)
+    return { success: true }
 }
 
 export async function updatePortalConfig(portalName: string, config: { clientId: string, clientSecret: string, scope?: string }) {
     const supabase = await createClient()
     const tenantId = await getTenantId(supabase)
+    const { data: { user } } = await supabase.auth.getUser()
 
     if (!tenantId) throw new Error("No tienes una inmobiliaria vinculada a tu cuenta.")
+    if (!user) throw new Error("Debes iniciar sesión.")
 
     // Fetch existing connection or create a skeletal one to hold credentials
     const { data: existing } = await supabase
         .from("portal_connections")
         .select("id, credentials")
         .eq("tenant_id", tenantId)
+        .eq("user_id", user.id)
         .eq("portal_name", portalName)
         .maybeSingle()
 
@@ -330,7 +471,7 @@ export async function updatePortalConfig(portalName: string, config: { clientId:
             .from("portal_connections")
             .update({
                 credentials: newCredentials,
-                status: 'connected', // Now connected as we have real keys
+                status: 'connected',
                 updated_at: new Date().toISOString()
             })
             .eq("id", existing.id)
@@ -341,6 +482,7 @@ export async function updatePortalConfig(portalName: string, config: { clientId:
             .from("portal_connections")
             .insert({
                 tenant_id: tenantId,
+                user_id: user.id,
                 portal_name: portalName as any,
                 status: 'connected', 
                 credentials: newCredentials
