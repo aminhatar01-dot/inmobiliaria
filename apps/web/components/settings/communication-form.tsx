@@ -22,7 +22,7 @@ const commSchema = z.object({
     smtp_from_name: z.string().optional(),
     smtp_from_email: z.string().optional().or(z.literal('')),
     resend_api_key: z.string().optional(),
-    whatsapp_mode: z.enum(['link', 'api']),
+    whatsapp_mode: z.enum(['link', 'api', 'webhook']),
     whatsapp_api_token: z.string().optional(),
     whatsapp_phone_id: z.string().optional()
 })
@@ -284,14 +284,48 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                     onClick={() => form.setValue("whatsapp_mode", "api")}
                                 >
                                     <div className="flex items-center justify-between mb-2">
-                                        <h5 className="font-black text-gray-900">Automatización API (Cloud API)</h5>
+                                        <h5 className="font-black text-gray-900">Automatización Oficial (Meta Cloud API)</h5>
                                         {form.watch("whatsapp_mode") === 'api' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
                                     </div>
                                     <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                                        Envío 100% automático sin intervención del agente. Requiere cuenta en Meta for Developers.
+                                        Envío automático usando WhatsApp Business Oficial. Requiere cuenta en Meta for Developers.
+                                    </p>
+                                </div>
+
+                                <div 
+                                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${form.watch("whatsapp_mode") === 'webhook' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200'}`}
+                                    onClick={() => form.setValue("whatsapp_mode", "webhook")}
+                                >
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h5 className="font-black text-gray-900">Automatización API Externa (Evolution API)</h5>
+                                        {form.watch("whatsapp_mode") === 'webhook' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+                                    </div>
+                                    <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                                        Dispara un Webhook automático en Supabase cuando entra un nuevo Lead hacia una API externa.
                                     </p>
                                 </div>
                             </div>
+
+                            {form.watch("whatsapp_mode") === 'webhook' && (
+                                <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+                                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex gap-3 mb-4">
+                                        <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold text-blue-900 leading-relaxed">
+                                                Configuración segura en Supabase
+                                            </p>
+                                            <p className="text-xs font-medium text-blue-800 leading-relaxed">
+                                                Las credenciales (URL y API Key) de esta API externa se configuran directamente como variables de entorno seguras en la base de datos para no exponerlas en la vista.
+                                            </p>
+                                            <p className="text-xs font-bold text-blue-900 mt-2">Ejecuta esto en el Editor SQL de Supabase:</p>
+                                            <code className="block bg-white/50 p-2 rounded text-[10px] text-blue-800 font-mono select-all">
+                                                ALTER DATABASE postgres SET app.evolution_api_url = 'https://tu-api.com/message/send';<br/>
+                                                ALTER DATABASE postgres SET app.evolution_api_key = 'tu_api_key';
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {form.watch("whatsapp_mode") === 'api' && (
                                 <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
