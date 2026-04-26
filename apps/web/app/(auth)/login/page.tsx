@@ -85,66 +85,7 @@ export default function LoginPage() {
                         <CardDescription className="text-gray-400 font-medium">Panel de Control para Inmobiliarias</CardDescription>
                     </CardHeader>
                     <CardContent className="p-10 pt-6">
-                        <form onSubmit={handleLogin} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
-                                <Input
-                                    type="email"
-                                    placeholder="agente@tuinmobiliaria.com"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="h-14 bg-gray-50/50 border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all text-sm font-medium"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center px-1">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contraseña</label>
-                                    <Link href="/recuperar" className="text-[9px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors tracking-tighter">¿Recuperar clave?</Link>
-                                </div>
-                                <div className="relative">
-                                    <Input
-                                        type={showPassword ? "text" : "password"}
-                                        required
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="h-14 bg-gray-50/50 border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all text-sm font-medium pr-12"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="w-full h-14 bg-blue-600 hover:bg-black text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-500/20 transition-all group"
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                ) : (
-                                    <span className="flex items-center gap-2">
-                                        Entrar al Dashboard <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                    </span>
-                                )}
-                            </Button>
-                        </form>
-
-                        <div className="mt-6">
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center">
-                                    <div className="w-full border-t border-gray-100"></div>
-                                </div>
-                                <div className="relative flex justify-center text-xs">
-                                    <span className="bg-white px-2 text-gray-400 font-bold tracking-widest uppercase text-[9px]">O continuar con</span>
-                                </div>
-                            </div>
-
+                        <div className="space-y-6">
                             <Button
                                 type="button"
                                 variant="outline"
@@ -163,7 +104,7 @@ export default function LoginPage() {
                                         }
                                     })
                                 }}
-                                className="w-full h-14 mt-6 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-100 font-black text-sm rounded-2xl shadow-sm transition-all flex items-center justify-center gap-3"
+                                className="w-full h-14 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-100 font-black text-sm rounded-2xl shadow-sm transition-all flex items-center justify-center gap-3"
                             >
                                 <svg className="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24">
                                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -174,6 +115,65 @@ export default function LoginPage() {
                                 </svg>
                                 Iniciar con Google
                             </Button>
+
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-100"></div>
+                                </div>
+                                <div className="relative flex justify-center text-xs">
+                                    <span className="bg-white px-2 text-gray-400 font-bold tracking-widest uppercase text-[9px]">O usa tu correo (Admin)</span>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleLogin} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
+                                    <Input
+                                        type="email"
+                                        placeholder="agente@tuinmobiliaria.com"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="h-14 bg-gray-50/50 border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all text-sm font-medium"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center px-1">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contraseña</label>
+                                        <Link href="/recuperar" className="text-[9px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors tracking-tighter">¿Recuperar clave?</Link>
+                                    </div>
+                                    <div className="relative">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            required
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="h-14 bg-gray-50/50 border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all text-sm font-medium pr-12"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    className="w-full h-14 bg-gray-900 hover:bg-black text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl transition-all group"
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <span className="flex items-center gap-2">
+                                            Entrar <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                        </span>
+                                    )}
+                                </Button>
+                            </form>
                         </div>
 
                         <div className="mt-10 pt-8 border-t border-gray-50 space-y-6">
