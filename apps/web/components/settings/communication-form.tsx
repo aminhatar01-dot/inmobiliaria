@@ -146,6 +146,23 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                             </TabsList>
 
                             <TabsContent value="smtp" className="space-y-4 m-0">
+                                <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex gap-3 mb-4">
+                                    <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                                    <div className="space-y-2">
+                                        <p className="text-xs font-bold text-blue-900 leading-relaxed">
+                                            ¿Usas una cuenta de Gmail (@gmail.com)?
+                                        </p>
+                                        <p className="text-xs font-medium text-blue-800 leading-relaxed">
+                                            Si no tienes un dominio propio y usas Gmail, esta es la opción correcta. Google no permite usar tu contraseña normal; debes generar una <strong>"Contraseña de Aplicación"</strong>.
+                                        </p>
+                                        <ol className="text-xs font-medium text-blue-800 list-decimal list-inside space-y-1">
+                                            <li>Ve a tu <a href="https://myaccount.google.com/security" target="_blank" className="font-black underline text-blue-700">Cuenta de Google (Seguridad)</a>.</li>
+                                            <li>Asegúrate de tener la <strong>Verificación en 2 pasos</strong> activada.</li>
+                                            <li>Busca "Contraseñas de aplicaciones" y crea una nueva (ej. llámala InmoCMS).</li>
+                                            <li>Copia esa contraseña de 16 letras y pégala aquí abajo. Usa puerto <strong>587</strong> y <strong>smtp.gmail.com</strong>.</li>
+                                        </ol>
+                                    </div>
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Servidor (Host)</Label>
@@ -161,7 +178,7 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                     <Input {...form.register("smtp_user")} placeholder="agencia@gmail.com" className="rounded-xl border-gray-100 bg-white/50 h-11" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Contraseña / Token</Label>
+                                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Contraseña de Aplicación</Label>
                                     <Input {...form.register("smtp_pass")} type="password" placeholder="••••••••" className="rounded-xl border-gray-100 bg-white/50 h-11" />
                                 </div>
                                 <div className="pt-4 flex gap-3">
@@ -172,7 +189,7 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                         disabled={testing}
                                         className="rounded-xl border-2 font-bold h-11 flex-1 border-blue-100 text-blue-600 hover:bg-blue-50"
                                     >
-                                        {testing ? "Probando..." : "Probar Conexión"}
+                                        {testing ? "Probando..." : "Probar Conexión SMTP"}
                                     </Button>
                                 </div>
                             </TabsContent>
@@ -181,7 +198,7 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                 <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3">
                                     <AlertCircle className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
                                     <p className="text-xs font-medium text-orange-800 leading-relaxed">
-                                        Resend ofrece 3,000 correos al mes gratis. Es ideal si no tienes servidor SMTP propio. Obtén tu llave en <a href="https://resend.com" target="_blank" className="font-black underline">resend.com</a>
+                                        <strong>Resend requiere un dominio propio</strong> (ej: @tuempresa.com). No permite enviar correos masivos usando @gmail.com o @hotmail.com debido a las leyes anti-spam. Si no tienes dominio, usa la pestaña SMTP.
                                     </p>
                                 </div>
                                 <div className="space-y-2">

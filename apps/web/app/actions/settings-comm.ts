@@ -83,7 +83,12 @@ export async function testSMTP() {
         return { success: true, message: "Conexión SMTP exitosa" }
     } catch (error: any) {
         console.error("SMTP Test failed:", error)
-        return { success: false, error: `Error de conexión SMTP: ${error.message}` }
+        let msg = error.message;
+        if (msg.includes("Invalid login")) msg = "Credenciales incorrectas. Si usas Gmail, asegúrate de usar una 'Contraseña de Aplicación', no tu contraseña normal.";
+        else if (msg.includes("timeout")) msg = "El servidor SMTP tardó demasiado en responder. Verifica el host y el puerto.";
+        else if (msg.includes("ECONNREFUSED")) msg = "Conexión rechazada por el servidor SMTP. Verifica el puerto (587 o 465).";
+        
+        return { success: false, error: `Error SMTP: ${msg}` }
     }
 }
 
@@ -110,13 +115,22 @@ export async function testResend() {
         const data = await response.json()
 
         if (!response.ok) {
-            return { success: false, error: data.message || `HTTP ${response.status}` }
+            let errorMsg = data.message || `HTTP ${response.status}`;
+            
+            // Traducción de errores comunes de Resend
+            if (errorMsg.includes("domain is not verified")) {
+                errorMsg = "Resend requiere un dominio propio (ej: hola@tuinmobiliaria.com). Por reglas mundiales contra el SPAM, ningún sistema permite enviar correos masivos usando @gmail.com, @hotmail.com o @yahoo.com a través de API. Si no tienes dominio, por favor usa la pestaña 'SMTP' y conecta tu Gmail directamente.";
+            } else if (errorMsg.includes("Invalid API key")) {
+                errorMsg = "La API Key de Resend es inválida o no existe.";
+            }
+
+            return { success: false, error: errorMsg }
         }
 
         return { success: true, message: "Conexión Resend exitosa y correo de prueba enviado" }
     } catch (error: any) {
         console.error("Resend Test failed:", error)
-        return { success: false, error: `Error de conexión Resend: ${error.message}` }
+        return { success: false, error: `Error de red con Resend: ${error.message}` }
     }
 }
 
@@ -129,14 +143,22 @@ export async function testWhatsApp() {
     const { sendWhatsAppMessage } = await import("@/lib/services/whatsapp")
     
     // Enviar un mensaje de prueba al propio número o un número genérico
-    // Para probar la API de Meta, el token debe ser válido
     const result = await sendWhatsAppMessage({
         apiToken: settings.whatsapp_api_token,
         phoneNumberId: settings.whatsapp_phone_id
     }, "5491112345678", "InmoCMS: Prueba de conexión exitosa ✅")
 
     if (!result.success) {
-        return { success: false, error: result.error || "Error al enviar mensaje de prueba" }
+        let errorMsg = result.error || "Error al enviar mensaje de prueba";
+        
+        // Traducciones comunes de Meta API
+        if (errorMsg.includes("Invalid OAuth access token") || errorMsg.includes("Error validating access token")) {
+            errorMsg = "El Token de Acceso es inválido o ha expirado. Genera uno nuevo en Meta for Developers.";
+        } else if (errorMsg.includes("Unsupported get request") || errorMsg.includes("does not exist")) {
+            errorMsg = "El ID de Teléfono (Phone ID) es incorrecto. Verifícalo en Meta for Developers.";
+        }
+
+        return { success: false, error: errorMsg }
     }
 
     return { success: true, message: "Conexión de WhatsApp Cloud API exitosa" }
