@@ -77,11 +77,45 @@ export async function processAutomationRules(
                 const recipientEmail = recipientProfile.email;
 
                 // Ejecución directa según modo configurado
-                if (actionType === 'whatsapp' && recipientPhone && settings?.whatsapp_mode === 'api' && settings?.whatsapp_api_token) {
-                    await sendWhatsAppMessage({
-                        apiToken: settings.whatsapp_api_token,
-                        phoneNumberId: settings.whatsapp_phone_id
-                    }, recipientPhone, message);
+                if (actionType === 'whatsapp' && recipientPhone) {
+                    if (settings?.whatsapp_mode === 'api' && settings?.whatsapp_api_token) {
+                        await sendWhatsAppMessage({
+                            apiToken: settings.whatsapp_api_token,
+                            phoneNumberId: settings.whatsapp_phone_id
+                        }, recipientPhone, message);
+                    } else if (settings?.whatsapp_mode === 'webhook' && settings?.evolution_api_url) {
+                        // Enviar usando Evolution API externa (API Key va en header apikey y/o Bearer)
+                        const evolutionPayload = {
+                            number: recipientPhone,
+                            textMessage: { text: message },
+                            options: { delay: 1200 }
+                        };
+                        try {
+                            await fetch(settings.evolution_api_url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'apikey': settings.evolution_api_key || '',
+                                    'Authorization': `Bearer ${settings.evolution_api_key || ''}`
+                                },
+                                body: JSON.stringify(evolutionPayload)
+                            });
+                        } catch (err) {
+                            console.error('[AUTOMATION] Evolution API fetch error:', err);
+                        }
+                    } else {
+                        // Fallback a notificación interna (Link Manual)
+                        const cleanPhone = recipientPhone.replace(/\D/g, '');
+                        const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+                        
+                        await supabase.from('notifications').insert({
+                            tenant_id: tenantId,
+                            user_id: context.agent?.id || recipientProfile.id,
+                            title: rule.name || 'Mensaje de WhatsApp pendiente',
+                            message: JSON.stringify({ text: message, url: waUrl }),
+                            type: 'automation'
+                        });
+                    }
                 } 
                 else if (actionType === 'email' && recipientEmail && (settings?.smtp_host || settings?.resend_api_key || settings?.google_access_token)) {
                     const html = buildReminderEmailHtml({
@@ -101,25 +135,8 @@ export async function processAutomationRules(
                     }, recipientEmail, rule.name || 'Notificación', html);
                 }
                 else {
-                    // Fallback a notificación interna si no hay canales directos o modo es 'link'
-                    let notificationMessage = message;
-                    
-                    if (actionType === 'whatsapp' && recipientPhone) {
-                        const cleanPhone = recipientPhone.replace(/\D/g, '');
-                        const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-                        notificationMessage = JSON.stringify({
-                            text: message,
-                            url: waUrl
-                        });
-                    }
-
-                    await supabase.from('notifications').insert({
-                        tenant_id: tenantId,
-                        user_id: context.agent?.id || recipientProfile.id,
-                        title: rule.name || (actionType === 'whatsapp' ? 'Mensaje de WhatsApp pendiente' : 'Notificación'),
-                        message: notificationMessage,
-                        type: 'automation'
-                    });
+                    // Si el actionType no es ni whatsapp ni email, o falta configuración, ya creamos la notificación arriba para WhatsApp
+                    // Para otros tipos podríamos agregar lógica aquí
                 }
 
             } catch (ruleErr) {
