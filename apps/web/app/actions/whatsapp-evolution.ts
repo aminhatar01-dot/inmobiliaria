@@ -71,12 +71,21 @@ export async function ensureWhatsAppInstance(tenantId: string) {
         }
 
         console.log(`[WHATSAPP] Instancia creada con éxito: ${instanceName}`);
-        return { instanceName, success: true };
+        
+        // Si la API v2 nos da el QR inmediatamente al crear, lo devolvemos
+        const qr = createData.qrcode?.base64 || createData.base64 || null;
+        
+        return { 
+            instanceName, 
+            success: true, 
+            error: null,
+            qr: qr 
+        };
 
     } catch (error: any) {
         // Si falla por timeout pero es una creación, es probable que se haya creado igual
         console.error('[WHATSAPP] Error o Timeout en creación:', error?.message || error);
-        return { instanceName, success: true }; // Retornamos true para intentar el connect de todas formas
+        return { instanceName, success: true, error: error?.message || 'Error en creación', qr: null }; 
     }
 }
 
