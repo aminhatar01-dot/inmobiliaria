@@ -83,25 +83,29 @@ export async function processAutomationRules(
                             apiToken: settings.whatsapp_api_token,
                             phoneNumberId: settings.whatsapp_phone_id
                         }, recipientPhone, message);
-                    } else if (settings?.whatsapp_mode === 'webhook' && settings?.evolution_api_url) {
-                        // Enviar usando Evolution API externa (API Key va en header apikey y/o Bearer)
+                    } else if (settings?.whatsapp_mode === 'webhook') {
+                        // Enviar usando el Servidor Central de WhatsApp Nativo (Evolution API)
+                        const GLOBAL_URL = process.env.EVOLUTION_GLOBAL_API_URL || 'http://localhost:8080';
+                        const GLOBAL_KEY = process.env.EVOLUTION_GLOBAL_API_KEY || 'ADMIN_GLOBAL_KEY_INMOCMS_123';
+                        const instanceName = `inmocms_${tenantId.substring(0, 8)}`;
+
                         const evolutionPayload = {
                             number: recipientPhone,
                             textMessage: { text: message },
                             options: { delay: 1200 }
                         };
+
                         try {
-                            await fetch(settings.evolution_api_url, {
+                            await fetch(`${GLOBAL_URL}/message/sendText/${instanceName}`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'apikey': settings.evolution_api_key || '',
-                                    'Authorization': `Bearer ${settings.evolution_api_key || ''}`
+                                    'apikey': GLOBAL_KEY
                                 },
                                 body: JSON.stringify(evolutionPayload)
                             });
                         } catch (err) {
-                            console.error('[AUTOMATION] Evolution API fetch error:', err);
+                            console.error('[AUTOMATION] Centralized WhatsApp fetch error:', err);
                         }
                     } else {
                         // Fallback a notificación interna (Link Manual)

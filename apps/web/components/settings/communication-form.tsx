@@ -10,10 +10,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Mail, MessageCircle, Server, Key, Send, CheckCircle2, AlertCircle } from "lucide-react"
+import { Mail, MessageCircle, Server, Key, Send, CheckCircle2, AlertCircle, Zap } from "lucide-react"
 import { toast } from "sonner"
 import { updateCommunicationSettings, testSMTP, testWhatsApp, testResend } from "@/app/actions/settings-comm"
-import { createWhatsAppInstance, getWhatsAppQR, checkWhatsAppConnection, disconnectWhatsApp } from "@/app/actions/whatsapp-evolution"
+import { ensureWhatsAppInstance, getWhatsAppQR, checkWhatsAppConnection, logoutWhatsApp } from "@/app/actions/whatsapp-evolution"
 
 const commSchema = z.object({
     smtp_host: z.string().optional(),
@@ -146,55 +146,98 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
     async function handleConnectWhatsApp() {
         setIsConnecting(true)
         setQrCode(null)
+        setWaStatus(null)
         try {
-            toast.info("Generando código QR, por favor espera...")
-            const createRes = await createWhatsAppInstance(tenantId)
-            if (!createRes.success) throw new Error(createRes.error)
-            
-            // Pausa breve para que Evolution API inicie el bailey y genere el QR
-            await new Promise(r => setTimeout(r, 2000))
-            
-            const qrRes = await getWhatsAppQR(tenantId)
-            if (qrRes.success && qrRes.base64) {
-                setQrCode(qrRes.base64)
+            toast.info("Conectando con el servidor de WhatsApp...")
+            const createRes = await ensureWhatsAppInstance(tenantId)
+            if (!createRes.success) {
+                throw new Error(typeof createRes.error === 'string' ? createRes.error : "No se pudo conectar con el servidor de WhatsApp. Verifica que esté activo.")
+            }
+
+            // Si la creación ya devolvió un QR, usarlo directamente
+            if ('qr' in createRes && createRes.qr) {
+                setQrCode(createRes.qr)
                 setWaStatus('pending')
-                toast.success("QR Generado. Escanéalo con tu WhatsApp.")
+                toast.success("¡QR Generado! Escanéalo con tu WhatsApp.")
+                startConnectionMonitor()
+                return
+            }
+            
+            toast.info("Generando código QR... esto puede tomar unos segundos.")
+            
+            let finalQr: string | null = null;
+            let attempts = 0;
+            const maxAttempts = 20; // 20 intentos * 5 seg = ~100 seg max
+            
+            while (attempts < maxAttempts && !finalQr) {
+                // Esperar antes de reintentar (el VPS necesita tiempo para arrancar WebSocket)
+                await new Promise(r => setTimeout(r, 5000))
                 
-                // Empezar a verificar si ya escaneó
-                const checkInterval = setInterval(async () => {
-                    const statusRes = await checkWhatsAppConnection(tenantId)
-                    if (statusRes.success && statusRes.state === 'open') {
+                try {
+                    const qrRes = await getWhatsAppQR(tenantId)
+                    
+                    if (qrRes.status === 'qr' && qrRes.qr) {
+                        finalQr = qrRes.qr
+                    } else if (qrRes.status === 'connected') {
                         setWaStatus('connected')
-                        setQrCode(null)
-                        clearInterval(checkInterval)
-                        toast.success("¡WhatsApp Conectado exitosamente!")
-                        form.setValue('whatsapp_mode', 'webhook')
+                        toast.success("¡Tu WhatsApp ya estaba conectado!")
+                        return;
+                    } else if (qrRes.status === 'error') {
+                        console.log('[UI] QR Error:', qrRes.error)
                     }
-                }, 5000)
+                    // loading/timeout: continuar intentando
+                } catch (e) {
+                    console.log('[UI] QR fetch attempt failed, retrying...')
+                }
                 
-                // Limpiar intervalo después de 2 minutos (timeout)
-                setTimeout(() => clearInterval(checkInterval), 120000)
+                attempts++;
+                if (attempts % 4 === 0 && !finalQr) {
+                    toast.info(`Esperando respuesta del servidor... (intento ${attempts}/${maxAttempts})`)
+                }
+            }
+
+            if (finalQr) {
+                setQrCode(finalQr)
+                setWaStatus('pending')
+                toast.success("¡QR Generado! Escanéalo ahora.")
+                startConnectionMonitor()
             } else {
-                throw new Error(qrRes.error || "No se pudo obtener el QR")
+                throw new Error("El servidor tardó demasiado en generar el QR. Puede que necesite más memoria. Intenta de nuevo en 30 segundos.")
             }
         } catch (error: any) {
-            toast.error(error.message)
+            toast.error(error.message || "Error inesperado")
             setWaStatus(null)
         } finally {
             setIsConnecting(false)
         }
     }
 
+    function startConnectionMonitor() {
+        const checkInterval = setInterval(async () => {
+            try {
+                const status = await checkWhatsAppConnection(tenantId)
+                if (status === 'connected') {
+                    setWaStatus('connected')
+                    setQrCode(null)
+                    clearInterval(checkInterval)
+                    toast.success("¡WhatsApp Conectado con éxito!")
+                }
+            } catch { /* silenciar errores de polling */ }
+        }, 5000)
+        
+        // Limpiar después de 5 minutos
+        setTimeout(() => clearInterval(checkInterval), 300000)
+    }
+
+
     async function handleDisconnectWhatsApp() {
-        if (!confirm("¿Seguro que deseas desconectar tu cuenta de WhatsApp?")) return;
+        if (!confirm("¿Seguro que deseas cerrar la sesión de WhatsApp? Dejarás de enviar mensajes automáticos.")) return;
         setIsConnecting(true)
         try {
-            await disconnectWhatsApp(tenantId)
-            setWaStatus(null)
+            await logoutWhatsApp(tenantId)
+            setWaStatus('disconnected')
             setQrCode(null)
-            form.setValue('evolution_api_url', '')
-            form.setValue('evolution_api_key', '')
-            toast.success("WhatsApp desconectado")
+            toast.success("Sesión cerrada correctamente")
         } catch (error: any) {
             toast.error("Error al desconectar")
         } finally {
@@ -367,11 +410,11 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                     onClick={() => form.setValue("whatsapp_mode", "webhook")}
                                 >
                                     <div className="flex items-center justify-between mb-2">
-                                        <h5 className="font-black text-gray-900">Automatización API Externa (Evolution API)</h5>
+                                        <h5 className="font-black text-gray-900">WhatsApp Nativo (Escaneo QR)</h5>
                                         {form.watch("whatsapp_mode") === 'webhook' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
                                     </div>
                                     <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                                        Dispara un Webhook automático en Supabase cuando entra un nuevo Lead hacia una API externa.
+                                        Víncula cualquier teléfono escaneando un código QR. Es la forma más fácil y rápida.
                                     </p>
                                 </div>
                             </div>
@@ -380,7 +423,7 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                 <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
                                     <div className="bg-blue-50 border border-blue-100 p-6 rounded-3xl flex flex-col items-center justify-center text-center gap-4">
                                         
-                                        {!waStatus && !qrCode && (
+                                        {waStatus !== 'connected' && !qrCode && (
                                             <>
                                                 <div className="bg-blue-100 p-4 rounded-full">
                                                     <MessageCircle className="h-8 w-8 text-blue-600" />
@@ -388,29 +431,29 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                                 <div>
                                                     <h4 className="text-sm font-black text-blue-900 mb-1">WhatsApp no conectado</h4>
                                                     <p className="text-xs font-medium text-blue-800/80">
-                                                        Vincula tu WhatsApp escaneando un código QR. Tus mensajes automáticos saldrán directamente desde tu propio número.
+                                                        Víncula tu WhatsApp escaneando un código QR. No requiere configuración técnica.
                                                     </p>
                                                 </div>
                                                 <Button 
                                                     type="button" 
                                                     onClick={handleConnectWhatsApp}
                                                     disabled={isConnecting}
-                                                    className="rounded-xl mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 px-8"
+                                                    className="rounded-xl mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 px-8 shadow-lg shadow-blue-200"
                                                 >
-                                                    {isConnecting ? "Conectando..." : "Vincular mi WhatsApp"}
+                                                    {isConnecting ? "Generando QR..." : "Generar Código QR"}
                                                 </Button>
                                             </>
                                         )}
 
-                                        {qrCode && (
+                                        {qrCode && waStatus !== 'connected' && (
                                             <div className="flex flex-col items-center space-y-4">
-                                                <div className="bg-white p-4 rounded-2xl shadow-sm border border-blue-100">
-                                                    <img src={qrCode} alt="WhatsApp QR Code" className="w-48 h-48" />
+                                                <div className="bg-white p-4 rounded-3xl shadow-2xl border-4 border-blue-50">
+                                                    <img src={qrCode} alt="WhatsApp QR Code" className="w-56 h-56" />
                                                 </div>
                                                 <div>
                                                     <h4 className="text-sm font-black text-blue-900 mb-1">Escanea el Código QR</h4>
                                                     <p className="text-xs font-medium text-blue-800/80 max-w-xs">
-                                                        Abre WhatsApp en tu teléfono, ve a Dispositivos Vinculados y apunta tu cámara a este código.
+                                                        Abre WhatsApp en tu teléfono {'>'} Dispositivos Vinculados {'>'} Vincular un dispositivo.
                                                     </p>
                                                 </div>
                                             </div>
@@ -418,13 +461,13 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
 
                                         {waStatus === 'connected' && (
                                             <>
-                                                <div className="bg-green-100 p-4 rounded-full">
+                                                <div className="bg-green-100 p-4 rounded-full animate-bounce">
                                                     <CheckCircle2 className="h-8 w-8 text-green-600" />
                                                 </div>
                                                 <div>
                                                     <h4 className="text-sm font-black text-green-900 mb-1">¡WhatsApp Conectado!</h4>
                                                     <p className="text-xs font-medium text-green-800/80">
-                                                        Tu cuenta está vinculada y lista para enviar mensajes automáticos.
+                                                        Tu cuenta está vinculada y las automatizaciones están activas.
                                                     </p>
                                                 </div>
                                                 <Button 
@@ -434,16 +477,11 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                                     disabled={isConnecting}
                                                     className="rounded-xl mt-2 border-red-200 text-red-600 hover:bg-red-50 font-bold h-11 px-8"
                                                 >
-                                                    Desconectar WhatsApp
+                                                    Desconectar cuenta
                                                 </Button>
                                             </>
                                         )}
-
                                     </div>
-                                    
-                                    {/* Mantenemos los inputs ocultos para que React Hook Form los envíe al backend cuando se guarde, aunque el Server Action ya los guardó en la DB */}
-                                    <input type="hidden" {...form.register("evolution_api_url")} />
-                                    <input type="hidden" {...form.register("evolution_api_key")} />
                                 </div>
                             )}
 
@@ -485,6 +523,7 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                                     </div>
                                 </div>
                             )}
+
                         </CardContent>
                     </Card>
 
