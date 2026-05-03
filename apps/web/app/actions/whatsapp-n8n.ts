@@ -75,6 +75,15 @@ export async function startWhatsAppBinding() {
         // 1. Asegurar Instancia en Evolution API
         const instance = await ensureWhatsAppInstance(tenantId);
         
+        let qr = instance.qr;
+        if (!qr) {
+            // Si la instancia ya existe (o no devolvió QR), intentamos obtenerlo explícitamente
+            const qrResult = await getWhatsAppQR(tenantId);
+            if (qrResult.status === 'qr') {
+                qr = qrResult.qr;
+            }
+        }
+
         // 2. Asegurar Flujo en n8n
         const provision = await provisionUserFlow(user.id);
 
@@ -84,7 +93,8 @@ export async function startWhatsAppBinding() {
         }
 
         revalidatePath('/marketing/canales');
-        return { success: true, qr: instance.qr };
+        return { success: true, qr: qr };
+
     } catch (error: any) {
         return { success: false, error: error.message };
     }

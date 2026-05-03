@@ -28,6 +28,13 @@ function getInstanceName(tenantId: string): string {
     return `inmocms_${tenantId.substring(0, 8)}`;
 }
 
+function formatQr(qr: string | null): string | null {
+    if (!qr) return null;
+    if (qr.startsWith('data:')) return qr;
+    return `data:image/png;base64,${qr}`;
+}
+
+
 /**
  * Helper para llamadas con timeout (evita cuelgues del VPS)
  */
@@ -85,8 +92,9 @@ export async function ensureWhatsAppInstance(tenantId: string) {
             instanceName, 
             success: true, 
             error: null,
-            qr: qr 
+            qr: formatQr(qr) 
         };
+
 
     } catch (error: any) {
         // Si falla por timeout pero es una creación, es probable que se haya creado igual
@@ -126,13 +134,14 @@ export async function getWhatsAppQR(tenantId: string) {
 
         // QR en formato v2 (base64 en la raíz)
         if (data.base64) {
-            return { status: 'qr' as const, qr: data.base64 };
+            return { status: 'qr' as const, qr: formatQr(data.base64) };
         }
 
         // QR en formato v2.1 (dentro de qrcode)
         if (data.qrcode?.base64) {
-            return { status: 'qr' as const, qr: data.qrcode.base64 };
+            return { status: 'qr' as const, qr: formatQr(data.qrcode.base64) };
         }
+
 
         // Código QR como pairingCode (alternativa Baileys)
         if (data.pairingCode) {
