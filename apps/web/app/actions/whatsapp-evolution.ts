@@ -72,7 +72,7 @@ export async function ensureWhatsAppInstance(tenantId: string) {
                     qrcode: true
                 })
             },
-            15000 // Aumentamos timeout interno pero Vercel sigue siendo el límite
+            8000 // Reducimos para cumplir con Vercel Hobby (10s limit)
         );
 
         const createData = await createRes.json();
@@ -95,7 +95,6 @@ export async function ensureWhatsAppInstance(tenantId: string) {
             qr: formatQr(qr) 
         };
 
-
     } catch (error: any) {
         // Si falla por timeout pero es una creación, es probable que se haya creado igual
         console.error('[WHATSAPP] Error o Timeout en creación:', error?.message || error);
@@ -116,8 +115,9 @@ export async function getWhatsAppQR(tenantId: string) {
         const response = await fetchWithTimeout(
             `${GLOBAL_URL}/instance/connect/${instanceName}`,
             { headers: { 'apikey': GLOBAL_KEY } },
-            20000 // Aumentamos a 20s para dar tiempo al VPS
+            8000 // Reducimos para cumplir con Vercel Hobby
         );
+
         
         if (!response.ok) {
             const errorText = await response.text();
