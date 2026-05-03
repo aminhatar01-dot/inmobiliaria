@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { sendWhatsAppMessage, WhatsAppConfig } from '@/lib/services/whatsapp';
+import { sendWhatsAppMessage, sendWhatsAppViaN8n, WhatsAppConfig } from '@/lib/services/whatsapp';
 import { sendEmail, SMTPConfig, buildReminderEmailHtml } from '@/lib/services/email';
 import { replaceTemplateVariables, TemplateVariables } from '@/lib/services/templates';
 
@@ -78,47 +78,55 @@ export async function processAutomationRules(
 
                 // Ejecución directa según modo configurado
                 if (actionType === 'whatsapp' && recipientPhone) {
-                    if (settings?.whatsapp_mode === 'api' && settings?.whatsapp_api_token) {
-                        await sendWhatsAppMessage({
-                            apiToken: settings.whatsapp_api_token,
-                            phoneNumberId: settings.whatsapp_phone_id
-                        }, recipientPhone, message);
-                    } else if (settings?.whatsapp_mode === 'webhook') {
-                        // Enviar usando el Servidor Central de WhatsApp Nativo (Evolution API)
-                        const GLOBAL_URL = process.env.EVOLUTION_GLOBAL_API_URL || 'http://localhost:8080';
+                    if (settings?.whatsapp_mode === 'webhook') {
+                        // Modo Centralizado (Evolution API)
+                        const GLOBAL_URL = process.env.EVOLUTION_GLOBAL_API_URL || 'http://157.245.115.101:8080';
                         const GLOBAL_KEY = process.env.EVOLUTION_GLOBAL_API_KEY || 'ADMIN_GLOBAL_KEY_INMOCMS_123';
                         const instanceName = `inmocms_${tenantId.substring(0, 8)}`;
-
-                        const evolutionPayload = {
-                            number: recipientPhone,
-                            textMessage: { text: message },
-                            options: { delay: 1200 }
-                        };
 
                         try {
                             await fetch(`${GLOBAL_URL}/message/sendText/${instanceName}`, {
                                 method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'apikey': GLOBAL_KEY
-                                },
-                                body: JSON.stringify(evolutionPayload)
+                                headers: { 'Content-Type': 'application/json', 'apikey': GLOBAL_KEY },
+                                body: JSON.stringify({
+                                    number: recipientPhone,
+                                    textMessage: { text: message },
+                                    options: { delay: 1200 }
+                                })
                             });
                         } catch (err) {
-                            console.error('[AUTOMATION] Centralized WhatsApp fetch error:', err);
+                            console.error('[AUTOMATION] Evolution API error:', err);
                         }
-                    } else {
-                        // Fallback a notificación interna (Link Manual)
-                        const cleanPhone = recipientPhone.replace(/\D/g, '');
-                        const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-                        
-                        await supabase.from('notifications').insert({
-                            tenant_id: tenantId,
-                            user_id: context.agent?.id || recipientProfile.id,
-                            title: rule.name || 'Mensaje de WhatsApp pendiente',
-                            message: JSON.stringify({ text: message, url: waUrl }),
-                            type: 'automation'
-                        });
+                    } 
+                    else if (settings?.whatsapp_mode === 'api' && settings?.whatsapp_api_token) {
+                        // Modo Whapi / API Directa
+                        await sendWhatsAppMessage({
+                            apiToken: settings.whatsapp_api_token,
+                            phoneNumberId: settings.whatsapp_phone_id
+                        }, recipientPhone, message);
+                    }
+                    else {
+                        // SaaS Mode: n8n + Agent Instance
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('n8n_webhook_url, whatsapp_token')
+                            .eq('id', context.agent?.id || '')
+                            .single();
+
+                        if (profile?.n8n_webhook_url) {
+                            await sendWhatsAppViaN8n(profile.n8n_webhook_url, profile.whatsapp_token || '', recipientPhone, message);
+                        } else {
+                            // Fallback a notificación manual
+                            const cleanPhone = recipientPhone.replace(/\D/g, '');
+                            const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+                            await supabase.from('notifications').insert({
+                                tenant_id: tenantId,
+                                user_id: context.agent?.id || recipientProfile.id,
+                                title: rule.name || 'Mensaje pendiente',
+                                message: JSON.stringify({ text: message, url: waUrl }),
+                                type: 'automation'
+                            });
+                        }
                     }
                 } 
                 else if (actionType === 'email' && recipientEmail && (settings?.smtp_host || settings?.resend_api_key || settings?.google_access_token)) {

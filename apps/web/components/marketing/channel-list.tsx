@@ -25,16 +25,6 @@ interface ChannelListProps {
 
 const CHANNEL_CARDS = [
     {
-        id: CHANNEL_NAMES.whatsapp,
-        title: CHANNEL_LABELS.whatsapp,
-        description: "Automatiza seguimientos y envía plantillas directo al celular de tus leads.",
-        icon: MessageCircle,
-        bgIcon: "bg-green-50 text-green-600",
-        hoverClass: "hover:border-green-200 hover:shadow-green-100",
-        topLine: "bg-green-500",
-        buttonClass: "bg-green-600 hover:bg-green-700 shadow-green-500/20"
-    },
-    {
         id: CHANNEL_NAMES.instagram,
         title: CHANNEL_LABELS.instagram,
         description: "Captura mensajes directos y responde comentarios automáticamente.",

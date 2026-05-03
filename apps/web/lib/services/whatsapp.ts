@@ -14,6 +14,8 @@ const WHATSAPP_API_BASE = 'https://graph.facebook.com/v21.0';
 export interface WhatsAppConfig {
     apiToken: string;
     phoneNumberId: string;
+    n8nWebhookUrl?: string;
+    whatsappToken?: string;
 }
 
 export interface WhatsAppSendResult {
@@ -140,4 +142,50 @@ export function buildWhatsAppLink(phone: string, message: string): string {
     const cleaned = normalizeArgentinePhone(phone);
     const encodedMessage = encodeURIComponent(message);
     return `https://wa.me/${cleaned}?text=${encodedMessage}`;
+}
+
+/**
+ * Envía un mensaje de WhatsApp a través del flujo de n8n (WhatsApp as a Service).
+ * 
+ * @param webhookUrl URL del webhook de n8n para este usuario/tenant
+ * @param whatsappToken Token del proveedor de WhatsApp (Whapi/WPPConnect)
+ * @param to Número de teléfono del destinatario
+ * @param message Texto del mensaje
+ * @returns Resultado del envío
+ */
+export async function sendWhatsAppViaN8n(
+    webhookUrl: string,
+    whatsappToken: string,
+    to: string,
+    message: string
+): Promise<WhatsAppSendResult> {
+    if (!webhookUrl || !whatsappToken) {
+        return {
+            success: false,
+            error: 'Configuración de n8n o WhatsApp incompleta.'
+        };
+    }
+
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                phone: to,
+                message: message,
+                whatsapp_token: whatsappToken
+            }),
+        });
+
+        if (!response.ok) {
+            return { success: false, error: `Error en n8n: ${response.statusText}` };
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        console.error('[WHATSAPP-N8N] Error:', error);
+        return { success: false, error: error.message };
+    }
 }
