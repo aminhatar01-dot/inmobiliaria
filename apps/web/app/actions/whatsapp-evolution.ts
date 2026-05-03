@@ -15,6 +15,12 @@
 const GLOBAL_URL = process.env.EVOLUTION_GLOBAL_API_URL || 'http://localhost:8080';
 const GLOBAL_KEY = process.env.EVOLUTION_GLOBAL_API_KEY || 'ADMIN_GLOBAL_KEY_INMOCMS_123';
 
+// Fix para entornos de desarrollo con túneles (Cloudflare/Ngrok)
+if (GLOBAL_URL.includes('localhost') || GLOBAL_URL.includes('trycloudflare.com')) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
+
 console.log(`[WHATSAPP_DEBUG] Utilizando API: ${GLOBAL_URL}`);
 console.log(`[WHATSAPP_DEBUG] Key definida: ${GLOBAL_KEY ? 'SÍ' : 'NO'}`);
 
