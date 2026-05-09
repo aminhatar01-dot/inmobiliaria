@@ -73,27 +73,48 @@ export async function GET(request: Request) {
         }
 
         // 4. Save connection with real tokens
-        const { error: upsertError } = await supabase
+        const { data: existingConnection } = await supabase
             .from("portal_connections")
-            .upsert({
-                tenant_id: profile.tenant_id,
-                user_id: user.id,
-                portal_name: "mercadolibre",
-                account_email: String(tokenData.user_id),
-                status: "connected",
-                credentials: {
-                    client_id: clientId,
-                    client_secret: clientSecret,
-                    access_token: tokenData.access_token,
-                    refresh_token: tokenData.refresh_token,
-                    token_type: tokenData.token_type,
-                    expires_in: tokenData.expires_in,
-                    scope: tokenData.scope,
-                    user_id: tokenData.user_id,
-                    connected_at: new Date().toISOString()
-                },
-                updated_at: new Date().toISOString()
-            }, { onConflict: "user_id,portal_name" })
+            .select("id")
+            .eq("tenant_id", profile.tenant_id)
+            .eq("portal_name", "mercadolibre")
+            .maybeSingle()
+
+        const connectionPayload = {
+            account_email: String(tokenData.user_id),
+            status: "connected",
+            credentials: {
+                client_id: clientId,
+                client_secret: clientSecret,
+                access_token: tokenData.access_token,
+                refresh_token: tokenData.refresh_token,
+                token_type: tokenData.token_type,
+                expires_in: tokenData.expires_in,
+                scope: tokenData.scope,
+                user_id: tokenData.user_id,
+                connected_at: new Date().toISOString()
+            },
+            updated_at: new Date().toISOString()
+        }
+
+        let upsertError;
+        if (existingConnection) {
+            const { error } = await supabase
+                .from("portal_connections")
+                .update(connectionPayload)
+                .eq("id", existingConnection.id)
+            upsertError = error;
+        } else {
+            const { error } = await supabase
+                .from("portal_connections")
+                .insert({
+                    tenant_id: profile.tenant_id,
+                    user_id: user.id,
+                    portal_name: "mercadolibre",
+                    ...connectionPayload
+                })
+            upsertError = error;
+        }
 
         if (upsertError) throw upsertError
 

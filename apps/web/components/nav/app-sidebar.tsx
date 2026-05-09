@@ -97,6 +97,11 @@ const data: SidebarData = {
                     ]
                 },
                 {
+                    title: "Mi Porfolio Digital",
+                    url: "/portfolio",
+                    icon: Globe,
+                },
+                {
                     title: "Leads",
                     url: "/leads",
                     icon: Users,

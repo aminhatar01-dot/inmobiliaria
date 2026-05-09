@@ -6,7 +6,9 @@ import {
   getWhatsAppServiceStatus,
   disconnectWhatsAppService,
   isSuperAdmin,
-  saveSystemConfig
+  saveSystemConfig,
+  getLatestQR,
+  getSystemInfrastructureInfo
 } from '@/app/actions/whatsapp-n8n';
 import { 
   QrCode, 
@@ -42,33 +44,37 @@ export default function WhatsAppConnector() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUserSuperAdmin, setIsUserSuperAdmin] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [infraInfo, setInfraInfo] = useState<any>(null);
 
   useEffect(() => {
     loadStatus();
     checkSuperAdmin();
+    loadInfraInfo();
   }, []);
 
-  // Polling para el código QR cuando está en estado pendiente
+  const loadInfraInfo = async () => {
+    const info = await getSystemInfrastructureInfo();
+    setInfraInfo(info);
+  };
+
+  // Polling para el código QR y estado de conexión
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (status === 'pending_binding' && !qrCode) {
+    if (status === 'pending_binding') {
       interval = setInterval(async () => {
-        const result = await startWhatsAppBinding();
-        if (result.success && result.qr) {
+        const result = await getLatestQR();
+        if (result.success && result.status === 'connected') {
+          setStatus('connected');
+          setQrCode(null);
+        } else if (result.success && result.qr) {
           setQrCode(result.qr);
-        } else if (result.success && !result.qr) {
-          // Si ya no hay QR pero fue exitoso, puede que se haya conectado
-          const statusResult = await getWhatsAppServiceStatus();
-          if (statusResult.status === 'connected') {
-            setStatus('connected');
-          }
         }
       }, 3000);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [status, qrCode]);
+  }, [status]);
 
   const checkSuperAdmin = async () => {
     const admin = await isSuperAdmin();
@@ -208,7 +214,7 @@ export default function WhatsAppConnector() {
             </div>
             <Button variant="ghost" size="sm" onClick={loadStatus} className="text-blue-600 hover:text-blue-700">
               <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-              Verificando estado...
+              Actualizar Estado Manualmente
             </Button>
           </div>
         )}
@@ -267,35 +273,32 @@ export default function WhatsAppConnector() {
                     </DialogDescription>
                   </DialogHeader>
                   
-                  <div className="space-y-4 py-2">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Servidor n8n</Label>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={async () => {
-                            toast.info('Sincronizando con variables de entorno...');
-                            window.location.reload(); 
-                          }}
-                          className="h-6 text-[10px] px-2"
-                        >
-                          Sincronizar .env
-                        </Button>
+                    <div className="space-y-4 py-2">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Servidor n8n</Label>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={loadInfraInfo}
+                            className="h-6 text-[10px] px-2"
+                          >
+                            Actualizar
+                          </Button>
+                        </div>
+                        <Input name="N8N_API_URL" defaultValue={infraInfo?.N8N_API_URL} placeholder="https://n8n.tu-servidor.com/api/v1" />
+                        <Input name="N8N_API_KEY" type="password" defaultValue={infraInfo?.N8N_API_KEY} placeholder="API Key de n8n" />
+                        <Input name="N8N_MASTER_FLOW_ID" defaultValue={infraInfo?.N8N_MASTER_FLOW_ID} placeholder="ID del Flujo Maestro (ej. 1)" />
+                        <Input name="N8N_WEBHOOK_BASE_URL" defaultValue={infraInfo?.N8N_WEBHOOK_BASE_URL} placeholder="https://n8n.tu-servidor.com" />
                       </div>
-                      <Input name="N8N_API_URL" placeholder="https://n8n.tu-servidor.com/api/v1" />
-                      <Input name="N8N_API_KEY" type="password" placeholder="API Key de n8n" />
-                      <Input name="N8N_MASTER_FLOW_ID" placeholder="ID del Flujo Maestro (ej. 1)" />
-                      <Input name="N8N_WEBHOOK_BASE_URL" placeholder="https://n8n.tu-servidor.com" />
+                      
+                      <div className="space-y-2 pt-2 border-t border-slate-100">
+                        <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Evolution API</Label>
+                        <Input name="EVOLUTION_API_URL" defaultValue={infraInfo?.EVOLUTION_API_URL} placeholder="https://evolution.tu-servidor.com" />
+                        <Input name="EVOLUTION_API_KEY" type="password" defaultValue={infraInfo?.EVOLUTION_API_KEY} placeholder="Global API Key de Evolution" />
+                      </div>
                     </div>
-                    
-                    <div className="space-y-2 pt-2 border-t border-slate-100">
-                      <Label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Evolution API</Label>
-                      <Input name="EVOLUTION_API_URL" placeholder="https://evolution.tu-servidor.com" />
-                      <Input name="EVOLUTION_API_KEY" type="password" placeholder="Global API Key de Evolution" />
-                    </div>
-                  </div>
 
                   <DialogFooter>
                     <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 h-11 rounded-xl">

@@ -73,6 +73,62 @@ export async function getUserPlanLimits(): Promise<{ planName: string, limits: P
     }
 }
 
+export type SubscriptionStatus = {
+    planName: string
+    status: 'active' | 'canceled' | 'past_due' | 'none'
+    currentPeriodStart: string | null
+    currentPeriodEnd: string | null
+    priceArs: number
+    planId: string | null
+}
+
+/**
+ * Gets the full subscription status for the authenticated user.
+ */
+export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) throw new Error("Not authenticated")
+
+    const { data: subscription } = await supabase
+        .from('user_subscriptions')
+        .select(`
+            id,
+            status,
+            current_period_start,
+            current_period_end,
+            plan_id,
+            subscription_plans (
+                name,
+                price_ars
+            )
+        `)
+        .eq('user_id', user.id)
+        .single()
+
+    if (!subscription) {
+        return {
+            planName: 'Gratuito',
+            status: 'none',
+            currentPeriodStart: null,
+            currentPeriodEnd: null,
+            priceArs: 0,
+            planId: null
+        }
+    }
+
+    const plan = subscription.subscription_plans as any
+    return {
+        planName: plan?.name || 'Gratuito',
+        status: subscription.status as SubscriptionStatus['status'],
+        currentPeriodStart: subscription.current_period_start,
+        currentPeriodEnd: subscription.current_period_end,
+        priceArs: plan?.price_ars || 0,
+        planId: subscription.plan_id
+    }
+}
+
 /**
  * Validates if the user can perform an action based on their limits.
  */
@@ -341,12 +397,12 @@ export async function acceptInvitation(token: string) {
 }
 
 /**
- * Creates a Mercado Pago Checkout Preference.
+ * Creates a Mercado Pago Checkout Pro Preference.
  * Returns the init_point for redirection.
  */
 export async function createCheckoutPreference(planName: string, price: number) {
     const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://inmobiliaria-orpin-one.vercel.app'
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -362,30 +418,46 @@ export async function createCheckoutPreference(planName: string, price: number) 
     }
 
     try {
-        // Creating a Recurring Subscription (Preapproval) instead of a one-off payment
-        const response = await fetch('https://api.mercadopago.com/preapproval', {
+        // Use Checkout Pro (Preference) for a reliable one-time payment
+        const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                reason: `InmoCMS - Plan ${planName}`,
+                items: [
+                    {
+                        title: `InmoCMS - Plan ${planName}`,
+                        description: `Suscripción mensual al plan ${planName} de InmoCMS`,
+                        quantity: 1,
+                        unit_price: price,
+                        currency_id: "ARS"
+                    }
+                ],
+                // Note: Do NOT include payer.email here - if the admin's email matches
+                // the seller account, MercadoPago blocks the payment (self-payment restriction).
+                // The user ID is tracked via external_reference instead.
                 external_reference: `${user.id}|||${planName}`,
-                payer_email: user.email,
-                auto_recurring: {
-                    frequency: 1,
-                    frequency_type: "months",
-                    transaction_amount: price,
-                    currency_id: "ARS"
+                back_urls: {
+                    success: `${siteUrl}/cuenta/plan/success?plan=${planName}`,
+                    failure: `${siteUrl}/cuenta/plan?status=failure`,
+                    pending: `${siteUrl}/cuenta/plan/success?plan=${planName}&status=pending`
                 },
-                back_url: `${siteUrl}/cuenta/plan/success?plan=${planName}`,
-                status: "authorized"
+                auto_return: "approved",
+                notification_url: `${siteUrl}/api/webhooks/mercadopago`,
+                statement_descriptor: "INMOCMS"
             })
         })
 
         const data = await response.json()
-        if (!response.ok) throw new Error(data.message || "Error creating MP preference")
+        
+        if (!response.ok) {
+            console.error("MP Preference Error Response:", JSON.stringify(data, null, 2))
+            throw new Error(data.message || data.error || "Error creating MP preference")
+        }
+
+        console.log("[MP] Preference created:", data.id, "init_point:", data.init_point)
 
         return {
             success: true,
@@ -393,6 +465,59 @@ export async function createCheckoutPreference(planName: string, price: number) 
         }
     } catch (error: any) {
         console.error("MP Preference Error:", error)
-        throw new Error("No se pudo generar el link de pago. Intenta más tarde.")
+        throw new Error("No se pudo generar el link de pago: " + error.message)
+    }
+}
+
+/**
+ * Creates a Mercado Pago Preapproval (Recurring Subscription).
+ */
+export async function createRecurringSubscription(planName: string, price: number) {
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://inmobiliaria-orpin-one.vercel.app'
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) throw new Error("Debes iniciar sesión para suscribirte.")
+    if (!accessToken) throw new Error("Servicio de pagos no configurado.")
+
+    try {
+        const response = await fetch('https://api.mercadopago.com/preapproval', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reason: `InmoCMS - Plan ${planName} (Débito Automático)`,
+                auto_recurring: {
+                    frequency: 1,
+                    frequency_type: 'months',
+                    transaction_amount: price,
+                    currency_id: 'ARS'
+                },
+                // Note: payer_email is required for preapproval.
+                // If testing with the same seller email, it might block the payment button as well.
+                payer_email: user.email,
+                back_url: `${siteUrl}/cuenta/plan/success?plan=${planName}&type=recurring`,
+                external_reference: `${user.id}|||${planName}`,
+                status: 'pending'
+            })
+        })
+
+        const data = await response.json()
+        
+        if (!response.ok) {
+            console.error("MP Preapproval Error:", JSON.stringify(data, null, 2))
+            throw new Error(data.message || data.error || "Error al crear suscripción recurrente")
+        }
+
+        return {
+            success: true,
+            init_point: data.init_point
+        }
+    } catch (error: any) {
+        console.error("MP Preapproval Error:", error)
+        throw new Error("No se pudo generar el link de débito automático: " + error.message)
     }
 }

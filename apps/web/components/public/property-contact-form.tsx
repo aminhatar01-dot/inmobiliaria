@@ -32,6 +32,9 @@ export function PropertyContactForm({
             return
         }
 
+        const urlParams = new URLSearchParams(window.location.search)
+        const agentId = urlParams.get("agente")
+
         setLoading(true)
         try {
             await createPublicLead({
@@ -40,7 +43,8 @@ export function PropertyContactForm({
                 phone,
                 message,
                 propertyId,
-                tenantSlug
+                tenantSlug,
+                agentId: agentId || undefined
             })
             toast.success("¡Mensaje enviado! Te contactaremos pronto.")
             setName("")

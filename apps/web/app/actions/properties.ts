@@ -82,7 +82,7 @@ export async function createProperty(formData: Partial<Property>, images: string
             tenant_id: tenantId,
             status: cleanData.status || "available",
             is_shared: cleanData.is_shared !== undefined ? cleanData.is_shared : true,
-            is_verified: false // Nuevas propiedades empiezan como no verificadas
+            is_verified: false
         }])
         .select()
         .single()
@@ -253,10 +253,30 @@ export async function togglePropertySharing(id: string, isShared: boolean) {
     revalidatePath(`/propiedades/${id}`)
 }
 
+export async function togglePropertyFeatured(id: string, isFeatured: boolean) {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+
+    if (!tenantId) throw new Error("Unauthorized")
+
+    const { error } = await supabase
+        .from("properties")
+        .update({ is_featured: isFeatured })
+        .eq("id", id)
+        .eq("tenant_id", tenantId)
+
+    if (error) {
+        console.error(`Error toggling featured for property ${id}:`, error)
+        throw new Error(error.message)
+    }
+
+    revalidatePath("/propiedades")
+    revalidatePath("/")
+}
+
 export async function getAllPublicProperties(): Promise<any[]> {
     const supabase = await createClient()
 
-    // Public properties are those marked as available
     const { data, error } = await supabase
         .from("properties")
         .select(`

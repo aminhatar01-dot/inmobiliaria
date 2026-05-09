@@ -31,55 +31,11 @@ export function ConnectPortalDialog({
     onOpenChange
 }: ConnectPortalDialogProps) {
     const router = useRouter()
-    const [step, setStep] = useState(1) // 0: Config, 1: Email/Link, 2: Success
-    const [subStep, setSubStep] = useState(1) // subSteps for step 0
+    const [step, setStep] = useState(1) // 1: Email/Link, 2: Success
     const [email, setEmail] = useState("")
-    const [clientId, setClientId] = useState("")
-    const [clientSecret, setClientSecret] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [feedUrl, setFeedUrl] = useState<string | null>(null)
     const [isCopied, setIsCopied] = useState(false)
-    const [hasGlobalConfig, setHasGlobalConfig] = useState(true)
-    const [isChecking, setIsChecking] = useState(true)
-
-    useEffect(() => {
-        if (open && portalName === 'mercadolibre') {
-            checkConfig()
-        } else {
-            setIsChecking(false)
-        }
-    }, [open, portalName])
-
-    const checkConfig = async () => {
-        if (!portalName) return
-        setIsChecking(true)
-        try {
-            const config = (await getGlobalPortalConfig(portalName)) as any
-            if (!config || !config.client_id) {
-                setHasGlobalConfig(false)
-                setStep(0)
-            } else {
-                setHasGlobalConfig(true)
-                // If it's the platform default, we can go straight to Step 1
-                setStep(1)
-                
-                // If it's NOT a platform default, pre-fill keys
-                if (!config.is_platform_default) {
-                    setClientId(config.client_id)
-                    setClientSecret(config.client_secret || "")
-                }
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setIsChecking(false)
-        }
-    }
-
-    const handleResetConfig = () => {
-        setHasGlobalConfig(false)
-        setStep(0)
-    }
 
     if (!portalName) return null
 
@@ -93,18 +49,14 @@ export function ConnectPortalDialog({
 
         setIsLoading(true)
         try {
-            if (portalName === 'mercadolibre') {
-                // For ML, we use a manual bypass connection since API is restricted
-                await connectPortalManualToken(portalName, email, "manual_mode_no_api")
-                setFeedUrl("Conexión de acceso rápido establecida")
-                setStep(2)
-                toast.success("Cuenta de Mercado Libre vinculada (Modo Manual)")
-                router.refresh()
+            // Allow ML to use real connectPortal flow
+            const result = await connectPortal(portalName, email)
+            
+            if ('type' in result && result.type === 'error') {
+                toast.error(`Error: ${result.message}`)
                 return
             }
 
-            const result = await connectPortal(portalName, email)
-            
             if (result.type === 'redirect') {
                 window.location.href = result.url
                 return
@@ -182,15 +134,30 @@ export function ConnectPortalDialog({
                                     />
                                 </div>
                             </div>
-                            
-                            <div className="flex gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100 italic">
+
+                            <div className="flex gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100">
                                 <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                                <div className="space-y-2 w-full">
+                                <div className="space-y-3 w-full">
                                     <p className="text-xs text-blue-800 font-medium leading-relaxed">
                                         {portalName === 'mercadolibre' 
-                                            ? "Para Mercado Libre usaremos el Asistente Manual. Generaremos accesos directos desde InmoCMS para que puedas copiar y subir tus propiedades fácilmente."
-                                            : "Generaremos un enlace único XML automático."}
+                                            ? "Serás redirigido a Mercado Libre para iniciar sesión y autorizar la conexión con InmoCMS de forma segura. Solo necesitas tu cuenta normal."
+                                            : `IMPORTANTE: ${PORTAL_LABELS[portalName as keyof typeof PORTAL_LABELS]} no posee un sistema de conexión automática. Primero debes tener una cuenta activa con ellos. Luego, te daremos un Enlace XML que deberás pegar en el panel de control de tu cuenta en su página web.`}
                                     </p>
+                                    <div className="pt-2 border-t border-blue-200/60 flex items-center justify-between">
+                                        <span className="text-[10px] text-blue-700 font-bold uppercase">¿Aún no tienes cuenta?</span>
+                                        <a 
+                                            href={
+                                                portalName === 'mercadolibre' ? 'https://www.mercadolibre.com/jms/mla/lgz/login' :
+                                                portalName === 'argenprop' ? 'https://www.argenprop.com/inmobiliarias/registro' :
+                                                'https://www.zonaprop.com.ar/inmobiliarias/registro.html'
+                                            }
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-xs font-black text-blue-700 hover:text-blue-900 underline flex items-center gap-1"
+                                        >
+                                            Crear cuenta nueva <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -204,7 +171,7 @@ export function ConnectPortalDialog({
                                         <Loader2 className="h-6 w-6 animate-spin mr-2" />
                                     ) : (
                                         <>
-                                            {portalName === 'mercadolibre' ? 'ACTIVAR ASISTENTE ML' : 'SIGUIENTE PASO'}
+                                            {portalName === 'mercadolibre' ? 'VINCULAR CON MERCADO LIBRE' : 'GENERAR ENLACE XML'}
                                             <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}

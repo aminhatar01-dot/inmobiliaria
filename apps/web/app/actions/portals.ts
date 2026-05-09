@@ -30,6 +30,7 @@ export async function getPortalConnections(): Promise<PortalConnection[]> {
 export type PortalConnectResult = 
     | { type: 'redirect', url: string }
     | { type: 'success', data: any, feedUrl: string }
+    | { type: 'error', message: string }
 
 export async function getGlobalPortalConfig(portalName: string) {
     try {
@@ -79,7 +80,7 @@ export async function getGlobalPortalConfig(portalName: string) {
 export async function connectPortal(portalName: string, email: string, config?: { clientId: string, clientSecret: string }, origin?: string): Promise<PortalConnectResult> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error("Debes iniciar sesión.")
+    if (!user) return { type: 'error', message: "Debes iniciar sesión." }
 
     const { data: profile } = await supabase
         .from("profiles")
@@ -87,7 +88,7 @@ export async function connectPortal(portalName: string, email: string, config?: 
         .eq("id", user.id)
         .single()
 
-    if (!profile?.tenant_id) throw new Error("No tienes una inmobiliaria vinculada.")
+    if (!profile?.tenant_id) return { type: 'error', message: "No tienes una inmobiliaria vinculada." }
 
     // Special handling for Mercado Libre (OAuth)
     if (portalName === 'mercadolibre') {
@@ -125,7 +126,7 @@ export async function connectPortal(portalName: string, email: string, config?: 
         }
 
         if (!clientId || clientId === "PLACEHOLDER_ID" || clientId.length < 5 || clientId.includes('@')) {
-            throw new Error("Configuración inválida: No hemos encontrado un App ID válido de Mercado Libre. Por favor, ve a la sección técnica y asegúrate de ingresar el ID numérico de tu aplicación.")
+            return { type: 'error', message: "Configuración inválida: No hemos encontrado un App ID válido de Mercado Libre. Por favor, ve a la sección técnica y asegúrate de ingresar el ID numérico de tu aplicación." }
         }
 
         // Use the origin passed from the client if available, otherwise fallback to env
@@ -184,7 +185,7 @@ export async function connectPortal(portalName: string, email: string, config?: 
 
     if (connectionError) {
         console.error("Error creating portal connection:", connectionError)
-        throw new Error(connectionError.message)
+        return { type: 'error', message: connectionError.message }
     }
 
     revalidatePath("/marketing/portales")
@@ -271,11 +272,19 @@ export async function disconnectPortal(connectionId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error("Debes iniciar sesión.")
 
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("tenant_id")
+        .eq("id", user.id)
+        .single()
+
+    if (!profile?.tenant_id) throw new Error("No se encontró el tenant_id.")
+
     const { error } = await supabase
         .from("portal_connections")
         .delete()
         .eq("id", connectionId)
-        .eq("user_id", user.id)
+        .eq("tenant_id", profile.tenant_id)
 
     if (error) {
         console.error("Error disconnecting portal:", error)
@@ -291,11 +300,19 @@ export async function getPropertyPublications(propertyId: string): Promise<Prope
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return []
 
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("tenant_id")
+            .eq("id", user.id)
+            .single()
+
+        if (!profile?.tenant_id) return []
+
         const { data, error } = await supabase
             .from("property_publications")
             .select("*, portal_connections(portal_name, account_email)")
             .eq("property_id", propertyId)
-            .eq("user_id", user.id)
+            .eq("tenant_id", profile.tenant_id)
 
         if (error) {
             console.error("Error fetching publications:", error)
@@ -308,10 +325,10 @@ export async function getPropertyPublications(propertyId: string): Promise<Prope
     }
 }
 
-export async function publishToPortal(propertyId: string, connectionId: string) {
+export async function publishToPortal(propertyId: string, connectionId: string, customMlData?: any) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error("Debes iniciar sesión.")
+    if (!user) return { success: false, error: "Debes iniciar sesión." }
 
     const { data: profile } = await supabase
         .from("profiles")
@@ -319,7 +336,7 @@ export async function publishToPortal(propertyId: string, connectionId: string) 
         .eq("id", user.id)
         .single()
 
-    if (!profile?.tenant_id) throw new Error("No tienes una inmobiliaria vinculada.")
+    if (!profile?.tenant_id) return { success: false, error: "No tienes una inmobiliaria vinculada." }
 
     // Simulated network delay
     await new Promise(resolve => setTimeout(resolve, 1500))
@@ -355,7 +372,7 @@ export async function publishToPortal(propertyId: string, connectionId: string) 
                 .select("id")
                 .single()
             
-            if (createError) throw new Error("No se pudo iniciar la conexión nativa: " + createError.message)
+            if (createError) return { success: false, error: "No se pudo iniciar la conexión nativa: " + createError.message }
             realConnectionId = newConnection.id;
         }
     } else {
@@ -365,15 +382,82 @@ export async function publishToPortal(propertyId: string, connectionId: string) 
             .eq("id", realConnectionId)
             .single()
 
-        if (!conn) throw new Error("No se encontró la conexión.")
+        if (!conn) return { success: false, error: "No se encontró la conexión." }
         portalName = conn.portal_name;
     }
 
-    const externalId = `EXT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+    let externalId = `EXT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
     let externalUrl = ""
 
     if (portalName === 'mercadolibre') {
-        externalUrl = `https://www.mercadolibre.com.ar/inmuebles/MLA-${externalId}`
+        const { data: conn } = await supabase
+            .from("portal_connections")
+            .select("credentials")
+            .eq("id", realConnectionId)
+            .single()
+
+        const accessToken = (conn?.credentials as any)?.access_token;
+        if (!accessToken) return { success: false, error: "No hay un token de acceso válido para esta cuenta de Mercado Libre. Por favor, vuelve a vincular la cuenta." }
+
+        const { data: property } = await supabase.from('properties').select('*').eq('id', propertyId).single();
+        if (!property) return { success: false, error: "Propiedad no encontrada." }
+
+        // Mapeo básico de categorías de Mercado Libre (Argentina) - Categorías Hoja (Leaf)
+        let mlCategory = "MLA401686"; // Departamentos > Venta > Propiedades Individuales
+        if (property.operation_type === 'sale' && property.property_type === 'house') mlCategory = "MLA401685";
+        if (property.operation_type === 'rent' && property.property_type === 'apartment') mlCategory = "MLA1473"; // Departamentos > Alquiler (Necesitaría hoja específica en prod)
+        if (property.operation_type === 'rent' && property.property_type === 'house') mlCategory = "MLA1467";
+
+        // Estructura requerida por la API real de Mercado Libre para Inmuebles
+        const mlPayload = {
+            title: (property.title || "Propiedad excelente oportunidad").substring(0, 60), 
+            category_id: customMlData?.categoryId || mlCategory, 
+            price: property.price || 100000,
+            currency_id: property.currency === 'USD' ? 'USD' : 'ARS',
+            available_quantity: 1,
+            buying_mode: "classified",
+            listing_type_id: "free",
+            condition: "not_specified",
+            pictures: property.images && property.images.length > 0 
+                ? property.images.slice(0, 10).map((img: string) => ({ source: img }))
+                : [{ source: "https://http2.mlstatic.com/frontend-assets/ui-navigation/5.19.5/mercadolibre/logo__large_plus.png" }],
+            location: customMlData?.location || {
+                country: { id: "AR" },
+                state: { id: "TUxBUENBUGw3M2E1" }, // Capital Federal
+                city: { id: "TUxBQ0NBUGZlZG1sYQ" }, // Ciudad Autónoma de Buenos Aires
+                neighborhood: { id: "TUxBQkFMTTMwNTBa" } // Almagro
+            },
+            attributes: customMlData?.attributes || [
+                { id: "TOTAL_AREA", value_name: `${property.surface_total || 50} m²` },
+                { id: "COVERED_AREA", value_name: `${property.surface_covered || 45} m²` },
+                { id: "ROOMS", value_name: `${property.rooms || 2}` },
+                { id: "BEDROOMS", value_name: `${property.bedrooms || 1}` },
+                { id: "FULL_BATHROOMS", value_name: `${property.bathrooms || 1}` }
+            ]
+        };
+
+        const response = await fetch("https://api.mercadolibre.com/items", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(mlPayload)
+        });
+
+        const mlData = await response.json();
+
+        if (!response.ok) {
+            console.error("ML Publish Error:", mlData);
+            // Formatear el error real de ML para que el usuario lo vea
+            const mlErrorCauses = mlData.cause && mlData.cause.length > 0 
+                ? mlData.cause.map((c: any) => c.message).join(", ") 
+                : mlData.message;
+            return { success: false, error: `Rechazado por Mercado Libre: ${mlErrorCauses}` }
+        }
+
+        externalId = mlData.id;
+        externalUrl = mlData.permalink;
     } else if (portalName === 'argenprop') {
         externalUrl = `https://www.argenprop.com/propiedad-${externalId}`
     } else if (portalName === 'zonaprop') {
@@ -406,7 +490,6 @@ export async function publishToPortal(propertyId: string, connectionId: string) 
             .from("property_publications")
             .insert({
                 tenant_id: profile.tenant_id,
-                user_id: user.id,
                 property_id: propertyId,
                 portal_connection_id: realConnectionId,
                 status: 'published',
@@ -419,7 +502,7 @@ export async function publishToPortal(propertyId: string, connectionId: string) 
 
     if (pubError) {
         console.error("Error publishing property:", pubError)
-        throw new Error(pubError.message)
+        return { success: false, error: pubError.message }
     }
 
     // Trigger automation

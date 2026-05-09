@@ -9,32 +9,42 @@ import {
     Phone,
     Mail,
     Instagram,
-    Facebook
+    Facebook,
+    Star
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { getPublicProperties } from "@/app/actions/public"
+import { getPublicProperties, getPublicAgentInfo } from "@/app/actions/public"
 import Link from "next/link"
 import { PublicSearchBar } from "@/components/public/public-search-bar"
+import { User, Sparkles as SparklesIcon } from "lucide-react"
 
 export default async function TenantPublicPage({
     params,
     searchParams
 }: {
     params: Promise<{ tenant_slug: string }>
-    searchParams: Promise<{ search?: string; operation?: string; type?: string }>
+    searchParams: Promise<{ search?: string; operation?: string; type?: string; agente?: string }>
 }) {
     const { tenant_slug } = await params
     const filters = await searchParams
+    const agentId = filters.agente
+    
+    const agentInfo = agentId ? await getPublicAgentInfo(agentId) : null
     const tenantName = tenant_slug.replace("-", " ").toUpperCase()
+    const displayTitle = agentInfo ? agentInfo.name : tenantName
 
     const properties = await getPublicProperties(tenant_slug, {
         search: filters.search,
         operation: filters.operation,
-        type: filters.type
+        type: filters.type,
+        agentId: agentId
     })
+
+    const agencyData = Array.isArray(agentInfo?.tenants) ? agentInfo.tenants[0] : (agentInfo?.tenants as any)
+    const agencyNameFromInfo = agencyData?.name || 'Inmobiliaria'
 
     return (
         <div className="min-h-screen bg-white selection:bg-blue-100 selection:text-blue-900">
@@ -63,13 +73,31 @@ export default async function TenantPublicPage({
                 <div className="max-w-7xl mx-auto px-6 text-center space-y-8">
                     <div className="space-y-4 max-w-3xl mx-auto">
                         <Badge variant="outline" className="bg-blue-50 border-blue-100 text-blue-600 font-bold px-4 py-1.5 rounded-full text-xs uppercase tracking-widest">
-                            Inmobiliaria Boutique en {tenantName}
+                            {agentInfo ? `Porfolio Profesional` : `Inmobiliaria Boutique en ${tenantName}`}
                         </Badge>
-                        <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-[1.1] tracking-tight">
-                            Encuentra el hogar que <span className="text-blue-600">siempre soñaste.</span>
-                        </h1>
+                        {agentInfo ? (
+                            <div className="flex flex-col items-center gap-6">
+                                <div className="h-24 w-24 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 p-1 shadow-2xl">
+                                    <div className="h-full w-full rounded-full bg-white flex items-center justify-center">
+                                        <User className="h-12 w-12 text-blue-600" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <h1 className="text-5xl md:text-6xl font-black text-gray-900 leading-[1.1] tracking-tight">
+                                        Hola, soy <span className="text-blue-600">{agentInfo.name}</span>
+                                    </h1>
+                                    <p className="text-xl text-gray-500 font-bold mt-2 uppercase tracking-[0.2em]">{agencyNameFromInfo}</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-[1.1] tracking-tight">
+                                Encuentra el hogar que <span className="text-blue-600">siempre soñaste.</span>
+                            </h1>
+                        )}
                         <p className="text-lg text-gray-500 font-medium max-w-xl mx-auto">
-                            Descubre nuestra selección curada de las propiedades más exclusivas y mejor ubicadas del mercado.
+                            {agentInfo 
+                                ? `Te presento mi selección exclusiva de propiedades disponibles. Estoy aquí para asesorarte en cada paso.`
+                                : `Descubre nuestra selección curada de las propiedades más exclusivas y mejor ubicadas del mercado.`}
                         </p>
                     </div>
 
@@ -83,7 +111,7 @@ export default async function TenantPublicPage({
                 <div className="flex items-end justify-between mb-12">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-                            {filters.search || filters.operation || filters.type ? "Resultados de Búsqueda" : "Propiedades Destacadas"}
+                            {filters.search || filters.operation || filters.type ? "Resultados de Búsqueda" : "Propiedades Disponibles"}
                         </h2>
                         <div className="h-1.5 w-20 bg-blue-600 rounded-full" />
                     </div>
@@ -98,58 +126,34 @@ export default async function TenantPublicPage({
                         </Button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                        {properties.map((prop: any) => {
-                            const mainImage = prop.property_media?.find((m: any) => m.type === 'image')?.url || '/placeholder-property.jpg'
-                            const operationLabel = prop.operation_type === 'sale' ? 'Venta' : prop.operation_type === 'rent' ? 'Alquiler' : 'Alquiler Temporal'
+                    <div className="space-y-20">
+                        {/* Featured Section */}
+                        {(!filters.search && !filters.operation && !filters.type) && properties.some((p: any) => p.is_featured) && (
+                            <div className="space-y-12">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+                                        <Star className="h-6 w-6 fill-amber-500" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-gray-900">Inmuebles Destacados</h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                                    {properties.filter((p: any) => p.is_featured).map((prop: any) => (
+                                        <PropertyCard key={prop.id} prop={prop} tenant_slug={tenant_slug} agentId={agentId} isFeatured />
+                                    ))}
+                                </div>
+                                <div className="h-px w-full bg-gray-100" />
+                            </div>
+                        )}
 
-                            return (
-                                <Link key={prop.id} href={`/${tenant_slug}/propiedades/${prop.id}`}>
-                                    <Card className="border-none shadow-none group cursor-pointer">
-                                        <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden mb-6">
-                                            <img src={mainImage} alt={prop.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                            <div className="absolute top-4 left-4 flex gap-2">
-                                                <Badge className="bg-white/90 backdrop-blur-md text-gray-900 border-none font-black text-[10px] uppercase tracking-wider px-3 py-1.5 shadow-sm">
-                                                    {operationLabel}
-                                                </Badge>
-                                            </div>
-                                            <div className="absolute bottom-4 left-4">
-                                                <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl shadow-sm">
-                                                    <p className="text-lg font-black text-gray-900">
-                                                        {prop.currency} {prop.price?.toLocaleString()}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <CardContent className="p-0 space-y-3">
-                                            <div>
-                                                <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{prop.title}</h3>
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium mt-1">
-                                                    <MapPin className="h-3.5 w-3.5 text-blue-500" /> {prop.address || 'Ubicación no especificada'}
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-4 pt-2">
-                                                {prop.bedrooms > 0 && (
-                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600">
-                                                        <BedDouble className="h-4 w-4 text-gray-300" /> {prop.bedrooms} Dorm.
-                                                    </div>
-                                                )}
-                                                {prop.bathrooms > 0 && (
-                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600">
-                                                        <Bath className="h-4 w-4 text-gray-300" /> {prop.bathrooms} Baños
-                                                    </div>
-                                                )}
-                                                {prop.surface_total && (
-                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600">
-                                                        <Maximize2 className="h-4 w-4 text-gray-300" /> {prop.surface_total} m²
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            )
-                        })}
+                        {/* All / Remaining Section */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                            {properties
+                                .filter((p: any) => !(!filters.search && !filters.operation && !filters.type && p.is_featured))
+                                .map((prop: any) => (
+                                    <PropertyCard key={prop.id} prop={prop} tenant_slug={tenant_slug} agentId={agentId} />
+                                ))
+                            }
+                        </div>
                     </div>
                 )}
             </section>
@@ -198,5 +202,59 @@ export default async function TenantPublicPage({
                 </div>
             </footer>
         </div>
+    )
+}
+
+function PropertyCard({ prop, tenant_slug, agentId, isFeatured }: { prop: any, tenant_slug: string, agentId?: string, isFeatured?: boolean }) {
+    const mainImage = prop.property_media?.find((m: any) => m.type === 'image')?.url || '/placeholder-property.jpg'
+    const operationLabel = prop.operation_type === 'sale' ? 'Venta' : prop.operation_type === 'rent' ? 'Alquiler' : 'Alquiler Temporal'
+
+    return (
+        <Link href={`/${tenant_slug}/propiedades/${prop.id}${agentId ? `?agente=${agentId}` : ''}`}>
+            <Card className={`border-none shadow-none group cursor-pointer ${isFeatured ? 'scale-105 md:scale-100' : ''}`}>
+                <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden mb-6 shadow-xl shadow-gray-200/50">
+                    <img src={mainImage} alt={prop.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute top-4 left-4 flex gap-2">
+                        <Badge className="bg-white/90 backdrop-blur-md text-gray-900 border-none font-black text-[10px] uppercase tracking-wider px-3 py-1.5 shadow-sm">
+                            {operationLabel}
+                        </Badge>
+                        {prop.is_featured && (
+                            <Badge className="bg-amber-500 text-white border-none font-black text-[10px] uppercase tracking-wider px-3 py-1.5 shadow-sm flex items-center gap-1">
+                                <Star className="h-3 w-3 fill-white" /> Destacado
+                            </Badge>
+                        )}
+                    </div>
+                    <div className="absolute bottom-4 left-4">
+                        <div className="bg-blue-600/90 backdrop-blur-md text-white px-4 py-2 rounded-2xl font-black text-lg shadow-lg">
+                            {prop.currency} {prop.price?.toLocaleString()}
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-3 px-2">
+                    <h3 className="text-xl font-black text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">{prop.title}</h3>
+                    <div className="flex items-center text-gray-400 font-bold text-sm">
+                        <MapPin className="h-4 w-4 mr-1 text-blue-500" />
+                        <span className="line-clamp-1">{prop.address}</span>
+                    </div>
+                    <div className="flex items-center gap-4 pt-2 border-t border-gray-50">
+                        {prop.bedrooms > 0 && (
+                            <div className="flex items-center gap-1 text-sm font-bold text-gray-500">
+                                <BedDouble className="h-4 w-4 text-gray-300" /> {prop.bedrooms}
+                            </div>
+                        )}
+                        {prop.bathrooms > 0 && (
+                            <div className="flex items-center gap-1 text-sm font-bold text-gray-500">
+                                <Bath className="h-4 w-4 text-gray-300" /> {prop.bathrooms}
+                            </div>
+                        )}
+                        {prop.surface_total > 0 && (
+                            <div className="flex items-center gap-1 text-sm font-bold text-gray-500">
+                                <Maximize2 className="h-4 w-4 text-gray-300" /> {prop.surface_total}m²
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </Card>
+        </Link>
     )
 }

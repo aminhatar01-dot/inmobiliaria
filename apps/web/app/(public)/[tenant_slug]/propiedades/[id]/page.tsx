@@ -1,4 +1,4 @@
-import { getPublicPropertyById } from "@/app/actions/public"
+import { getPublicPropertyById, getPublicAgentInfo } from "@/app/actions/public"
 import { notFound } from "next/navigation"
 import {
     MapPin,
@@ -9,7 +9,8 @@ import {
     ArrowLeft,
     Share2,
     Phone,
-    Mail
+    Mail,
+    User
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,12 +19,20 @@ import Link from "next/link"
 import { PropertyContactForm } from "@/components/public/property-contact-form"
 
 export default async function PublicPropertyDetailPage({
-    params
+    params,
+    searchParams
 }: {
     params: Promise<{ tenant_slug: string; id: string }>
+    searchParams: Promise<{ agente?: string }>
 }) {
     const { tenant_slug, id } = await params
-    const result = await getPublicPropertyById(tenant_slug, id)
+    const filters = await searchParams
+    const agentId = filters.agente
+    
+    const [result, agentInfo] = await Promise.all([
+        getPublicPropertyById(tenant_slug, id),
+        agentId ? getPublicAgentInfo(agentId) : null
+    ])
 
     if (!result) {
         notFound()
@@ -32,6 +41,10 @@ export default async function PublicPropertyDetailPage({
     const { property, tenant } = result
     const tenantName = tenant_slug.replace("-", " ").toUpperCase()
     const operationLabel = property.operation_type === 'sale' ? 'Venta' : property.operation_type === 'rent' ? 'Alquiler' : 'Alquiler Temporal'
+    
+    const agencyData = Array.isArray(agentInfo?.tenants) ? agentInfo.tenants[0] : (agentInfo?.tenants as any)
+    const agencyNameFromInfo = agencyData?.name || tenantName
+
     const images = property.property_media?.filter((m: any) => m.type === 'image').sort((a: any, b: any) => a.order - b.order) || []
 
     return (
@@ -39,14 +52,14 @@ export default async function PublicPropertyDetailPage({
             {/* Header */}
             <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <Link href={`/${tenant_slug}`} className="flex items-center gap-2">
+                    <Link href={`/${tenant_slug}${agentId ? `?agente=${agentId}` : ''}`} className="flex items-center gap-2">
                         <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                             <span className="font-black text-xl">{tenantName[0]}</span>
                         </div>
-                        <span className="font-black text-xl text-gray-900 tracking-tighter">{tenantName}</span>
+                        <span className="font-black text-xl text-gray-900 tracking-tighter">{agentInfo ? agentInfo.name : tenantName}</span>
                     </Link>
                     <Button asChild variant="outline" className="rounded-full font-bold">
-                        <Link href={`/${tenant_slug}`}>
+                        <Link href={`/${tenant_slug}${agentId ? `?agente=${agentId}` : ''}`}>
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Volver a propiedades
                         </Link>
@@ -180,15 +193,24 @@ export default async function PublicPropertyDetailPage({
                                 </Card>
 
                                 <div className="mt-6 p-6 bg-gray-50 rounded-2xl space-y-4">
-                                    <h4 className="font-black text-gray-900">Contacto Directo</h4>
+                                    <h4 className="font-black text-gray-900">Tu Asesor</h4>
+                                    <div className="flex items-center gap-3 pb-2 border-b border-gray-200 mb-2">
+                                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                            <User className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-black text-gray-900">{agentInfo ? agentInfo.name : tenantName}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{agencyNameFromInfo}</p>
+                                        </div>
+                                    </div>
                                     <div className="space-y-3">
-                                        <a href="tel:+5491112345678" className="flex items-center gap-3 text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors">
+                                        <a href={`tel:${agentInfo ? agentInfo.phone : '+5491112345678'}`} className="flex items-center gap-3 text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors">
                                             <Phone className="h-4 w-4" />
-                                            +54 9 11 1234 5678
+                                            {agentInfo ? agentInfo.phone : '+54 9 11 1234 5678'}
                                         </a>
-                                        <a href={`mailto:hola@${tenant_slug}.com`} className="flex items-center gap-3 text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors">
+                                        <a href={`mailto:${agentInfo ? agentInfo.email : `hola@${tenant_slug}.com`}`} className="flex items-center gap-3 text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors">
                                             <Mail className="h-4 w-4" />
-                                            hola@{tenant_slug}.com
+                                            {agentInfo ? agentInfo.email : `hola@${tenant_slug}.com`}
                                         </a>
                                     </div>
                                 </div>

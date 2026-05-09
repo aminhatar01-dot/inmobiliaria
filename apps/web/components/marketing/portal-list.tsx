@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { disconnectPortal } from "@/app/actions/portals"
 import {
     Link2,
@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { ConnectPortalDialog } from "@/components/marketing/connect-portal-dialog"
 import { PortalConnection } from "@inmocms/shared"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 
 interface PortalListProps {
@@ -29,6 +29,21 @@ export function PortalList({ initialConnections }: PortalListProps) {
     const [isDisconnecting, setIsDisconnecting] = useState<string | null>(null)
     const [selectedPortal, setSelectedPortal] = useState<string | null>(null)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const searchParams = useSearchParams()
+
+    useEffect(() => {
+        const error = searchParams.get('error')
+        const detail = searchParams.get('detail')
+        const success = searchParams.get('success')
+
+        if (error) {
+            toast.error(`Error al conectar: ${error} ${detail ? `(${detail})` : ''}`)
+            router.replace('/marketing/portales')
+        } else if (success) {
+            toast.success(`¡Portal vinculado exitosamente!`)
+            router.replace('/marketing/portales')
+        }
+    }, [searchParams, router])
 
     const handleDisconnect = async (connectionId: string) => {
         setIsDisconnecting(connectionId)
@@ -96,21 +111,7 @@ export function PortalList({ initialConnections }: PortalListProps) {
                                     <p className="text-sm text-gray-500 font-medium mt-1">{meta.description}</p>
                                 </div>
 
-                                {key === 'mercadolibre' ? (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-3 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-2xl p-6 border-2 border-emerald-100">
-                                            <CheckCircle2 className="h-4 w-4" />
-                                            ¡App Maestra Conectada y Lista!
-                                        </div>
-                                        <Button
-                                            disabled
-                                            className={`w-full rounded-2xl font-black h-14 ${meta.color} ${meta.textColor} shadow-lg shadow-${key}-500/20 active:scale-95 transition-all opacity-80`}
-                                        >
-                                            <CheckCircle2 className="mr-2 h-5 w-5" />
-                                            NATIVO DE INMOCMS
-                                        </Button>
-                                    </div>
-                                ) : conn ? (
+                                {conn ? (
                                     <div className="space-y-4">
                                         <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between">
                                             <div className="overflow-hidden">

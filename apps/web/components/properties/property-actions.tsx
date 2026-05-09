@@ -18,17 +18,18 @@ import {
     Trash2,
     Globe,
     Rocket,
+    Star,
     Loader2
 } from "lucide-react"
 import Link from "next/link"
 import { PublishDialog } from "@/components/marketing/publish-dialog"
 import { PortalConnection, PropertyPublication, Property } from "@inmocms/shared"
-import { togglePropertySharing, deleteProperty } from "@/app/actions/properties"
+import { togglePropertySharing, deleteProperty, togglePropertyFeatured } from "@/app/actions/properties"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 interface PropertyActionsProps {
-    property: Property
+    property: Property & { is_featured?: boolean }
     connections: PortalConnection[]
     publications: PropertyPublication[]
 }
@@ -37,6 +38,16 @@ export function PropertyActions({ property, connections, publications }: Propert
     const [publishOpen, setPublishOpen] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const router = useRouter()
+
+    async function handleToggleFeatured() {
+        try {
+            await togglePropertyFeatured(property.id, !property.is_featured);
+            toast.success(property.is_featured ? "Propiedad retirada de destacados" : "Propiedad marcada como destacada");
+            router.refresh();
+        } catch (e: any) {
+            toast.error("Error al cambiar estado de destacado");
+        }
+    }
 
     async function handleDelete() {
         if (!confirm(`¿Eliminar la propiedad "${property.title}"? Esta acción no se puede deshacer.`)) return;
@@ -103,6 +114,14 @@ export function PropertyActions({ property, connections, publications }: Propert
                     >
                         <Globe className={`h-4 w-4 mr-3 ${property.is_shared ? 'text-blue-600' : 'text-gray-400'} group-hover:text-blue-600 transition-colors`} />
                         <span className="font-bold text-gray-700">{property.is_shared ? "Dejar de compartir" : "Compartir en Red"}</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                        className="rounded-xl py-3 cursor-pointer group"
+                        onClick={handleToggleFeatured}
+                    >
+                        <Star className={`h-4 w-4 mr-3 ${property.is_featured ? 'text-amber-500 fill-amber-500' : 'text-gray-400'} group-hover:text-amber-500 transition-colors`} />
+                        <span className="font-bold text-gray-700">{property.is_featured ? "Quitar de Destacados" : "Marcar como Destacado"}</span>
                     </DropdownMenuItem>
 
                     <DropdownMenuItem className="rounded-xl py-3 cursor-pointer group" asChild>

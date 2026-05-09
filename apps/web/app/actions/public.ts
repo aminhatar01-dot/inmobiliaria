@@ -9,6 +9,7 @@ export async function getPublicProperties(
         search?: string
         operation?: string
         type?: string
+        agentId?: string
     }
 ) {
     const supabase = await createClient()
@@ -25,7 +26,7 @@ export async function getPublicProperties(
         return []
     }
 
-    // Build query for shared properties
+    // Build query for properties
     let query = supabase
         .from("properties")
         .select(`
@@ -41,6 +42,10 @@ export async function getPublicProperties(
         .order("created_at", { ascending: false })
 
     // Apply filters
+    if (filters?.agentId) {
+        query = query.eq("created_by", filters.agentId)
+    }
+
     if (filters?.search) {
         query = query.or(`title.ilike.%${filters.search}%,address.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
     }
@@ -61,6 +66,33 @@ export async function getPublicProperties(
     }
 
     return properties || []
+}
+
+export async function getPublicAgentInfo(agentId: string) {
+    const supabase = await createAdminClient()
+
+    const { data: profile, error } = await supabase
+        .from("profiles")
+        .select(`
+            name,
+            email,
+            phone,
+            tenant_id,
+            tenants (
+                name,
+                slug,
+                logo_url
+            )
+        `)
+        .eq("id", agentId)
+        .single()
+
+    if (error) {
+        console.error("Error fetching public agent info:", error)
+        return null
+    }
+
+    return profile
 }
 
 export async function getPublicPropertyById(tenantSlug: string, propertyId: string) {
@@ -108,6 +140,7 @@ export async function createPublicLead(data: {
     message: string
     propertyId?: string
     tenantSlug: string
+    agentId?: string
 }) {
     const adminSupabase = await createAdminClient()
 
@@ -133,6 +166,7 @@ export async function createPublicLead(data: {
             phone: data.phone || null,
             notes: data.message,
             interested_property_id: data.propertyId || null,
+            assigned_to: data.agentId || null,
             status: "new",
             source: "website",
             scoring: 0

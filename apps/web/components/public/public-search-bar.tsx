@@ -21,10 +21,14 @@ export function PublicSearchBar({ tenantSlug }: { tenantSlug: string }) {
     const [propertyType, setPropertyType] = useState<string>("")
 
     const handleSearch = () => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const agentId = urlParams.get("agente")
+        
         const params = new URLSearchParams()
         if (searchQuery) params.set("search", searchQuery)
         if (operation) params.set("operation", operation)
         if (propertyType) params.set("type", propertyType)
+        if (agentId) params.set("agente", agentId)
 
         router.push(`/${tenantSlug}?${params.toString()}`)
     }
