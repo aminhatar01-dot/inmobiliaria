@@ -10,7 +10,9 @@ import {
     Mail,
     MessageSquare,
     Loader2,
-    Users
+    Users,
+    UserPlus,
+    Share2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,9 +23,11 @@ import { Card } from "@/components/ui/card"
 import { MessageList } from "./message-list"
 import { MessageInput } from "./message-input"
 import { NewChatDialog } from "./new-chat-dialog"
+import { InviteAgentDialog } from "./invite-agent-dialog"
 import { getMessages, markAsRead, getConversations } from "@/app/actions/messages"
 import type { ConversationWithDetails, MessageWithSender } from "@inmocms/shared"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface MessagingInterfaceProps {
     initialConversations: ConversationWithDetails[]
@@ -40,6 +44,7 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
     const [messages, setMessages] = useState<MessageWithSender[]>([])
     const [isLoadingMessages, setIsLoadingMessages] = useState(false)
     const [isNewChatOpen, setIsNewChatOpen] = useState(false)
+    const [isInviteOpen, setIsInviteOpen] = useState(false)
 
     // Load messages when conversation changes
     useEffect(() => {
@@ -94,11 +99,16 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
     const renderSidebarItem = (conv: ConversationWithDetails) => {
         const isSelected = selectedConversation?.id === conv.id
         const isClient = !!conv.lead_id
-        const displayName = isClient
-            ? conv.lead?.name
-            : (conv.other_user?.full_name || conv.other_user?.email || 'Colega')
-        const displaySub = isClient ? 'Cliente' : 'Equipo'
-        const avatarInitial = (isClient ? conv.lead?.name?.[0] : (conv.other_user?.full_name?.[0] || conv.other_user?.email?.[0])) || '?'
+        const isGroup = !!conv.is_group
+        const displayName = isGroup 
+            ? (conv.name || 'Grupo sin nombre')
+            : isClient
+                ? conv.lead?.name
+                : (conv.other_user?.full_name || conv.other_user?.email || 'Colega')
+        
+        const avatarInitial = isGroup 
+            ? (conv.name?.[0] || 'G')
+            : (isClient ? conv.lead?.name?.[0] : (conv.other_user?.full_name?.[0] || conv.other_user?.email?.[0])) || '?'
 
         return (
             <div
@@ -109,14 +119,21 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
             >
                 <div className="relative shrink-0">
                     <Avatar className={`h-12 w-12 border-2 ${isSelected ? 'border-white/20' : 'border-transparent'}`}>
-                        <AvatarFallback className={`${isClient
-                            ? 'bg-gradient-to-br from-amber-400 to-orange-500'
-                            : 'bg-gradient-to-br from-blue-500 to-purple-500'
+                        <AvatarFallback className={`${isGroup 
+                            ? 'bg-gradient-to-br from-indigo-500 to-purple-600'
+                            : isClient
+                                ? 'bg-gradient-to-br from-amber-400 to-orange-500'
+                                : 'bg-gradient-to-br from-blue-500 to-purple-500'
                             } text-white font-black`}>
                             {avatarInitial}
                         </AvatarFallback>
                     </Avatar>
-                    {isClient && !isSelected && (
+                    {isGroup && !isSelected && (
+                        <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-indigo-500 border-2 border-white flex items-center justify-center">
+                            <Users className="h-2.5 w-2.5 text-white" />
+                        </div>
+                    )}
+                    {isClient && !isGroup && !isSelected && (
                         <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center">
                             <Users className="h-2.5 w-2.5 text-white" />
                         </div>
@@ -153,12 +170,20 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
                 <div className="p-6 space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-black text-gray-900 tracking-tight">Inbox</h2>
-                        <Button
-                            onClick={() => setIsNewChatOpen(true)}
-                            className="rounded-xl h-10 w-10 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20 p-0"
-                        >
-                            <Mail className="h-5 w-5 text-white" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                onClick={() => setIsInviteOpen(true)}
+                                className="rounded-xl h-10 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-[10px] uppercase tracking-wider px-4 shadow-lg shadow-indigo-500/20 border-none"
+                            >
+                                <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Invitar
+                            </Button>
+                            <Button
+                                onClick={() => setIsNewChatOpen(true)}
+                                className="rounded-xl h-10 w-10 bg-white border border-gray-100 text-gray-400 hover:text-blue-600 hover:bg-blue-50 shadow-sm p-0"
+                            >
+                                <Mail className="h-5 w-5" />
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="flex p-1 bg-gray-100/50 rounded-2xl h-11">
@@ -221,8 +246,8 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
                                         : (selectedConversation.other_user?.full_name || selectedConversation.other_user?.email || 'Usuario')}
                                 </h3>
                                 <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
-                                    <span className={`h-1.5 w-1.5 rounded-full ${selectedConversation.lead_id ? 'bg-amber-400' : 'bg-blue-400'}`} />
-                                    {selectedConversation.lead_id ? 'Cliente' : 'Equipo'} • {selectedConversation.lead_id ? selectedConversation.lead?.email : selectedConversation.other_user?.email}
+                                    <span className={`h-1.5 w-1.5 rounded-full ${selectedConversation.is_group ? 'bg-indigo-400' : selectedConversation.lead_id ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                                    {selectedConversation.is_group ? 'Grupo' : selectedConversation.lead_id ? 'Cliente' : 'Equipo'} • {selectedConversation.is_group ? `${selectedConversation.participants?.length || 2} miembros` : selectedConversation.lead_id ? selectedConversation.lead?.email : selectedConversation.other_user?.email}
                                 </div>
                             </div>
                         </div>
@@ -253,12 +278,22 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
                     <MessageInput conversationId={selectedConversation.id} onMessageSent={handleMessageSent} />
                 </div>
             ) : (
-                <div className="flex-1 flex items-center justify-center bg-gray-50">
-                    <div className="text-center space-y-4">
-                        <div className="h-20 w-20 mx-auto rounded-3xl bg-white shadow-xl shadow-gray-200/50 flex items-center justify-center text-blue-500">
+                <div className="flex-1 flex items-center justify-center bg-gray-50/50">
+                    <div className="text-center space-y-6">
+                        <div className="h-24 w-24 mx-auto rounded-[2.5rem] bg-white shadow-2xl shadow-gray-200/50 flex items-center justify-center text-blue-500 transform -rotate-6 transition-transform hover:rotate-0">
                             <MessageSquare className="h-10 w-10" />
                         </div>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Selecciona una conversación</p>
+                        <div className="space-y-2">
+                            <p className="text-sm font-black text-gray-900 uppercase tracking-widest">Tu bandeja de entrada</p>
+                            <p className="text-xs text-gray-400 font-medium max-w-[200px] mx-auto">Selecciona una conversación o invita a nuevos agentes a tu equipo.</p>
+                        </div>
+                        <Button
+                            onClick={() => setIsInviteOpen(true)}
+                            variant="outline"
+                            className="rounded-2xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-bold px-6 h-12 shadow-sm"
+                        >
+                            <UserPlus className="h-4 w-4 mr-2" /> Invitar Colegas
+                        </Button>
                     </div>
                 </div>
             )}
@@ -267,6 +302,11 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
                 open={isNewChatOpen}
                 onOpenChange={setIsNewChatOpen}
                 onConversationCreated={(id) => refreshConversations(id)}
+            />
+
+            <InviteAgentDialog 
+                open={isInviteOpen}
+                onOpenChange={setIsInviteOpen}
             />
         </div>
     )

@@ -11,6 +11,9 @@ export interface Conversation {
     id: string
     tenant_id: string
     lead_id?: string
+    name?: string
+    is_group?: boolean
+    type?: 'direct' | 'group' | 'lead'
     created_at: string
     updated_at: string
 }

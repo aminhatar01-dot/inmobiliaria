@@ -50,14 +50,60 @@ export default function NewPropertyPage() {
         status: "available",
         owner_id: "",
         automation_settings: {
-            follow_up: false,
-            suggestions: false,
-            offers: false,
-            price_changes: false,
-            new_offers: false,
-            retazaciones: false
+            rules: [
+                {
+                    id: 'rule-' + Math.random().toString(36).substr(2, 9),
+                    leadType: 'all',
+                    actionType: 'whatsapp',
+                    trigger: 'new_inquiry',
+                    message: "¡Hola! Gracias por contactarme por esta propiedad. Me gustaría invitarte a una visita personalizada para que conozcas todos los detalles. ¿Qué día te queda mejor?",
+                    enabled: false
+                }
+            ]
         }
     })
+
+    const addRule = () => {
+        setFormData(prev => ({
+            ...prev,
+            automation_settings: {
+                ...prev.automation_settings,
+                rules: [
+                    ...prev.automation_settings.rules,
+                    {
+                        id: 'rule-' + Math.random().toString(36).substr(2, 9),
+                        leadType: 'all',
+                        actionType: 'whatsapp',
+                        trigger: 'new_inquiry',
+                        message: "Nuevo mensaje de seguimiento personalizado...",
+                        enabled: true
+                    }
+                ]
+            }
+        }))
+    }
+
+    const removeRule = (id: string) => {
+        setFormData(prev => ({
+            ...prev,
+            automation_settings: {
+                ...prev.automation_settings,
+                rules: prev.automation_settings.rules.filter((r: any) => r.id !== id)
+            }
+        }))
+    }
+
+    const updateRule = (id: string, updates: any) => {
+        setFormData(prev => ({
+            ...prev,
+            automation_settings: {
+                ...prev.automation_settings,
+                rules: prev.automation_settings.rules.map((r: any) => 
+                    r.id === id ? { ...r, ...updates } : r
+                )
+            }
+        }))
+    }
 
     const handleChange = (field: string, value: string | number) => {
         setFormData(prev => ({ ...prev, [field]: value }))
@@ -274,103 +320,114 @@ export default function NewPropertyPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Automation Settings */}
+                    {/* Advanced Automation Rules */}
                     <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-                        <CardHeader className="flex flex-row items-center gap-3 border-b border-gray-50 pb-6 px-8">
-                            <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
-                                <Settings className="h-5 w-5" />
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 pb-6 px-8">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                                    <Sparkles className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg font-bold">Automatización de Leads</CardTitle>
+                                    <CardDescription>Campaña personalizada y seguimiento inteligente</CardDescription>
+                                </div>
                             </div>
-                            <div>
-                                <CardTitle className="text-lg font-bold">Automatización de Leads</CardTitle>
-                                <CardDescription>Configura el seguimiento automático para este inmueble</CardDescription>
-                            </div>
+                            <Button 
+                                type="button"
+                                onClick={addRule}
+                                variant="outline" 
+                                size="sm" 
+                                className="rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-bold"
+                            >
+                                <PlusCircle className="h-4 w-4 mr-2" /> Nueva Regla
+                            </Button>
                         </CardHeader>
-                        <CardContent className="p-8 space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-100 transition-all hover:bg-gray-50">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-bold text-gray-700">Seguimiento Automático</p>
-                                        <p className="text-xs text-gray-400">Enviar mensajes de seguimiento a nuevos interesados</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.automation_settings.follow_up}
-                                        onCheckedChange={(checked) => setFormData(prev => ({
-                                            ...prev,
-                                            automation_settings: { ...prev.automation_settings, follow_up: checked }
-                                        }))}
-                                    />
+                        <CardContent className="p-8 space-y-6">
+                            {formData.automation_settings.rules.length === 0 ? (
+                                <div className="text-center py-12 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
+                                    <Settings className="h-12 w-12 text-gray-200 mx-auto mb-4" />
+                                    <p className="text-gray-400 font-medium">No hay reglas de automatización configuradas.</p>
+                                    <Button 
+                                        type="button"
+                                        onClick={addRule}
+                                        variant="link" 
+                                        className="text-indigo-600 font-bold mt-2"
+                                    >
+                                        Crear mi primera regla
+                                    </Button>
                                 </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {formData.automation_settings.rules.map((rule: any, index: number) => (
+                                        <div key={rule.id} className="p-6 rounded-[2rem] border border-gray-100 bg-gray-50/30 space-y-6 relative group transition-all hover:bg-white hover:shadow-xl hover:shadow-gray-200/30">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-[10px] font-black text-gray-400 border border-gray-100">
+                                                        {index + 1}
+                                                    </div>
+                                                    <Badge className="bg-indigo-600 text-white border-none uppercase text-[9px] font-black tracking-widest px-2 py-0.5">
+                                                        Regla de {rule.trigger === 'new_inquiry' ? 'Nueva Consulta' : rule.trigger}
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <Switch 
+                                                        checked={rule.enabled} 
+                                                        onCheckedChange={(v) => updateRule(rule.id, { enabled: v })}
+                                                    />
+                                                    <Button 
+                                                        type="button"
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-8 w-8 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"
+                                                        onClick={() => removeRule(rule.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
 
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-100 transition-all hover:bg-gray-50">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-bold text-gray-700">Sugerencias Inteligentes</p>
-                                        <p className="text-xs text-gray-400">Recomendar inmuebles similares a los leads</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.automation_settings.suggestions}
-                                        onCheckedChange={(checked) => setFormData(prev => ({
-                                            ...prev,
-                                            automation_settings: { ...prev.automation_settings, suggestions: checked }
-                                        }))}
-                                    />
-                                </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Para Tipo de Lead</Label>
+                                                    <Select value={rule.leadType} onValueChange={(v) => updateRule(rule.id, { leadType: v })}>
+                                                        <SelectTrigger className="h-11 bg-white border-gray-100 rounded-xl text-xs font-bold">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-xl">
+                                                            <SelectItem value="all">Todos los interesados</SelectItem>
+                                                            <SelectItem value="sale">Interesados en Compra</SelectItem>
+                                                            <SelectItem value="rent">Interesados en Alquiler</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Canal de Respuesta</Label>
+                                                    <Select value={rule.actionType} onValueChange={(v) => updateRule(rule.id, { actionType: v })}>
+                                                        <SelectTrigger className="h-11 bg-white border-gray-100 rounded-xl text-xs font-bold">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-xl">
+                                                            <SelectItem value="whatsapp">WhatsApp Directo</SelectItem>
+                                                            <SelectItem value="email">Correo Electrónico</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
 
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-100 transition-all hover:bg-gray-50">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-bold text-gray-700">Gestión de Ofertas</p>
-                                        <p className="text-xs text-gray-400">Notificar automáticamente sobre nuevas ofertas</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.automation_settings.offers}
-                                        onCheckedChange={(checked) => setFormData(prev => ({
-                                            ...prev,
-                                            automation_settings: { ...prev.automation_settings, offers: checked }
-                                        }))}
-                                    />
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mensaje de Campaña Personalizada</Label>
+                                                <Textarea 
+                                                    value={rule.message}
+                                                    onChange={(e) => updateRule(rule.id, { message: e.target.value })}
+                                                    placeholder="Escribe el mensaje que recibirá el lead automáticamente..."
+                                                    className="min-h-[100px] bg-white border-gray-100 rounded-2xl resize-none text-sm font-medium p-4 focus:ring-indigo-500/20"
+                                                />
+                                                <p className="text-[10px] text-gray-400 font-medium italic">Sugerencia: Incluye una invitación a una cita personal para aumentar la conversión.</p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-100 transition-all hover:bg-gray-50">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-bold text-gray-700">Avisos de Precio</p>
-                                        <p className="text-xs text-gray-400">Informar a interesados sobre cambios de precio</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.automation_settings.price_changes}
-                                        onCheckedChange={(checked) => setFormData(prev => ({
-                                            ...prev,
-                                            automation_settings: { ...prev.automation_settings, price_changes: checked }
-                                        }))}
-                                    />
-                                </div>
-
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-100 transition-all hover:bg-gray-50">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-bold text-gray-700">Nuevas Oportunidades</p>
-                                        <p className="text-xs text-gray-400">Alertar sobre nuevas retazaciones del inmueble</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.automation_settings.retazaciones}
-                                        onCheckedChange={(checked) => setFormData(prev => ({
-                                            ...prev,
-                                            automation_settings: { ...prev.automation_settings, retazaciones: checked }
-                                        }))}
-                                    />
-                                </div>
-
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-100 transition-all hover:bg-gray-50">
-                                    <div className="space-y-1 flex items-center gap-2">
-                                        <Bell className="h-3 w-3 text-indigo-500" />
-                                        <p className="text-sm font-bold text-gray-700">Notificaciones en Tiempo Real</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.automation_settings.new_offers}
-                                        onCheckedChange={(checked) => setFormData(prev => ({
-                                            ...prev,
-                                            automation_settings: { ...prev.automation_settings, new_offers: checked }
-                                        }))}
-                                    />
-                                </div>
-                            </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

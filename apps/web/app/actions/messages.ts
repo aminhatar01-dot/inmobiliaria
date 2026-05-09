@@ -27,7 +27,10 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
                 tenant_id,
                 created_at,
                 updated_at,
-                lead_id
+                lead_id,
+                name,
+                is_group,
+                type
             )
         `)
         .eq("user_id", user.id)
@@ -410,4 +413,85 @@ export async function getOrCreateLeadConversation(leadId: string, revalidate = t
         revalidatePath("/mensajes")
     }
     return newConversation.id
+}
+/**
+ * Crear una conversación grupal
+ */
+export async function createGroupConversation(name: string, userIds: string[]): Promise<string | null> {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!tenantId || !user || !name.trim()) return null
+
+    // Crear la conversación marcada como grupo
+    const { data: newConversation, error: convError } = await supabase
+        .from("conversations")
+        .insert({ 
+            tenant_id: tenantId, 
+            name: name.trim(), 
+            is_group: true,
+            type: 'group'
+        })
+        .select()
+        .single()
+
+    if (convError) {
+        console.error("Error creating group conversation:", convError)
+        return null
+    }
+
+    // Agregar a todos los participantes (incluyendo al creador)
+    const allParticipantIds = Array.from(new Set([...userIds, user.id]))
+    const participantsData = allParticipantIds.map(id => ({
+        conversation_id: newConversation.id,
+        user_id: id
+    }))
+
+    const { error: participantsError } = await supabase
+        .from("conversation_participants")
+        .insert(participantsData)
+
+    if (participantsError) {
+        console.error("Error adding group participants:", participantsError)
+        return null
+    }
+
+    revalidatePath("/mensajes")
+    return newConversation.id
+}
+
+/**
+ * Invitar a un agente por correo electrónico
+ */
+export async function inviteAgentByEmail(email: string) {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+    
+    if (!tenantId) return { success: false, error: "Tenant no encontrado" }
+
+    // Generar un token único para la invitación
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    
+    const { data, error } = await supabase
+        .from("network_invitations")
+        .insert({
+            sender_tenant_id: tenantId,
+            recipient_email: email,
+            token,
+            status: 'pending'
+        })
+        .select()
+        .single()
+
+    if (error) {
+        console.error("Error creating invitation:", error)
+        return { success: false, error: error.message }
+    }
+
+    // Aquí normalmente enviarías un correo con el link: /join?token=${token}
+    // Por ahora devolvemos el link para que el agente lo comparta manualmente
+    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL}/join?token=${token}`
+    
+    return { success: true, inviteLink }
 }
