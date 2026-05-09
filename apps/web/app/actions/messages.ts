@@ -467,8 +467,9 @@ export async function createGroupConversation(name: string, userIds: string[]): 
 export async function inviteAgentByEmail(email: string) {
     const supabase = await createClient()
     const tenantId = await getTenantId(supabase)
+    const { data: { user } } = await supabase.auth.getUser()
     
-    if (!tenantId) return { success: false, error: "Tenant no encontrado" }
+    if (!tenantId || !user) return { success: false, error: "Usuario o Tenant no encontrado" }
 
     // Generar un token único para la invitación
     const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -477,6 +478,7 @@ export async function inviteAgentByEmail(email: string) {
         .from("network_invitations")
         .insert({
             sender_tenant_id: tenantId,
+            sender_id: user.id,
             recipient_email: email,
             token,
             status: 'pending'

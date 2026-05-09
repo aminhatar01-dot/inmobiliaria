@@ -64,8 +64,9 @@ import {
 } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
-import { getAgents, getRoles, getBranches, updateAgentRole, deleteAgent, inviteAgent } from "@/app/actions/agents"
+import { getAgents, getRoles, getBranches, updateAgentRole, deleteAgent } from "@/app/actions/agents"
 import { inviteNetworkAgent, getNetworkStatus, acceptNetworkInvitation, getNetworkProperties } from "@/app/actions/network"
+import { InviteAgentDialog } from "@/components/messages/invite-agent-dialog"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -259,9 +260,13 @@ export default function AgentsPage() {
                         <Plus className="h-5 w-5 mr-2" /> Invitar Agente
                     </Button>
                 ) : (
-                    <Button onClick={() => setNetworkInviteOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 py-6 px-6 h-fit">
-                        <Network className="h-5 w-5 mr-2" /> Conectar Partner
-                    </Button>
+                    <InviteAgentDialog 
+                        trigger={
+                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 py-6 px-6 h-fit">
+                                <Network className="h-5 w-5 mr-2" /> Conectar Partner
+                            </Button>
+                        }
+                    />
                 )}
             </div>
 

@@ -26,10 +26,14 @@ export async function inviteNetworkAgent(email: string) {
         }
     }
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("User not found")
+
     const { error } = await supabase
         .from("network_invitations")
         .insert({
             sender_tenant_id: tenantId,
+            sender_id: user.id,
             recipient_email: email,
             status: 'pending'
         })
@@ -140,7 +144,14 @@ export async function acceptNetworkInvitation(invitationId: string) {
         .update({ status: 'accepted' })
         .eq("id", invitationId)
 
+    // 3. Automatically create a conversation between the sender and the acceptor
+    if (invitation.sender_id) {
+        const { getOrCreateConversation } = await import("./messages")
+        await getOrCreateConversation(invitation.sender_id)
+    }
+
     revalidatePath("/agentes")
+    revalidatePath("/mensajes")
 }
 
 export async function getNetworkProperties() {
