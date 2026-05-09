@@ -491,9 +491,40 @@ export async function inviteAgentByEmail(email: string) {
         return { success: false, error: error.message }
     }
 
-    // Aquí normalmente enviarías un correo con el link: /join?token=${token}
-    // Por ahora devolvemos el link para que el agente lo comparta manualmente
-    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL}/join?token=${token}`
+    // Obtener configuración de correo del tenant
+    const { data: commSettings } = await supabase
+        .from("tenant_communication_settings")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .single()
+
+    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${token}`
+
+    if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host)) {
+        try {
+            const { sendEmail, buildReminderEmailHtml } = await import("@/lib/services/email")
+            
+            const html = buildReminderEmailHtml({
+                title: "Invitación a InmoCMS",
+                greeting: `Hola,`,
+                body: `Te han invitado a unirte a la red de colaboración de InmoCMS.\n\nAl unirte, podrás compartir propiedades y comunicarte directamente con otros agentes.\n\nPara aceptar la invitación y comenzar a colaborar, haz clic en el siguiente enlace:\n\n${inviteLink}`,
+                footer: "Si no esperabas esta invitación, puedes ignorar este correo."
+            })
+
+            await sendEmail({
+                host: commSettings.smtp_host,
+                port: commSettings.smtp_port,
+                user: commSettings.smtp_user,
+                pass: commSettings.smtp_pass,
+                fromName: commSettings.smtp_from_name || "InmoCMS Network",
+                fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
+                resendApiKey: commSettings.resend_api_key
+            }, email, "Invitación a colaborar en InmoCMS", html)
+        } catch (emailError) {
+            console.error("Error sending invitation email:", emailError)
+            // No bloqueamos el proceso, ya que el link se generó
+        }
+    }
     
     return { success: true, inviteLink }
 }

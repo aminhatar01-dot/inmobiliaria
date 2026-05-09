@@ -8,6 +8,8 @@ import { InviteAgentDialog } from "./invite-agent-dialog"
 export function MessagesHeader() {
     const [isInviteOpen, setIsInviteOpen] = useState(false)
 
+    console.log("Rendering MessagesHeader component")
+
     return (
         <div className="flex items-center justify-between">
             <div className="space-y-2">

@@ -255,19 +255,20 @@ export default function AgentsPage() {
                     <p className="text-gray-500 text-sm font-medium">Administra tu equipo y red de contactos</p>
                 </div>
 
-                {activeTab === "team" ? (
-                    <Button onClick={() => setInviteOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 py-6 px-6 h-fit">
-                        <Plus className="h-5 w-5 mr-2" /> Invitar Agente
-                    </Button>
-                ) : (
+                <div className="flex items-center gap-3">
                     <InviteAgentDialog 
                         trigger={
-                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 py-6 px-6 h-fit">
+                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 py-6 px-6 h-fit transition-all hover:scale-105">
                                 <Network className="h-5 w-5 mr-2" /> Conectar Partner
                             </Button>
                         }
                     />
-                )}
+                    {activeTab === "team" && (
+                        <Button onClick={() => setInviteOpen(true)} variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50 font-bold rounded-xl py-6 px-6 h-fit">
+                            <Plus className="h-5 w-5 mr-2" /> Nuevo Agente (Interno)
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <Tabs defaultValue="team" value={activeTab} onValueChange={setActiveTab} className="w-full">
