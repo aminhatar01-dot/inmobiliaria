@@ -34,7 +34,11 @@ export function InviteAgentDialog({ open: controlledOpen, onOpenChange: controll
             const result = await inviteAgentByEmail(email)
             if (result.success && result.inviteLink) {
                 setInviteLink(result.inviteLink)
-                toast.success("Invitación generada con éxito")
+                if (result.warning) {
+                    toast.warning(result.warning, { duration: 6000 })
+                } else {
+                    toast.success("Invitación enviada por correo con éxito")
+                }
             } else {
                 toast.error(result.error || "Error al generar invitación")
             }

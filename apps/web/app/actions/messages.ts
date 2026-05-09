@@ -531,9 +531,19 @@ export async function inviteAgentByEmail(email: string) {
                 fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
                 resendApiKey: commSettings.resend_api_key
             }, email, "Invitación a colaborar en InmoCMS", html)
-        } catch (emailError) {
+        } catch (emailError: any) {
             console.error("Error sending invitation email:", emailError)
-            // No bloqueamos el proceso, ya que el link se generó
+            return { 
+                success: true, 
+                inviteLink, 
+                warning: "La invitación se generó, pero no se pudo enviar el correo: " + (emailError.message || "Error desconocido")
+            }
+        }
+    } else {
+        return { 
+            success: true, 
+            inviteLink, 
+            warning: "No tienes configurado el correo (SMTP/Resend) en Ajustes, por lo que el mail no se envió. Comparte el link manualmente." 
         }
     }
     
