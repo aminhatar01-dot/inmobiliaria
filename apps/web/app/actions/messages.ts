@@ -474,7 +474,8 @@ export async function inviteAgentByEmail(email: string) {
     // Generar un token único para la invitación
     const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
     
-    const { data, error } = await supabase
+    // Intentar insertar con sender_id, si falla intentamos sin él (por si no se corrió el SQL aún)
+    const { error } = await supabase
         .from("network_invitations")
         .insert({
             sender_tenant_id: tenantId,
@@ -483,12 +484,22 @@ export async function inviteAgentByEmail(email: string) {
             token,
             status: 'pending'
         })
-        .select()
-        .single()
 
     if (error) {
-        console.error("Error creating invitation:", error)
-        return { success: false, error: error.message }
+        console.warn("Error inserting with sender_id, retrying without it:", error.message)
+        const { error: retryError } = await supabase
+            .from("network_invitations")
+            .insert({
+                sender_tenant_id: tenantId,
+                recipient_email: email,
+                token,
+                status: 'pending'
+            })
+        
+        if (retryError) {
+            console.error("Critical error creating invitation:", retryError)
+            return { success: false, error: retryError.message }
+        }
     }
 
     // Obtener configuración de correo del tenant
