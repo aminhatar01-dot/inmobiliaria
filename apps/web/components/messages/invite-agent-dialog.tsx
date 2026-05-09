@@ -10,11 +10,16 @@ import { inviteAgentByEmail } from "@/app/actions/messages"
 import { toast } from "sonner"
 
 interface InviteAgentDialogProps {
-    open: boolean
-    onOpenChange: (open: boolean) => void
+    open?: boolean
+    onOpenChange?: (open: boolean) => void
+    trigger?: React.ReactNode
 }
 
-export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps) {
+export function InviteAgentDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange, trigger }: InviteAgentDialogProps) {
+    const [internalOpen, setInternalOpen] = useState(false)
+    const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+    const onOpenChange = controlledOnOpenChange || setInternalOpen
+
     const [email, setEmail] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [inviteLink, setInviteLink] = useState<string | null>(null)
@@ -60,11 +65,16 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
         setCopied(false)
     }
 
-    return (
-        <Dialog open={open} onOpenChange={(v) => {
-            onOpenChange(v)
-            if (!v) reset()
-        }}>
+        <>
+            {trigger && (
+                <div onClick={() => onOpenChange(true)} className="cursor-pointer">
+                    {trigger}
+                </div>
+            )}
+            <Dialog open={open} onOpenChange={(v) => {
+                onOpenChange(v)
+                if (!v) reset()
+            }}>
             <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl">
                 <DialogHeader className="p-8 bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
                     <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center mb-4">
@@ -164,6 +174,7 @@ export function InviteAgentDialog({ open, onOpenChange }: InviteAgentDialogProps
                     </Button>
                 </div>
             </DialogContent>
-        </Dialog>
+            </Dialog>
+        </>
     )
 }

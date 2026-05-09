@@ -9,9 +9,9 @@ import Link from "next/link"
 export default async function JoinPage({
     searchParams,
 }: {
-    searchParams: { token?: string }
+    searchParams: Promise<{ token?: string }>
 }) {
-    const token = searchParams.token
+    const { token } = await searchParams
     if (!token) redirect("/")
 
     const supabase = await createClient()
