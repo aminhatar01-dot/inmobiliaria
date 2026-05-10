@@ -12,7 +12,8 @@ import {
     Trash2,
     X,
     Settings,
-    Bell
+    Bell,
+    Sparkles
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
