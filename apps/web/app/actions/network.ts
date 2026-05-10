@@ -28,7 +28,7 @@ export async function inviteNetworkAgent(email: string) {
 
     if (existing) {
         if (existing.status === 'pending') {
-            // Permitir "reenviar" actualizando el token y la fecha
+            // Permitir "reenviar" actualizando el token y la fecha para que el link sea nuevo
             await adminClient
                 .from("network_invitations")
                 .update({ 
@@ -38,19 +38,29 @@ export async function inviteNetworkAgent(email: string) {
                 .eq("id", existing.id)
             inviteToken = token
         } else if (existing.status === 'accepted') {
-            // Verificar si la partnership sigue activa
-            const { data: partnership } = await adminClient
-                .from("tenant_partnerships")
-                .select("id")
-                .or(`requester_tenant_id.eq.${tenantId},responder_tenant_id.eq.${tenantId}`)
-                .eq("status", "active")
-                .limit(1)
-            
-            if (partnership && partnership.length > 0) {
-                throw new Error("Este agente ya es parte de tu red")
+            // Buscar el tenant del destinatario para verificar la partnership real
+            const { data: recipientProfile } = await adminClient
+                .from("profiles")
+                .select("tenant_id")
+                .eq("email", email)
+                .maybeSingle()
+
+            if (recipientProfile?.tenant_id) {
+                // Verificar si la partnership sigue activa con ESTE tenant específico
+                const { data: partnership } = await adminClient
+                    .from("tenant_partnerships")
+                    .select("id")
+                    .or(`and(requester_tenant_id.eq.${tenantId},responder_tenant_id.eq.${recipientProfile.tenant_id}),and(requester_tenant_id.eq.${recipientProfile.tenant_id},responder_tenant_id.eq.${tenantId})`)
+                    .eq("status", "active")
+                    .maybeSingle()
+                
+                if (partnership) {
+                    throw new Error("Este agente ya es parte de tu red")
+                }
             }
             
-            // Partnership no existe (fue bloqueada o eliminada) → reactivar
+            // Si llegamos aquí, la invitación estaba como 'accepted' pero no hay partnership activa
+            // o el usuario cambió de tenant/email. Permitimos re-invitar reactivando.
             await adminClient
                 .from("network_invitations")
                 .update({ status: 'pending', token: token, updated_at: new Date().toISOString() })
