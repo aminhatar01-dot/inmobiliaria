@@ -65,7 +65,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { getAgents, getRoles, getBranches, updateAgentRole, deleteAgent } from "@/app/actions/agents"
-import { inviteNetworkAgent, getNetworkStatus, acceptNetworkInvitation, getNetworkProperties } from "@/app/actions/network"
+import { inviteNetworkAgent, getNetworkStatus, acceptNetworkInvitation, getNetworkProperties, cancelAllMyInvitations } from "@/app/actions/network"
 import { InviteAgentDialog } from "@/components/messages/invite-agent-dialog"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -221,6 +221,17 @@ export default function AgentsPage() {
             toast.error(error.message || "Error al enviar invitación")
         } finally {
             setIsNetworkInviting(false)
+        }
+    }
+
+    const handleClearInvitations = async () => {
+        if (!confirm("¿Cancelar todas las invitaciones huérfanas?")) return
+        try {
+            const result = await cancelAllMyInvitations()
+            toast.success(result.message)
+            fetchData()
+        } catch (error: any) {
+            toast.error(error.message || "Error al limpiar")
         }
     }
 
@@ -490,7 +501,17 @@ export default function AgentsPage() {
                                 {/* Sent Invitations */}
                                 {sentInvitations.length > 0 && (
                                     <div className="mt-8">
-                                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 ml-1">Invitaciones Enviadas</h4>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1">Invitaciones Enviadas</h4>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={handleClearInvitations}
+                                                className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl font-bold"
+                                            >
+                                                Limpiar huérfanas
+                                            </Button>
+                                        </div>
                                         <div className="space-y-2">
                                             {sentInvitations.map(inv => (
                                                 <div key={inv.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100">

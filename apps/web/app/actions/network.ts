@@ -238,6 +238,57 @@ export async function acceptNetworkInvitation(invitationId: string) {
     revalidatePath("/mensajes")
 }
 
+/**
+ * Cancela todas las invitaciones enviadas por el tenant actual que no tengan
+ * una partnership activa. Útil para limpiar invitaciones huérfanas.
+ */
+export async function cancelAllMyInvitations() {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+
+    if (!tenantId) throw new Error("Unauthorized")
+
+    // Obtener todas las invitaciones enviadas por este tenant con status != 'cancelled'
+    const { data: invitations } = await supabase
+        .from("network_invitations")
+        .select("id, status, recipient_email")
+        .eq("sender_tenant_id", tenantId)
+        .neq("status", "cancelled")
+
+    if (!invitations || invitations.length === 0) {
+        return { cancelled: 0, message: "No hay invitaciones para cancelar." }
+    }
+
+    let cancelledCount = 0
+
+    for (const inv of invitations) {
+        if (inv.status === 'accepted') {
+            // Solo cancelar si no hay partnership activa
+            const { data: partnership } = await supabase
+                .from("tenant_partnerships")
+                .select("id")
+                .or(`requester_tenant_id.eq.${tenantId},responder_tenant_id.eq.${tenantId}`)
+                .eq("status", "active")
+                .limit(1)
+
+            if (partnership && partnership.length > 0) {
+                continue // Tiene partnership activa, no cancelar
+            }
+        }
+
+        // Cancelar la invitación
+        await supabase
+            .from("network_invitations")
+            .update({ status: 'cancelled' })
+            .eq("id", inv.id)
+
+        cancelledCount++
+    }
+
+    revalidatePath("/agentes")
+    return { cancelled: cancelledCount, message: `${cancelledCount} invitaciones canceladas.` }
+}
+
 export async function getNetworkProperties() {
     const supabase = await createClient()
     const tenantId = await getTenantId(supabase)
