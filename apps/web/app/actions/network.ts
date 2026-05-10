@@ -245,11 +245,13 @@ export async function acceptNetworkInvitation(invitationId: string) {
 export async function cancelAllMyInvitations() {
     const supabase = await createClient()
     const tenantId = await getTenantId(supabase)
+    const { createAdminClient } = await import("@/lib/supabase/server")
+    const adminClient = await createAdminClient()
 
     if (!tenantId) throw new Error("Unauthorized")
 
-    // Obtener todas las invitaciones enviadas por este tenant con status != 'cancelled'
-    const { data: invitations } = await supabase
+    // Obtener todas las invitaciones enviadas por este tenant (admin client = sin RLS)
+    const { data: invitations } = await adminClient
         .from("network_invitations")
         .select("id, status, recipient_email")
         .eq("sender_tenant_id", tenantId)
@@ -276,8 +278,8 @@ export async function cancelAllMyInvitations() {
             }
         }
 
-        // Cancelar la invitación
-        await supabase
+        // Cancelar la invitación (admin client para evitar RLS)
+        await adminClient
             .from("network_invitations")
             .update({ status: 'cancelled' })
             .eq("id", inv.id)
