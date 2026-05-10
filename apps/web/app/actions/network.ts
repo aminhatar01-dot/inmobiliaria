@@ -6,27 +6,40 @@ import crypto from "crypto"
 
 export async function inviteNetworkAgent(email: string) {
     const supabase = await createClient()
+    const { createAdminClient } = await import("@/lib/supabase/server")
+    const adminClient = await createAdminClient()
     const tenantId = await getTenantId(supabase)
 
     if (!tenantId) throw new Error("Unauthorized")
 
-    // Check if invitation already exists
-    const { data: existing } = await supabase
+    // Check if invitation already exists (using adminClient to see all regardless of RLS)
+    const { data: existing } = await adminClient
         .from("network_invitations")
         .select("id, status")
         .eq("sender_tenant_id", tenantId)
         .eq("recipient_email", email)
-        .single()
+        .maybeSingle()
 
-    let reactivatedToken: string | null = null
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("User not found")
+
+    const token = crypto.randomUUID()
+    let inviteToken = token
 
     if (existing) {
         if (existing.status === 'pending') {
-            throw new Error("Ya existe una invitación pendiente para este correo")
-        }
-        if (existing.status === 'accepted') {
+            // Permitir "reenviar" actualizando el token y la fecha
+            await adminClient
+                .from("network_invitations")
+                .update({ 
+                    token: token, 
+                    updated_at: new Date().toISOString() 
+                })
+                .eq("id", existing.id)
+            inviteToken = token
+        } else if (existing.status === 'accepted') {
             // Verificar si la partnership sigue activa
-            const { data: partnership } = await supabase
+            const { data: partnership } = await adminClient
                 .from("tenant_partnerships")
                 .select("id")
                 .or(`requester_tenant_id.eq.${tenantId},responder_tenant_id.eq.${tenantId}`)
@@ -36,23 +49,24 @@ export async function inviteNetworkAgent(email: string) {
             if (partnership && partnership.length > 0) {
                 throw new Error("Este agente ya es parte de tu red")
             }
-            // Partnership no existe → reactivar la invitación existente
-            reactivatedToken = crypto.randomUUID()
-            await supabase
+            
+            // Partnership no existe (fue bloqueada o eliminada) → reactivar
+            await adminClient
                 .from("network_invitations")
-                .update({ status: 'pending', token: reactivatedToken, updated_at: new Date().toISOString() })
+                .update({ status: 'pending', token: token, updated_at: new Date().toISOString() })
                 .eq("id", existing.id)
+            inviteToken = token
+        } else {
+            // rejected, expired, etc -> reactivar
+            await adminClient
+                .from("network_invitations")
+                .update({ status: 'pending', token: token, updated_at: new Date().toISOString() })
+                .eq("id", existing.id)
+            inviteToken = token
         }
-    }
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error("User not found")
-
-    const token = reactivatedToken || crypto.randomUUID()
-    let inviteToken = token
-
-    if (!reactivatedToken) {
-        const { data: invite, error } = await supabase
+    } else {
+        // Create new
+        const { data: invite, error } = await adminClient
             .from("network_invitations")
             .insert({
                 sender_tenant_id: tenantId,
@@ -203,8 +217,8 @@ export async function acceptNetworkInvitation(invitationId: string) {
 
     // Start transaction (simplified as separate calls for Supabase implementation)
 
-    // 1. Create partnership
-    const { error: partnershipError } = await supabase
+    // 1. Create partnership (Usamos adminClient porque el usuario actual puede no tener permiso de insert directo)
+    const { error: partnershipError } = await adminClient
         .from("tenant_partnerships")
         .insert({
             requester_tenant_id: invitation.sender_tenant_id,
@@ -217,8 +231,8 @@ export async function acceptNetworkInvitation(invitationId: string) {
         throw new Error("Error al aceptar la invitación")
     }
 
-    // 2. Update invitation status
-    await supabase
+    // 2. Update invitation status (Usamos adminClient)
+    await adminClient
         .from("network_invitations")
         .update({ status: 'accepted' })
         .eq("id", invitationId)
@@ -263,10 +277,10 @@ export async function cancelAllMyInvitations() {
         .from("network_invitations")
         .select("id, status, recipient_email")
         .eq("sender_tenant_id", tenantId)
-        .neq("status", "cancelled")
+        .neq("status", "rejected") // 'cancelled' no existe en el CHECK constraint original, usamos 'rejected'
 
     if (!invitations || invitations.length === 0) {
-        return { cancelled: 0, message: "No hay invitaciones para cancelar." }
+        return { cancelled: 0, message: "No hay invitaciones para limpiar." }
     }
 
     let cancelledCount = 0
@@ -274,7 +288,7 @@ export async function cancelAllMyInvitations() {
     for (const inv of invitations) {
         if (inv.status === 'accepted') {
             // Solo cancelar si no hay partnership activa
-            const { data: partnership } = await supabase
+            const { data: partnership } = await adminClient
                 .from("tenant_partnerships")
                 .select("id")
                 .or(`requester_tenant_id.eq.${tenantId},responder_tenant_id.eq.${tenantId}`)
@@ -286,17 +300,17 @@ export async function cancelAllMyInvitations() {
             }
         }
 
-        // Cancelar la invitación (admin client para evitar RLS)
+        // Cancelar la invitación (usando status 'rejected' para cumplir con el CHECK constraint)
         await adminClient
             .from("network_invitations")
-            .update({ status: 'cancelled' })
+            .update({ status: 'rejected' })
             .eq("id", inv.id)
 
         cancelledCount++
     }
 
     revalidatePath("/agentes")
-    return { cancelled: cancelledCount, message: `${cancelledCount} invitaciones canceladas.` }
+    return { cancelled: cancelledCount, message: `${cancelledCount} invitaciones limpiadas.` }
 }
 
 export async function getNetworkProperties() {

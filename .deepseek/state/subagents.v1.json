@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "agents": [
+    {
+      "id": "agent_ec26cb6f",
+      "agent_type": "general",
+      "prompt": "Read the file at \"apps/web/app/(dashboard)/propiedades/[id]/editar/form.tsx\". Find the import from \"lucide-react\" (around line 4-14). Add \"Sparkles\" to the list of imports (it's currently missing but used at line 354). Then write the corrected file. Only change that one line - add \", Sparkles\" after \"Bell\" in the import list.",
+      "assignment": {
+        "objective": "Read the file at \"apps/web/app/(dashboard)/propiedades/[id]/editar/form.tsx\". Find the import from \"lucide-react\" (around line 4-14). Add \"Sparkles\" to the list of imports (it's currently missing but used at line 354). Then write the corrected file. Only change that one line - add \", Sparkles\" after \"Bell\" in the import list."
+      },
+      "model": "deepseek-v4-pro",
+      "nickname": "Humpback",
+      "status": "Cancelled",
+      "result": null,
+      "steps_taken": 0,
+      "duration_ms": 2195335,
+      "allowed_tools": [],
+      "updated_at_ms": 1778425271394,
+      "session_boot_id": "boot_a3d9649d-c4c"
+    }
+  ]
+}
