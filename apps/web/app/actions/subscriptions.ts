@@ -198,7 +198,55 @@ export async function inviteToAgency(inviteeEmail: string) {
         throw error
     }
 
-    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://inmocms.com'}/invitacion/${invite.token}`
+    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/invitacion/${invite.token}`
+
+    // 3. Enviar correo de invitación
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('tenant_id, full_name')
+            .eq('id', user!.id)
+            .single()
+
+        if (profile?.tenant_id) {
+            const { data: commSettings } = await supabase
+                .from("tenant_communication_settings")
+                .select("*")
+                .eq("tenant_id", profile.tenant_id)
+                .single()
+
+            if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host || commSettings.google_access_token)) {
+                const { sendEmail } = await import("@/lib/services/email")
+                
+                const html = `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
+                        <h2 style="color: #4f46e5;">Invitación a Equipo en InmoCMS</h2>
+                        <p><strong>${profile.full_name || 'Tu administrador'}</strong> te ha invitado a formar parte de su equipo profesional en InmoCMS.</p>
+                        <p>Al unirte al equipo, podrás gestionar propiedades, leads y automatizaciones de forma colaborativa.</p>
+                        <div style="margin: 30px 0; text-align: center;">
+                            <a href="${inviteLink}" style="background: #4f46e5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">Aceptar Invitación y Registrarme</a>
+                        </div>
+                        <p style="color: #666; font-size: 14px;">Este enlace es único para ti. Si ya tienes una cuenta, asegúrate de haber iniciado sesión antes de hacer clic.</p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+                        <p style="color: #999; font-size: 12px; text-align: center;">Enviado por InmoCMS</p>
+                    </div>
+                `
+
+                await sendEmail({
+                    host: commSettings.smtp_host,
+                    port: commSettings.smtp_port,
+                    user: commSettings.smtp_user,
+                    pass: commSettings.smtp_pass,
+                    fromName: commSettings.smtp_from_name || "InmoCMS Equipo",
+                    fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
+                    resendApiKey: commSettings.resend_api_key,
+                    googleAccessToken: commSettings.google_access_token
+                }, inviteeEmail, `Invitación a colaborar en el equipo de ${profile.full_name || 'InmoCMS'}`, html)
+            }
+        }
+    } catch (emailErr) {
+        console.error("Error sending agency invitation email:", emailErr)
+    }
 
     revalidatePath('/cuenta/equipo')
     return { success: true, inviteLink }

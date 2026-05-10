@@ -39,16 +39,22 @@ export async function sendEmail(
     if (config.googleAccessToken) {
         try {
             const rawMessage = [
+                `From: ${config.fromName || 'InmoCMS'} <${config.fromEmail || 'no-reply@inmocms.com'}>`,
                 `To: ${to}`,
                 `Subject: =?utf-8?B?${Buffer.from(subject).toString('base64')}?=`,
+                'MIME-Version: 1.0',
                 'Content-Type: text/html; charset=utf-8',
                 '',
                 htmlBody
-            ].join('\n');
+            ].join('\r\n');
 
-            const encodedMessage = Buffer.from(rawMessage).toString('base64url');
+            const encodedMessage = Buffer.from(rawMessage)
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
 
-            const response = await fetch('https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send', {
+            const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${config.googleAccessToken}`,
@@ -78,6 +84,7 @@ export async function sendEmail(
     // Si tiene Resend API Key configurada, priorizamos usar Resend
     if (config.resendApiKey) {
         try {
+            const fromEmail = config.fromEmail || 'no-reply@resend.dev'; // Resend default if not set
             const response = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: {
@@ -85,7 +92,7 @@ export async function sendEmail(
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    from: `${config.fromName || 'InmoCMS'} <${config.fromEmail}>`,
+                    from: `${config.fromName || 'InmoCMS'} <${fromEmail}>`,
                     to: [to],
                     subject,
                     html: htmlBody,
@@ -111,7 +118,7 @@ export async function sendEmail(
     if (!config.host || !config.user || !config.pass) {
         return {
             success: false,
-            error: 'Configuración de correo incompleta. Configura Resend o SMTP en Ajustes.'
+            error: 'Configuración de correo incompleta. Configura Gmail (OAuth), Resend o SMTP en Ajustes.'
         };
     }
 
@@ -130,11 +137,13 @@ export async function sendEmail(
             }
         });
 
+        const from = `"${config.fromName || 'InmoCMS'}" <${config.fromEmail || config.user}>`;
+
         const info = await transporter.sendMail({
-            from: `"${config.fromName || 'InmoCMS'}" <${config.fromEmail || config.user}>`,
+            from,
             to,
             subject,
-            text: textBody || htmlBody.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
+            text: textBody || htmlBody.replace(/<[^>]*>/g, ''),
             html: htmlBody,
         });
 

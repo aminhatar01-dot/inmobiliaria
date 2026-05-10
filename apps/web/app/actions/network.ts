@@ -30,7 +30,7 @@ export async function inviteNetworkAgent(email: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error("User not found")
 
-    const { error } = await supabase
+    const { data: invite, error } = await supabase
         .from("network_invitations")
         .insert({
             sender_tenant_id: tenantId,
@@ -39,10 +39,59 @@ export async function inviteNetworkAgent(email: string) {
             token: crypto.randomUUID(),
             status: 'pending'
         })
+        .select('token')
+        .single()
 
     if (error) {
         console.error("Error creating invitation:", error)
         throw new Error("Error al crear la invitación")
+    }
+
+    // Enviar correo de invitación
+    try {
+        const { data: commSettings } = await supabase
+            .from("tenant_communication_settings")
+            .select("*")
+            .eq("tenant_id", tenantId)
+            .single()
+
+        if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host || commSettings.google_access_token)) {
+            const { data: senderProfile } = await supabase
+                .from("profiles")
+                .select("full_name")
+                .eq("id", user.id)
+                .single()
+
+            const { sendEmail } = await import("@/lib/services/email")
+            const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${invite?.token}`
+            
+            const html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
+                    <h2 style="color: #4f46e5;">Hola de parte de InmoCMS Network</h2>
+                    <p><strong>${senderProfile?.full_name || 'Un agente'}</strong> te ha invitado a formar parte de su red de partners en InmoCMS.</p>
+                    <p>Al ser partners, podrán compartir propiedades y colaborar en tiempo real para cerrar más ventas.</p>
+                    <div style="margin: 30px 0; text-align: center;">
+                        <a href="${inviteLink}" style="background: #4f46e5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">Unirme a la Red</a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">Si ya tienes una cuenta en InmoCMS, simplemente inicia sesión y podrás ver esta invitación en tu sección de Agentes > Red.</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+                    <p style="color: #999; font-size: 12px; text-align: center;">Enviado por InmoCMS Network</p>
+                </div>
+            `
+
+            await sendEmail({
+                host: commSettings.smtp_host,
+                port: commSettings.smtp_port,
+                user: commSettings.smtp_user,
+                pass: commSettings.smtp_pass,
+                fromName: commSettings.smtp_from_name || "InmoCMS Network",
+                fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
+                resendApiKey: commSettings.resend_api_key,
+                googleAccessToken: commSettings.google_access_token
+            }, email, "Invitación a Red de Partners - InmoCMS", html)
+        }
+    } catch (emailErr) {
+        console.error("Error sending network invitation email:", emailErr)
     }
 
     revalidatePath("/agentes")

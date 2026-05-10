@@ -530,7 +530,8 @@ export async function inviteAgentByEmail(email: string) {
                 pass: commSettings.smtp_pass,
                 fromName: commSettings.smtp_from_name || "InmoCMS Network",
                 fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
-                resendApiKey: commSettings.resend_api_key
+                resendApiKey: commSettings.resend_api_key,
+                googleAccessToken: commSettings.google_access_token
             }, email, "Invitación a colaborar en InmoCMS", html)
 
             if (!emailResult.success) {

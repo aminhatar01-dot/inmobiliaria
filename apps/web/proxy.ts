@@ -1,7 +1,11 @@
 import { type NextRequest } from 'next/server'
 import { updateSession } from './lib/supabase/middleware'
 
-export async function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
+    return await updateSession(request)
+}
+
+export async function proxy_named(request: NextRequest) {
     return await updateSession(request)
 }
 
