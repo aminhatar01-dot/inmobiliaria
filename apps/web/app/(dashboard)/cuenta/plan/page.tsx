@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { Check, Sparkles, Zap, Users, Building2, Crown, Loader2, CalendarDays, CreditCard, ShieldCheck, AlertTriangle, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -86,6 +86,18 @@ function getStatusConfig(status: SubscriptionStatus['status']) {
 }
 
 export default function PlanPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+        }>
+            <PlanPageContent />
+        </Suspense>
+    )
+}
+
+function PlanPageContent() {
     const [loading, setLoading] = useState<string | null>(null)
     const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null)
     const [loadingSub, setLoadingSub] = useState(true)

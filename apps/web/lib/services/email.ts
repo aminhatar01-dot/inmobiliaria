@@ -116,7 +116,7 @@ export async function sendEmail(
     }
 
     try {
-        const nodemailer = await import('nodemailer');
+        const nodemailer = (await import('nodemailer')).default;
         const transporter = nodemailer.createTransport({
             host: config.host,
             port: config.port || 587,

@@ -4,6 +4,7 @@ import { createClient, getTenantId } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import type { Conversation, Message, ConversationWithDetails, MessageWithSender } from "@inmocms/shared"
 import { sendEmail, buildReminderEmailHtml } from "@/lib/services/email"
+import crypto from "crypto"
 
 /**
  * Obtener todas las conversaciones del usuario actual
@@ -472,6 +473,7 @@ export async function inviteAgentByEmail(email: string) {
     
     if (!tenantId || !user) return { success: false, error: "Usuario o Tenant no encontrado" }
 
+    // Generar un token único para la invitación (debe ser un UUID válido para la DB)
     // Generar un token único para la invitación (debe ser un UUID válido para la DB)
     const token = crypto.randomUUID()
     

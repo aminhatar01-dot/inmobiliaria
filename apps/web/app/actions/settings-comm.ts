@@ -75,7 +75,7 @@ export async function testSMTP(formData: FormData) {
 
     if (!host) return { success: false, error: "Debes ingresar el Servidor (Host) antes de probar" }
 
-    const nodemailer = await import("nodemailer")
+    const nodemailer = (await import("nodemailer")).default
     const transporter = nodemailer.createTransport({
         host: host,
         port: port,

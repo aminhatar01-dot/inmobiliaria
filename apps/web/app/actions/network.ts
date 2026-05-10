@@ -2,6 +2,7 @@
 
 import { createClient, getTenantId } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import crypto from "crypto"
 
 export async function inviteNetworkAgent(email: string) {
     const supabase = await createClient()
