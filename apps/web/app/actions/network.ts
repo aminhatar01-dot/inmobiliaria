@@ -87,7 +87,9 @@ export async function inviteNetworkAgent(email: string) {
                 fromName: commSettings.smtp_from_name || "InmoCMS Network",
                 fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
                 resendApiKey: commSettings.resend_api_key,
-                googleAccessToken: commSettings.google_access_token
+                googleAccessToken: commSettings.google_access_token,
+                googleRefreshToken: commSettings.google_refresh_token,
+                tenantId
             }, email, "Invitación a Red de Partners - InmoCMS", html)
         }
     } catch (emailErr) {

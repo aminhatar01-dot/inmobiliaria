@@ -477,7 +477,9 @@ export async function inviteAgentByEmail(email: string) {
     // Generar un token único para la invitación (debe ser un UUID válido para la DB)
     const token = crypto.randomUUID()
     
-    // Intentar insertar con sender_id, si falla intentamos sin él (por si no se corrió el SQL aún)
+    // Insertar invitación en la base de datos
+    // NOTA: El fallback sin sender_id es temporal para tenants donde la migración
+    // 20260509000000_add_sender_to_invites.sql aún no se aplicó. Remover después de Mayo 2026.
     const { error } = await supabase
         .from("network_invitations")
         .insert({
@@ -489,19 +491,26 @@ export async function inviteAgentByEmail(email: string) {
         })
 
     if (error) {
-        console.warn("Error inserting with sender_id, retrying without it:", error.message)
-        const { error: retryError } = await supabase
-            .from("network_invitations")
-            .insert({
-                sender_tenant_id: tenantId,
-                recipient_email: email,
-                token,
-                status: 'pending'
-            })
-        
-        if (retryError) {
-            console.error("Critical error creating invitation:", retryError)
-            return { success: false, error: retryError.message }
+        // Si el error es por columna sender_id faltante (migración no aplicada), reintentamos sin ella
+        if (error.message.includes("sender_id") || error.code === "42703") {
+            console.warn("[INVITE] Columna sender_id no existe — aplicando migración pendiente. Reintentando sin sender_id:", error.message)
+            const { error: retryError } = await supabase
+                .from("network_invitations")
+                .insert({
+                    sender_tenant_id: tenantId,
+                    recipient_email: email,
+                    token,
+                    status: 'pending'
+                })
+            
+            if (retryError) {
+                console.error("[INVITE] Error crítico al crear invitación (fallback):", retryError)
+                return { success: false, error: `Error al crear invitación: ${retryError.message}` }
+            }
+        } else {
+            // Otro tipo de error (RLS, duplicado, etc.) — no reintentar
+            console.error("[INVITE] Error al crear invitación:", error)
+            return { success: false, error: `Error al crear invitación: ${error.message}` }
         }
     }
 
@@ -514,7 +523,7 @@ export async function inviteAgentByEmail(email: string) {
 
     const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${token}`
 
-    if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host)) {
+    if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host || commSettings.google_access_token)) {
         try {
             const html = buildReminderEmailHtml({
                 title: "Invitación a InmoCMS",
@@ -531,7 +540,9 @@ export async function inviteAgentByEmail(email: string) {
                 fromName: commSettings.smtp_from_name || "InmoCMS Network",
                 fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
                 resendApiKey: commSettings.resend_api_key,
-                googleAccessToken: commSettings.google_access_token
+                googleAccessToken: commSettings.google_access_token,
+                googleRefreshToken: commSettings.google_refresh_token,
+                tenantId
             }, email, "Invitación a colaborar en InmoCMS", html)
 
             if (!emailResult.success) {

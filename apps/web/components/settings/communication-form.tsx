@@ -263,6 +263,37 @@ export function CommunicationForm({ initialData }: CommunicationFormProps) {
                         </div>
                     </CardHeader>
                     <CardContent className="p-8">
+                        {/* Conectar Gmail vía OAuth2 directo (refresh automático de token) */}
+                        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-100">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                                        <Mail className="h-5 w-5 text-red-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-black text-gray-800">Gmail OAuth</p>
+                                        <p className="text-xs text-gray-500">
+                                            {initialData?.google_access_token
+                                                ? '✅ Conectado — el token se refresca automáticamente'
+                                                : 'Conectá tu cuenta de Google para enviar correos sin contraseña'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant={initialData?.google_access_token ? "outline" : "default"}
+                                    size="sm"
+                                    onClick={() => window.location.href = '/api/auth/google/connect'}
+                                    className={initialData?.google_access_token
+                                        ? "rounded-xl border-green-200 text-green-700 hover:bg-green-50 font-bold"
+                                        : "rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-500/20"
+                                    }
+                                >
+                                    {initialData?.google_access_token ? 'Reconectar' : 'Conectar Gmail'}
+                                </Button>
+                            </div>
+                        </div>
+
                         <Tabs defaultValue="smtp" className="space-y-6">
                             <TabsList className="grid grid-cols-2 bg-gray-100/50 p-1 rounded-2xl h-12">
                                 <TabsTrigger value="smtp" className="rounded-xl font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm">

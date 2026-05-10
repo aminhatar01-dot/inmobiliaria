@@ -107,7 +107,9 @@ async function processTaskReminders(supabase: any, tenantId: string, settings: a
                     fromName: settings.smtp_from_name,
                     fromEmail: settings.smtp_from_email,
                     resendApiKey: settings.resend_api_key,
-                    googleAccessToken: settings.google_access_token
+                    googleAccessToken: settings.google_access_token,
+                    googleRefreshToken: settings.google_refresh_token,
+                    tenantId
                 };
                 const html = buildReminderEmailHtml({
                     title: 'Recordatorio de Tarea',
@@ -238,7 +240,9 @@ async function processVisitReminders(supabase: any, tenantId: string, settings: 
                         fromName: settings.smtp_from_name,
                         fromEmail: settings.smtp_from_email,
                         resendApiKey: settings.resend_api_key,
-                        googleAccessToken: settings.google_access_token
+                        googleAccessToken: settings.google_access_token,
+                        googleRefreshToken: settings.google_refresh_token,
+                        tenantId
                     }, visit.lead.email, 'Recordatorio de Visita', html);
                 }
 

@@ -143,7 +143,9 @@ export async function processAutomationRules(
                         fromName: settings.smtp_from_name || 'InmoCMS',
                         fromEmail: settings.smtp_from_email || 'no-reply@inmocms.com',
                         resendApiKey: settings.resend_api_key || undefined,
-                        googleAccessToken: settings.google_access_token || undefined
+                        googleAccessToken: settings.google_access_token || undefined,
+                        googleRefreshToken: settings.google_refresh_token || undefined,
+                        tenantId
                     }, recipientEmail, rule.name || 'Notificación', html);
                 }
                 else {

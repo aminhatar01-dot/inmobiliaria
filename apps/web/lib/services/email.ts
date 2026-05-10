@@ -17,12 +17,74 @@ export interface SMTPConfig {
     fromEmail: string;
     resendApiKey?: string;
     googleAccessToken?: string;
+    googleRefreshToken?: string;
+    tenantId?: string; // Necesario para persistir el token refrescado en la DB
 }
 
 export interface EmailSendResult {
     success: boolean;
     messageId?: string;
     error?: string;
+}
+
+/**
+ * Refresca un Google access token expirado usando el refresh token.
+ * Requiere GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en variables de entorno.
+ */
+async function refreshGoogleAccessToken(refreshToken: string): Promise<string | null> {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+        console.warn('[EMAIL-GMAIL] GOOGLE_CLIENT_ID o GOOGLE_CLIENT_SECRET no configurados. No se puede refrescar el token.');
+        return null;
+    }
+
+    try {
+        const response = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                refresh_token: refreshToken,
+                grant_type: 'refresh_token'
+            }).toString()
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('[EMAIL-GMAIL] Error al refrescar token:', data.error_description || data.error || data);
+            return null;
+        }
+
+        console.log('[EMAIL-GMAIL] ✅ Token refrescado exitosamente.');
+        return data.access_token;
+    } catch (error: any) {
+        console.error('[EMAIL-GMAIL] Error de red al refrescar token:', error.message);
+        return null;
+    }
+}
+
+/**
+ * Persiste el nuevo access token en la base de datos del tenant.
+ */
+async function persistRefreshedToken(tenantId: string, accessToken: string) {
+    try {
+        const { createClient } = await import('@/lib/supabase/server');
+        const supabase = await createClient();
+        await supabase
+            .from('tenant_communication_settings')
+            .update({
+                google_access_token: accessToken,
+                updated_at: new Date().toISOString()
+            })
+            .eq('tenant_id', tenantId);
+        console.log('[EMAIL-GMAIL] Token actualizado en DB para tenant:', tenantId);
+    } catch (err: any) {
+        console.error('[EMAIL-GMAIL] No se pudo persistir el token refrescado:', err.message);
+    }
 }
 
 /**
@@ -35,9 +97,11 @@ export async function sendEmail(
     htmlBody: string,
     textBody?: string
 ): Promise<EmailSendResult> {
-    // Si tiene Google Access Token, lo usamos primero
+    // --- MÉTODO 1: Gmail API (con refresh automático de token) ---
     if (config.googleAccessToken) {
-        try {
+        let accessToken = config.googleAccessToken;
+
+        const tryGmailSend = async (token: string) => {
             const rawMessage = [
                 `From: ${config.fromName || 'InmoCMS'} <${config.fromEmail || 'no-reply@inmocms.com'}>`,
                 `To: ${to}`,
@@ -57,28 +121,59 @@ export async function sendEmail(
             const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${config.googleAccessToken}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    raw: encodedMessage
-                })
+                body: JSON.stringify({ raw: encodedMessage })
             });
 
             const data = await response.json();
+            return { response, data };
+        };
 
-            if (!response.ok) {
-                // Posible token expirado u otro error de Google
-                throw new Error(data.error?.message || `Google API Error: ${response.status}`);
+        try {
+            let { response, data } = await tryGmailSend(accessToken);
+
+            if (response.ok) {
+                console.log(`[EMAIL-GMAIL] ✅ Correo enviado a ${to}. ID: ${data.id}`);
+                return { success: true, messageId: data.id };
             }
 
-            console.log(`[EMAIL-GMAIL] ✅ Correo enviado a ${to}. ID: ${data.id}`);
-            return { success: true, messageId: data.id };
+            // Token expirado → intentar refrescar automáticamente
+            if (response.status === 401 && config.googleRefreshToken) {
+                console.warn('[EMAIL-GMAIL] Token expirado (401). Intentando refrescar automáticamente...');
+                const newToken = await refreshGoogleAccessToken(config.googleRefreshToken);
+
+                if (newToken) {
+                    // Persistir el nuevo token en DB
+                    if (config.tenantId) {
+                        await persistRefreshedToken(config.tenantId, newToken);
+                    }
+
+                    // Reintentar con el token fresco
+                    const retry = await tryGmailSend(newToken);
+                    if (retry.response.ok) {
+                        console.log(`[EMAIL-GMAIL] ✅ Correo enviado a ${to} con token refrescado. ID: ${retry.data.id}`);
+                        return { success: true, messageId: retry.data.id };
+                    }
+                    console.warn('[EMAIL-GMAIL] El reintento con token refrescado también falló (HTTP ' + retry.response.status + ').');
+                    data = retry.data;
+                    response = retry.response;
+                } else {
+                    console.warn('[EMAIL-GMAIL] No se pudo refrescar el token. Verificá GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET.');
+                }
+            }
+
+            // Si llegamos acá, Gmail falló definitivamente → log y fallback
+            if (response.status === 401 || response.status === 403) {
+                console.warn(`[EMAIL-GMAIL] Fallo definitivo (HTTP ${response.status}). Intentando método alternativo...`);
+            } else {
+                console.error(`[EMAIL-GMAIL] Error HTTP ${response.status}:`, data.error?.message || data);
+            }
         } catch (error: any) {
-            console.error('[EMAIL-GMAIL] Error sending email via Gmail API:', error);
-            // Fallback a siguientes métodos si falla? O fallar directamente.
-            return { success: false, error: `Error Gmail: ${error.message}` };
+            console.error('[EMAIL-GMAIL] Error de red o API:', error.message);
         }
+        // Fall through a Resend o SMTP
     }
 
     // Si tiene Resend API Key configurada, priorizamos usar Resend

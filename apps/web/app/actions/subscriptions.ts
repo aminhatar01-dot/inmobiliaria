@@ -240,7 +240,9 @@ export async function inviteToAgency(inviteeEmail: string) {
                     fromName: commSettings.smtp_from_name || "InmoCMS Equipo",
                     fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
                     resendApiKey: commSettings.resend_api_key,
-                    googleAccessToken: commSettings.google_access_token
+                    googleAccessToken: commSettings.google_access_token,
+                    googleRefreshToken: commSettings.google_refresh_token,
+                    tenantId: profile.tenant_id
                 }, inviteeEmail, `Invitación a colaborar en el equipo de ${profile.full_name || 'InmoCMS'}`, html)
             }
         }
