@@ -17,7 +17,12 @@ export default async function JoinPage({
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // 1. Verify invitation
+    // 1. Si no está logueado, redirigir a login primero (evita que RLS bloquee la consulta)
+    if (!user) {
+        redirect(`/login?redirectTo=/join?token=${token}`)
+    }
+
+    // 2. Verify invitation (ahora con sesión activa, RLS permite la lectura)
     const { data: invitation, error: inviteError } = await supabase
         .from("network_invitations")
         .select(`
@@ -37,7 +42,7 @@ export default async function JoinPage({
                     </div>
                     <div className="space-y-2">
                         <h1 className="text-2xl font-black text-gray-900">Invitación Inválida</h1>
-                        <p className="text-gray-500">Este link ha expirado o ya ha sido utilizado.</p>
+                        <p className="text-gray-500">Este link ha expirado, ya fue utilizado, o la invitación no es para tu usuario.</p>
                     </div>
                     <Button asChild className="w-full h-12 rounded-xl font-bold bg-gray-900">
                         <Link href="/">Ir al inicio</Link>
@@ -45,11 +50,6 @@ export default async function JoinPage({
                 </Card>
             </div>
         )
-    }
-
-    // 2. If not logged in, redirect to login
-    if (!user) {
-        redirect(`/login?redirectTo=/join?token=${token}`)
     }
 
     // 3. Process acceptance if logged in
