@@ -2,6 +2,7 @@
 
 import { createClient, getTenantId } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { sendEmail, buildReminderEmailHtml } from "@/lib/services/email"
 import type { Conversation, Message, ConversationWithDetails, MessageWithSender } from "@inmocms/shared"
 
 /**
@@ -465,6 +466,7 @@ export async function createGroupConversation(name: string, userIds: string[]): 
  * Invitar a un agente por correo electrónico
  */
 export async function inviteAgentByEmail(email: string) {
+    console.log("[INVITE] Starting invitation for:", email)
     const supabase = await createClient()
     const tenantId = await getTenantId(supabase)
     const { data: { user } } = await supabase.auth.getUser()
@@ -510,11 +512,11 @@ export async function inviteAgentByEmail(email: string) {
         .single()
 
     const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${token}`
+    console.log("[INVITE] Link generated:", inviteLink)
 
     if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host)) {
+        console.log("[INVITE] Found comm settings, sending email...")
         try {
-            const { sendEmail, buildReminderEmailHtml } = await import("@/lib/services/email")
-            
             const html = buildReminderEmailHtml({
                 title: "Invitación a InmoCMS",
                 greeting: `Hola,`,
