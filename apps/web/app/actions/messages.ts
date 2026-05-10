@@ -3,6 +3,7 @@
 import { createClient, getTenantId } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import type { Conversation, Message, ConversationWithDetails, MessageWithSender } from "@inmocms/shared"
+import { sendEmail, buildReminderEmailHtml } from "@/lib/services/email"
 
 /**
  * Obtener todas las conversaciones del usuario actual
@@ -471,8 +472,8 @@ export async function inviteAgentByEmail(email: string) {
     
     if (!tenantId || !user) return { success: false, error: "Usuario o Tenant no encontrado" }
 
-    // Generar un token único para la invitación
-    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    // Generar un token único para la invitación (debe ser un UUID válido para la DB)
+    const token = crypto.randomUUID()
     
     // Intentar insertar con sender_id, si falla intentamos sin él (por si no se corrió el SQL aún)
     const { error } = await supabase

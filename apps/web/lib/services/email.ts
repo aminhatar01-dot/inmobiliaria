@@ -5,7 +5,8 @@
  * Utiliza nodemailer para el envío real.
  */
 
-import nodemailer from 'nodemailer';
+// nodemailer will be dynamically imported only on the server side to avoid bundling issues
+// import nodemailer from 'nodemailer';
 
 export interface SMTPConfig {
     host?: string;
@@ -115,6 +116,7 @@ export async function sendEmail(
     }
 
     try {
+        const nodemailer = await import('nodemailer');
         const transporter = nodemailer.createTransport({
             host: config.host,
             port: config.port || 587,

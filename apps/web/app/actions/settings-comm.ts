@@ -3,7 +3,8 @@
 
 import { createClient, getTenantId } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import nodemailer from "nodemailer"
+// nodemailer will be dynamically imported to avoid bundling issues
+// import nodemailer from "nodemailer"
 
 export async function getCommunicationSettings() {
     try {
@@ -74,6 +75,7 @@ export async function testSMTP(formData: FormData) {
 
     if (!host) return { success: false, error: "Debes ingresar el Servidor (Host) antes de probar" }
 
+    const nodemailer = await import("nodemailer")
     const transporter = nodemailer.createTransport({
         host: host,
         port: port,

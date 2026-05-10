@@ -35,6 +35,7 @@ export async function inviteNetworkAgent(email: string) {
             sender_tenant_id: tenantId,
             sender_id: user.id,
             recipient_email: email,
+            token: crypto.randomUUID(),
             status: 'pending'
         })
 
