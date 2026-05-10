@@ -481,6 +481,8 @@ export async function inviteAgentByEmail(email: string) {
         .eq("recipient_email", email)
         .maybeSingle()
 
+    let reactivatedToken: string | null = null
+
     if (existingInvite) {
         if (existingInvite.status === 'pending') {
             return { success: false, error: "Ya enviaste una invitación a este correo. Pídele que revise su bandeja o reenvíale el enlace manualmente." }
@@ -497,64 +499,67 @@ export async function inviteAgentByEmail(email: string) {
             if (partnership && partnership.length > 0) {
                 return { success: false, error: "Este agente ya está en tu red." }
             }
-            // Partnership no existe → resetear invitación para permitir re-envío
+            // Partnership no existe → reactivar la invitación existente
+            // (no podemos hacer cancel + insert nuevo por la constraint unique)
+            reactivatedToken = crypto.randomUUID()
             await supabase
                 .from("network_invitations")
-                .update({ status: 'cancelled' })
+                .update({ status: 'pending', token: reactivatedToken, updated_at: new Date().toISOString() })
                 .eq("id", existingInvite.id)
-            // Continuar con la nueva invitación
         }
     }
 
-    // Generar un token único para la invitación (debe ser un UUID válido para la DB)
-    const token = crypto.randomUUID()
+    // Solo insertar si no estamos reactivando una existente
+    const token = reactivatedToken || crypto.randomUUID()
     
-    // Insertar invitación en la base de datos
-    // NOTA: El fallback sin sender_id es temporal para tenants donde la migración
-    // 20260509000000_add_sender_to_invites.sql aún no se aplicó. Remover después de Mayo 2026.
-    const { error } = await supabase
-        .from("network_invitations")
-        .insert({
-            sender_tenant_id: tenantId,
-            sender_id: user.id,
-            recipient_email: email,
-            token,
-            status: 'pending'
-        })
+    if (!reactivatedToken) {
+        // Insertar invitación en la base de datos
+        // NOTA: El fallback sin sender_id es temporal para tenants donde la migración
+        // 20260509000000_add_sender_to_invites.sql aún no se aplicó. Remover después de Mayo 2026.
+        const { error } = await supabase
+            .from("network_invitations")
+            .insert({
+                sender_tenant_id: tenantId,
+                sender_id: user.id,
+                recipient_email: email,
+                token,
+                status: 'pending'
+            })
 
-    if (error) {
-        // Si el error es por columna sender_id faltante (migración no aplicada), reintentamos sin ella
-        if (error.message.includes("sender_id") || error.code === "42703") {
-            console.warn("[INVITE] Columna sender_id no existe — aplicando migración pendiente. Reintentando sin sender_id:", error.message)
-            const { error: retryError } = await supabase
-                .from("network_invitations")
-                .insert({
-                    sender_tenant_id: tenantId,
-                    recipient_email: email,
-                    token,
-                    status: 'pending'
-                })
-            
-            if (retryError) {
-                console.error("[INVITE] Error crítico al crear invitación (fallback):", retryError)
-                return { success: false, error: `Error al crear invitación: ${retryError.message}` }
+        if (error) {
+            // Si el error es por columna sender_id faltante (migración no aplicada), reintentamos sin ella
+            if (error.message.includes("sender_id") || error.code === "42703") {
+                console.warn("[INVITE] Columna sender_id no existe — aplicando migración pendiente. Reintentando sin sender_id:", error.message)
+                const { error: retryError } = await supabase
+                    .from("network_invitations")
+                    .insert({
+                        sender_tenant_id: tenantId,
+                        recipient_email: email,
+                        token,
+                        status: 'pending'
+                    })
+                
+                if (retryError) {
+                    console.error("[INVITE] Error crítico al crear invitación (fallback):", retryError)
+                    return { success: false, error: `Error al crear invitación: ${retryError.message}` }
+                }
+            } else if (error.message.includes("duplicate") || error.code === "23505") {
+                // Inserción duplicada (race condition) — verificar estado
+                const { data: dup } = await supabase
+                    .from("network_invitations")
+                    .select("status")
+                    .eq("sender_tenant_id", tenantId)
+                    .eq("recipient_email", email)
+                    .maybeSingle()
+                if (dup?.status === 'pending') {
+                    return { success: false, error: "Ya enviaste una invitación a este correo. Pídele que revise su bandeja." }
+                }
+                return { success: false, error: "Este agente ya está en tu red." }
+            } else {
+                // Otro tipo de error (RLS, etc.) — no reintentar
+                console.error("[INVITE] Error al crear invitación:", error)
+                return { success: false, error: `Error al crear invitación: ${error.message}` }
             }
-        } else if (error.message.includes("duplicate") || error.code === "23505") {
-            // Inserción duplicada (race condition) — verificar estado
-            const { data: dup } = await supabase
-                .from("network_invitations")
-                .select("status")
-                .eq("sender_tenant_id", tenantId)
-                .eq("recipient_email", email)
-                .maybeSingle()
-            if (dup?.status === 'pending') {
-                return { success: false, error: "Ya enviaste una invitación a este correo. Pídele que revise su bandeja." }
-            }
-            return { success: false, error: "Este agente ya está en tu red." }
-        } else {
-            // Otro tipo de error (RLS, etc.) — no reintentar
-            console.error("[INVITE] Error al crear invitación:", error)
-            return { success: false, error: `Error al crear invitación: ${error.message}` }
         }
     }
 

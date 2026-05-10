@@ -18,6 +18,8 @@ export async function inviteNetworkAgent(email: string) {
         .eq("recipient_email", email)
         .single()
 
+    let reactivatedToken: string | null = null
+
     if (existing) {
         if (existing.status === 'pending') {
             throw new Error("Ya existe una invitación pendiente para este correo")
@@ -34,33 +36,39 @@ export async function inviteNetworkAgent(email: string) {
             if (partnership && partnership.length > 0) {
                 throw new Error("Este agente ya es parte de tu red")
             }
-            // Partnership no existe → resetear para permitir re-invitar
+            // Partnership no existe → reactivar la invitación existente
+            reactivatedToken = crypto.randomUUID()
             await supabase
                 .from("network_invitations")
-                .update({ status: 'cancelled' })
+                .update({ status: 'pending', token: reactivatedToken, updated_at: new Date().toISOString() })
                 .eq("id", existing.id)
-            // Continuar con la nueva invitación
         }
     }
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error("User not found")
 
-    const { data: invite, error } = await supabase
-        .from("network_invitations")
-        .insert({
-            sender_tenant_id: tenantId,
-            sender_id: user.id,
-            recipient_email: email,
-            token: crypto.randomUUID(),
-            status: 'pending'
-        })
-        .select('token')
-        .single()
+    const token = reactivatedToken || crypto.randomUUID()
+    let inviteToken = token
 
-    if (error) {
-        console.error("Error creating invitation:", error)
-        throw new Error("Error al crear la invitación")
+    if (!reactivatedToken) {
+        const { data: invite, error } = await supabase
+            .from("network_invitations")
+            .insert({
+                sender_tenant_id: tenantId,
+                sender_id: user.id,
+                recipient_email: email,
+                token,
+                status: 'pending'
+            })
+            .select('token')
+            .single()
+
+        if (error) {
+            console.error("Error creating invitation:", error)
+            throw new Error("Error al crear la invitación")
+        }
+        inviteToken = invite?.token || token
     }
 
     // Enviar correo de invitación
@@ -79,7 +87,7 @@ export async function inviteNetworkAgent(email: string) {
                 .single()
 
             const { sendEmail } = await import("@/lib/services/email")
-            const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${invite?.token}`
+            const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${inviteToken}`
             
             const html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
