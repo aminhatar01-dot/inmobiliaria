@@ -465,8 +465,85 @@ export async function createGroupConversation(name: string, userIds: string[]): 
  * Invitar a un agente por correo electrónico
  */
 export async function inviteAgentByEmail(email: string) {
-    // TEST: Return immediately without DB or Email
-    const token = Math.random().toString(36).substring(2, 15)
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!tenantId || !user) return { success: false, error: "Usuario o Tenant no encontrado" }
+
+    // Generar un token único para la invitación
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    
+    // Intentar insertar con sender_id, si falla intentamos sin él (por si no se corrió el SQL aún)
+    const { error } = await supabase
+        .from("network_invitations")
+        .insert({
+            sender_tenant_id: tenantId,
+            sender_id: user.id,
+            recipient_email: email,
+            token,
+            status: 'pending'
+        })
+
+    if (error) {
+        console.warn("Error inserting with sender_id, retrying without it:", error.message)
+        const { error: retryError } = await supabase
+            .from("network_invitations")
+            .insert({
+                sender_tenant_id: tenantId,
+                recipient_email: email,
+                token,
+                status: 'pending'
+            })
+        
+        if (retryError) {
+            console.error("Critical error creating invitation:", retryError)
+            return { success: false, error: retryError.message }
+        }
+    }
+
+    // Obtener configuración de correo del tenant
+    const { data: commSettings } = await supabase
+        .from("tenant_communication_settings")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .single()
+
     const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${token}`
+
+    if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host)) {
+        try {
+            const html = buildReminderEmailHtml({
+                title: "Invitación a InmoCMS",
+                greeting: `Hola,`,
+                body: `Te han invitado a unirte a la red de colaboración de InmoCMS.\n\nAl unirte, podrás compartir propiedades y comunicarte directamente con otros agentes.\n\nPara aceptar la invitación y comenzar a colaborar, haz clic en el siguiente enlace:\n\n${inviteLink}`,
+                footer: "Si no esperabas esta invitación, puedes ignorar este correo."
+            })
+
+            await sendEmail({
+                host: commSettings.smtp_host,
+                port: commSettings.smtp_port,
+                user: commSettings.smtp_user,
+                pass: commSettings.smtp_pass,
+                fromName: commSettings.smtp_from_name || "InmoCMS Network",
+                fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
+                resendApiKey: commSettings.resend_api_key
+            }, email, "Invitación a colaborar en InmoCMS", html)
+        } catch (emailError: any) {
+            console.error("Error sending invitation email:", emailError)
+            return { 
+                success: true, 
+                inviteLink, 
+                warning: "La invitación se generó, pero no se pudo enviar el correo: " + (emailError.message || "Error desconocido")
+            }
+        }
+    } else {
+        return { 
+            success: true, 
+            inviteLink, 
+            warning: "No tienes configurado el correo (SMTP/Resend) en Ajustes, por lo que el mail no se envió. Comparte el link manualmente." 
+        }
+    }
+    
     return { success: true, inviteLink }
 }

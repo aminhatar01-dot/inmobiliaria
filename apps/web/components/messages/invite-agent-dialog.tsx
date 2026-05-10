@@ -68,7 +68,8 @@ export function InviteAgentDialog({ open: controlledOpen, onOpenChange: controll
         setInviteLink(null)
         setCopied(false)
     }
-
+    
+    return (
         <>
             {trigger && (
                 <div onClick={() => onOpenChange(true)} className="cursor-pointer">
