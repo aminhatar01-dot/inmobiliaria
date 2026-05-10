@@ -6,7 +6,8 @@ import { SecurityForm } from "@/components/settings/security-form"
 import { NotificationsForm } from "@/components/settings/notifications-form"
 import { CommunicationForm } from "@/components/settings/communication-form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Building2, MapPin, ShieldCheck, Bell, MessageSquareQuote } from "lucide-react"
+import { Building2, MapPin, ShieldCheck, Bell, MessageSquareQuote, Globe } from "lucide-react"
+import { AdsManager } from "@/components/ads/ads-manager"
 
 export default async function AjustesPage() {
     const [settings, branches, notificationPreferences, commSettings] = await Promise.all([
@@ -48,6 +49,9 @@ export default async function AjustesPage() {
                     <TabsTrigger value="notifications" className="rounded-3xl px-8 font-bold data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-lg text-gray-400 gap-2 h-full">
                         <Bell className="h-4 w-4" /> Notificaciones
                     </TabsTrigger>
+                    <TabsTrigger value="ads" className="rounded-3xl px-8 font-bold data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-lg text-gray-400 gap-2 h-full">
+                        <Globe className="h-4 w-4" /> Google Ads
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="agency" className="m-0 focus-visible:outline-none">
@@ -68,6 +72,10 @@ export default async function AjustesPage() {
 
                 <TabsContent value="notifications" className="m-0 focus-visible:outline-none">
                     <NotificationsForm initialPreferences={notificationPreferences} />
+                </TabsContent>
+
+                <TabsContent value="ads" className="m-0 focus-visible:outline-none">
+                    <AdsManager />
                 </TabsContent>
             </Tabs>
         </div>

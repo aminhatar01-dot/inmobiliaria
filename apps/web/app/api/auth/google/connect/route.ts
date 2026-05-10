@@ -32,7 +32,8 @@ export async function GET(request: Request) {
     const scopes = [
         'https://www.googleapis.com/auth/gmail.send',
         'https://www.googleapis.com/auth/calendar.events',
-        'https://www.googleapis.com/auth/contacts'
+        'https://www.googleapis.com/auth/contacts',
+        'https://www.googleapis.com/auth/adwords'
     ].join(' ')
 
     const params = new URLSearchParams({

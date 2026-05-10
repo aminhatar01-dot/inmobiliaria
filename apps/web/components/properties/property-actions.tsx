@@ -23,6 +23,8 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { PublishDialog } from "@/components/marketing/publish-dialog"
+import { PromoteProperty } from "@/components/ads/promote-property"
+import { Sparkles as SparklesIcon } from "lucide-react"
 import { PortalConnection, PropertyPublication, Property } from "@inmocms/shared"
 import { togglePropertySharing, deleteProperty, togglePropertyFeatured } from "@/app/actions/properties"
 import { toast } from "sonner"
@@ -105,6 +107,24 @@ export function PropertyActions({ property, connections, publications }: Propert
                         <Rocket className="h-4 w-4 mr-3 text-indigo-600 animate-pulse" />
                         <span className="font-black text-indigo-700">Publicar Portales</span>
                     </DropdownMenuItem>
+
+                    <PromoteProperty 
+                        property={{
+                            id: property.id,
+                            title: property.title || 'Sin título',
+                            description: property.description || '',
+                            price: property.price || 0
+                        }}
+                        trigger={
+                            <DropdownMenuItem
+                                className="rounded-xl py-3 cursor-pointer group bg-blue-50/50 hover:bg-blue-50 focus:bg-blue-50"
+                                onSelect={(e) => e.preventDefault()}
+                            >
+                                <SparklesIcon className="h-4 w-4 mr-3 text-blue-600 animate-pulse" />
+                                <span className="font-black text-blue-700">Google Ads (Promocionar)</span>
+                            </DropdownMenuItem>
+                        }
+                    />
 
                     <DropdownMenuSeparator className="bg-gray-100" />
 

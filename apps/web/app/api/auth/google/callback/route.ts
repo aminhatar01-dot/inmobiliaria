@@ -77,7 +77,7 @@ export async function GET(request: Request) {
             return NextResponse.redirect(`${origin}/ajustes?google_error=${encodeURIComponent(msg)}`)
         }
 
-        // Guardar tokens en tenant_communication_settings
+        // Guardar tokens en tenant_communication_settings (para Gmail/Calendar del tenant)
         const { error: upsertError } = await supabase
             .from('tenant_communication_settings')
             .upsert({
@@ -87,11 +87,29 @@ export async function GET(request: Request) {
                 updated_at: new Date().toISOString()
             }, {
                 onConflict: 'tenant_id',
-                defaultToNull: false  // No destruir configuraciones SMTP/Resend existentes
+                defaultToNull: false
             } as any)
 
         if (upsertError) {
-            console.error('[GOOGLE-CALLBACK] Error al guardar tokens:', upsertError)
+            console.error('[GOOGLE-CALLBACK] Error al guardar tokens en tenant settings:', upsertError)
+        }
+
+        // Guardar refresh_token en profiles (para Google Ads personal del usuario)
+        if (tokenData.refresh_token) {
+            const { error: profileUpdateError } = await supabase
+                .from('profiles')
+                .update({
+                    google_ads_refresh_token: tokenData.refresh_token,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', user.id)
+
+            if (profileUpdateError) {
+                console.error('[GOOGLE-CALLBACK] Error al guardar token en perfil:', profileUpdateError)
+            }
+        }
+
+        if (upsertError) {
             return NextResponse.redirect(`${origin}/ajustes?google_error=db_save_failed`)
         }
 
