@@ -520,7 +520,7 @@ export async function inviteAgentByEmail(email: string) {
                 footer: "Si no esperabas esta invitación, puedes ignorar este correo."
             })
 
-            await sendEmail({
+            const emailResult = await sendEmail({
                 host: commSettings.smtp_host,
                 port: commSettings.smtp_port,
                 user: commSettings.smtp_user,
@@ -529,6 +529,10 @@ export async function inviteAgentByEmail(email: string) {
                 fromEmail: commSettings.smtp_from_email || "no-reply@inmocms.com",
                 resendApiKey: commSettings.resend_api_key
             }, email, "Invitación a colaborar en InmoCMS", html)
+
+            if (!emailResult.success) {
+                throw new Error(emailResult.error || "Fallo desconocido al enviar el correo")
+            }
         } catch (emailError: any) {
             console.error("Error sending invitation email:", emailError)
             return { 
