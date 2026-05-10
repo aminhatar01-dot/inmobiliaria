@@ -2,7 +2,6 @@
 
 import { createClient, getTenantId } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import { sendEmail, buildReminderEmailHtml } from "@/lib/services/email"
 import type { Conversation, Message, ConversationWithDetails, MessageWithSender } from "@inmocms/shared"
 
 /**
