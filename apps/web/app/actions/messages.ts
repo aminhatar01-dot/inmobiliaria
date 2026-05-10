@@ -473,7 +473,23 @@ export async function inviteAgentByEmail(email: string) {
     
     if (!tenantId || !user) return { success: false, error: "Usuario o Tenant no encontrado" }
 
-    // Generar un token único para la invitación (debe ser un UUID válido para la DB)
+    // Verificar si ya existe una invitación para este correo
+    const { data: existingInvite } = await supabase
+        .from("network_invitations")
+        .select("id, status")
+        .eq("sender_tenant_id", tenantId)
+        .eq("recipient_email", email)
+        .maybeSingle()
+
+    if (existingInvite) {
+        if (existingInvite.status === 'pending') {
+            return { success: false, error: "Ya enviaste una invitación a este correo. Pídele que revise su bandeja o reenvíale el enlace manualmente." }
+        }
+        if (existingInvite.status === 'accepted') {
+            return { success: false, error: "Este agente ya aceptó tu invitación y está en tu red." }
+        }
+    }
+
     // Generar un token único para la invitación (debe ser un UUID válido para la DB)
     const token = crypto.randomUUID()
     
@@ -507,8 +523,20 @@ export async function inviteAgentByEmail(email: string) {
                 console.error("[INVITE] Error crítico al crear invitación (fallback):", retryError)
                 return { success: false, error: `Error al crear invitación: ${retryError.message}` }
             }
+        } else if (error.message.includes("duplicate") || error.code === "23505") {
+            // Inserción duplicada (race condition) — verificar estado
+            const { data: dup } = await supabase
+                .from("network_invitations")
+                .select("status")
+                .eq("sender_tenant_id", tenantId)
+                .eq("recipient_email", email)
+                .maybeSingle()
+            if (dup?.status === 'pending') {
+                return { success: false, error: "Ya enviaste una invitación a este correo. Pídele que revise su bandeja." }
+            }
+            return { success: false, error: "Este agente ya está en tu red." }
         } else {
-            // Otro tipo de error (RLS, duplicado, etc.) — no reintentar
+            // Otro tipo de error (RLS, etc.) — no reintentar
             console.error("[INVITE] Error al crear invitación:", error)
             return { success: false, error: `Error al crear invitación: ${error.message}` }
         }
