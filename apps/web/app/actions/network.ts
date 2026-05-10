@@ -23,7 +23,23 @@ export async function inviteNetworkAgent(email: string) {
             throw new Error("Ya existe una invitación pendiente para este correo")
         }
         if (existing.status === 'accepted') {
-            throw new Error("Este agente ya es parte de tu red")
+            // Verificar si la partnership sigue activa
+            const { data: partnership } = await supabase
+                .from("tenant_partnerships")
+                .select("id")
+                .or(`requester_tenant_id.eq.${tenantId},responder_tenant_id.eq.${tenantId}`)
+                .eq("status", "active")
+                .limit(1)
+            
+            if (partnership && partnership.length > 0) {
+                throw new Error("Este agente ya es parte de tu red")
+            }
+            // Partnership no existe → resetear para permitir re-invitar
+            await supabase
+                .from("network_invitations")
+                .update({ status: 'cancelled' })
+                .eq("id", existing.id)
+            // Continuar con la nueva invitación
         }
     }
 

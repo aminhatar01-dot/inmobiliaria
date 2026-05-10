@@ -486,7 +486,23 @@ export async function inviteAgentByEmail(email: string) {
             return { success: false, error: "Ya enviaste una invitación a este correo. Pídele que revise su bandeja o reenvíale el enlace manualmente." }
         }
         if (existingInvite.status === 'accepted') {
-            return { success: false, error: "Este agente ya aceptó tu invitación y está en tu red." }
+            // Verificar si la partnership sigue activa — si no, permitir re-invitar
+            const { data: partnership } = await supabase
+                .from("tenant_partnerships")
+                .select("id")
+                .or(`requester_tenant_id.eq.${tenantId},responder_tenant_id.eq.${tenantId}`)
+                .eq("status", "active")
+                .limit(1)
+            
+            if (partnership && partnership.length > 0) {
+                return { success: false, error: "Este agente ya está en tu red." }
+            }
+            // Partnership no existe → resetear invitación para permitir re-envío
+            await supabase
+                .from("network_invitations")
+                .update({ status: 'cancelled' })
+                .eq("id", existingInvite.id)
+            // Continuar con la nueva invitación
         }
     }
 
