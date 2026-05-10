@@ -123,6 +123,9 @@ export async function sendEmail(
                 user: config.user,
                 pass: config.pass,
             },
+            tls: {
+                rejectUnauthorized: false
+            }
         });
 
         const info = await transporter.sendMail({

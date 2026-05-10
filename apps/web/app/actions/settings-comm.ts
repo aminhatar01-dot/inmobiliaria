@@ -81,6 +81,9 @@ export async function testSMTP(formData: FormData) {
         auth: {
             user: user,
             pass: pass
+        },
+        tls: {
+            rejectUnauthorized: false
         }
     })
 
