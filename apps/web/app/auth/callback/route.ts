@@ -29,7 +29,7 @@ export async function GET(request: Request) {
               google_access_token: data.session.provider_token,
               google_refresh_token: data.session.provider_refresh_token || null,
               updated_at: new Date().toISOString()
-          }, { onConflict: 'tenant_id', defaultToNull: false })
+          }, { onConflict: 'tenant_id', defaultToNull: false } as any)
       }
       
       return NextResponse.redirect(`${origin}${next}`)

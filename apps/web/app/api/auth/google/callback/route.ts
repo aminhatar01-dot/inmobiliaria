@@ -88,7 +88,7 @@ export async function GET(request: Request) {
             }, {
                 onConflict: 'tenant_id',
                 defaultToNull: false  // No destruir configuraciones SMTP/Resend existentes
-            })
+            } as any)
 
         if (upsertError) {
             console.error('[GOOGLE-CALLBACK] Error al guardar tokens:', upsertError)

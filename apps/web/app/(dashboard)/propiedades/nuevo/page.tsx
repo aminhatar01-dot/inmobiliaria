@@ -11,7 +11,10 @@ import {
     User,
     Loader2,
     Settings,
-    Bell
+    Bell,
+    Sparkles,
+    PlusCircle,
+    Trash2
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
@@ -20,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { createProperty } from "@/app/actions/properties"
 import { OPERATION_TYPES, PROPERTY_STATUSES, PROPERTY_TYPES, CURRENCIES, PROPERTY_TYPE_LABELS } from "@inmocms/shared"
@@ -517,4 +521,3 @@ export default function NewPropertyPage() {
         </div>
     )
 }
-

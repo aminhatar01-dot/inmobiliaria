@@ -13,7 +13,8 @@ import {
     X,
     Settings,
     Bell,
-    Sparkles
+    Sparkles,
+    PlusCircle
 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ import { Property, OPERATION_TYPES, PROPERTY_TYPES, CURRENCIES, PROPERTY_TYPE_LA
 import { ImageUpload } from "@/components/properties/image-upload"
 import { OwnerSelector } from "@/components/properties/owner-selector"
 import LocationPicker from "@/components/properties/location-picker"
+import { Badge } from "@/components/ui/badge"
 
 interface Props {
     property: Property
