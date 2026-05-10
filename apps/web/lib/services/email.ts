@@ -176,10 +176,10 @@ export async function sendEmail(
         // Fall through a Resend o SMTP
     }
 
-    // Si tiene Resend API Key configurada, priorizamos usar Resend
+    // --- MÉTODO 2: Resend API ---
     if (config.resendApiKey) {
         try {
-            const fromEmail = config.fromEmail || 'no-reply@resend.dev'; // Resend default if not set
+            const fromEmail = config.fromEmail || 'no-reply@resend.dev';
             const response = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: {
@@ -197,16 +197,21 @@ export async function sendEmail(
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.message || `HTTP ${response.status}`);
+            if (response.ok) {
+                console.log(`[EMAIL-RESEND] ✅ Correo enviado a ${to}. ID: ${data.id}`);
+                return { success: true, messageId: data.id };
             }
 
-            console.log(`[EMAIL-RESEND] ✅ Correo enviado a ${to}. ID: ${data.id}`);
-            return { success: true, messageId: data.id };
+            // Error de dominio no verificado → sugerencia clara
+            if (data.message && data.message.includes("domain is not verified")) {
+                console.warn(`[EMAIL-RESEND] Dominio no verificado en Resend. Intentando SMTP...`);
+            } else {
+                console.error(`[EMAIL-RESEND] Error HTTP ${response.status}:`, data.message || data);
+            }
         } catch (error: any) {
-            console.error('[EMAIL-RESEND] Error sending email via Resend:', error);
-            return { success: false, error: `Error Resend: ${error.message}` };
+            console.error('[EMAIL-RESEND] Error de red o API:', error.message);
         }
+        // Fall through a SMTP en vez de fallar inmediatamente
     }
 
     // Si no tiene Resend, usamos SMTP tradicional con Nodemailer
