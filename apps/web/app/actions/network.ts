@@ -165,8 +165,10 @@ export async function acceptNetworkInvitation(invitationId: string) {
 
     if (!tenantId) throw new Error("Unauthorized")
 
-    // Get invitation
-    const { data: invitation } = await supabase
+    // Get invitation (usamos admin client para evitar bloqueos de RLS)
+    const { createAdminClient } = await import("@/lib/supabase/server")
+    const adminClient = await createAdminClient()
+    const { data: invitation } = await adminClient
         .from("network_invitations")
         .select("*")
         .eq("id", invitationId)
@@ -198,9 +200,22 @@ export async function acceptNetworkInvitation(invitationId: string) {
         .eq("id", invitationId)
 
     // 3. Automatically create a conversation between the sender and the acceptor
-    if (invitation.sender_id) {
+    let senderUserId = invitation.sender_id
+
+    // Si sender_id es NULL (migración pendiente), buscar cualquier usuario del tenant emisor
+    if (!senderUserId) {
+        const { data: senderProfile } = await adminClient
+            .from("profiles")
+            .select("id")
+            .eq("tenant_id", invitation.sender_tenant_id)
+            .limit(1)
+            .single()
+        senderUserId = senderProfile?.id
+    }
+
+    if (senderUserId) {
         const { getOrCreateConversation } = await import("./messages")
-        await getOrCreateConversation(invitation.sender_id)
+        await getOrCreateConversation(senderUserId)
     }
 
     revalidatePath("/agentes")

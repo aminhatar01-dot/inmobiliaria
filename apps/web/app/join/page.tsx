@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { acceptNetworkInvitation } from "@/app/actions/network"
 import { Card } from "@/components/ui/card"
@@ -22,8 +22,9 @@ export default async function JoinPage({
         redirect(`/login?redirectTo=/join?token=${token}`)
     }
 
-    // 2. Verify invitation (ahora con sesión activa, RLS permite la lectura)
-    const { data: invitation, error: inviteError } = await supabase
+    // 2. Verify invitation (usamos admin client para evitar bloqueos de RLS)
+    const adminClient = await createAdminClient()
+    const { data: invitation, error: inviteError } = await adminClient
         .from("network_invitations")
         .select(`
             *,
