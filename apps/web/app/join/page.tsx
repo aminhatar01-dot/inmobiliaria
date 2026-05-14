@@ -9,9 +9,9 @@ import Link from "next/link"
 export default async function JoinPage({
     searchParams,
 }: {
-    searchParams: Promise<{ token?: string }>
+    searchParams: Promise<{ token?: string, error?: string }>
 }) {
-    const { token } = await searchParams
+    const { token, error: errorMessage } = await searchParams
     if (!token) redirect("/")
 
     const supabase = await createClient()
@@ -66,14 +66,31 @@ export default async function JoinPage({
                         <span className="font-bold text-indigo-600">{(invitation as any).sender?.name || 'Un agente'}</span> te invita a colaborar en InmoCMS.
                     </p>
                 </div>
+                
+                {errorMessage && (
+                    <div className="bg-red-50 p-4 rounded-xl text-sm text-red-600 font-medium border border-red-100 flex items-start gap-2 text-left">
+                        <XCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                        <span>{errorMessage}</span>
+                    </div>
+                )}
+                
                 <div className="bg-gray-50 p-6 rounded-3xl text-sm text-gray-400 font-medium">
                     Al aceptar, podrán compartir propiedades y comunicarse por el chat interno.
                 </div>
                 
                 <form action={async () => {
                     "use server"
-                    await acceptNetworkInvitation(invitation.id)
-                    redirect("/mensajes")
+                    let success = false;
+                    try {
+                        await acceptNetworkInvitation(invitation.id)
+                        success = true;
+                    } catch (error: any) {
+                        redirect(`/join?token=${token}&error=${encodeURIComponent(error.message)}`)
+                    }
+                    
+                    if (success) {
+                        redirect("/mensajes")
+                    }
                 }}>
                     <Button type="submit" className="w-full h-16 rounded-2xl font-black text-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-xl shadow-indigo-500/20 transition-all hover:scale-[1.02] border-none">
                         Aceptar Invitación

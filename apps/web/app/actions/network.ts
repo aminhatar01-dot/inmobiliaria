@@ -227,20 +227,33 @@ export async function acceptNetworkInvitation(invitationId: string) {
     if (!invitation) throw new Error("Invitación no encontrada")
     if (invitation.status !== 'pending') throw new Error("Invitación no válida")
 
+    if (invitation.sender_tenant_id === tenantId) {
+        throw new Error("No puedes aceptar una invitación enviada por tu propia agencia.")
+    }
+
     // Start transaction (simplified as separate calls for Supabase implementation)
 
     // 1. Create partnership (Usamos adminClient porque el usuario actual puede no tener permiso de insert directo)
-    const { error: partnershipError } = await adminClient
+    // Primero verificamos si ya existe la conexión
+    const { data: existingPartnership } = await adminClient
         .from("tenant_partnerships")
-        .insert({
-            requester_tenant_id: invitation.sender_tenant_id,
-            responder_tenant_id: tenantId,
-            status: 'active'
-        })
+        .select("id")
+        .or(`and(requester_tenant_id.eq.${invitation.sender_tenant_id},responder_tenant_id.eq.${tenantId}),and(requester_tenant_id.eq.${tenantId},responder_tenant_id.eq.${invitation.sender_tenant_id})`)
+        .maybeSingle()
 
-    if (partnershipError) {
-        console.error("Error creating partnership:", partnershipError)
-        throw new Error("Error al aceptar la invitación")
+    if (!existingPartnership) {
+        const { error: partnershipError } = await adminClient
+            .from("tenant_partnerships")
+            .insert({
+                requester_tenant_id: invitation.sender_tenant_id,
+                responder_tenant_id: tenantId,
+                status: 'active'
+            })
+
+        if (partnershipError) {
+            console.error("Error creating partnership:", partnershipError)
+            throw new Error("Error al aceptar la invitación: " + partnershipError.message)
+        }
     }
 
     // 2. Update invitation status (Usamos adminClient)
