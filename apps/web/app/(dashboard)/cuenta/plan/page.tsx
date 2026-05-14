@@ -271,38 +271,12 @@ function PlanPageContent() {
                 </div>
             ) : null}
 
-            {/* ── SELECTOR DE MODO DE PAGO ── */}
+            {/* ── INFORMACIÓN DE COBRO ── */}
             <div className="flex flex-col items-center justify-center space-y-6">
-                <div className="flex items-center gap-4 bg-gray-100/50 p-1.5 rounded-[2rem] border border-gray-200">
-                    <button
-                        onClick={() => setIsRecurring(true)}
-                        className={`px-8 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
-                            isRecurring 
-                                ? "bg-white text-blue-600 shadow-xl shadow-blue-500/10" 
-                                : "text-gray-400 hover:text-gray-600"
-                        }`}
-                    >
-                        <ShieldCheck className={`h-4 w-4 ${isRecurring ? 'animate-pulse' : ''}`} />
-                        Débito Automático
-                    </button>
-                    <button
-                        onClick={() => setIsRecurring(false)}
-                        className={`px-8 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
-                            !isRecurring 
-                                ? "bg-white text-blue-600 shadow-xl shadow-blue-500/10" 
-                                : "text-gray-400 hover:text-gray-600"
-                        }`}
-                    >
-                        <CreditCard className="h-4 w-4" />
-                        Pago Único
-                    </button>
-                </div>
-                <div className="flex items-center gap-2 text-gray-400">
+                <div className="flex items-center gap-2 text-gray-400 bg-gray-50 px-6 py-3 rounded-full border border-gray-200">
                     <Clock className="h-4 w-4" />
                     <span className="text-xs font-bold uppercase tracking-wider">
-                        {isRecurring 
-                            ? "Se cobrará automáticamente cada mes" 
-                            : "Deberás renovar manualmente cada 30 días"}
+                        Se cobrará automáticamente cada mes
                     </span>
                 </div>
             </div>
