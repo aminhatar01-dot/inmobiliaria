@@ -95,6 +95,8 @@ export async function inviteNetworkAgent(email: string) {
         inviteToken = invite?.token || token
     }
 
+    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${inviteToken}`
+
     // Enviar correo de invitación
     try {
         const { data: commSettings } = await supabase
@@ -111,7 +113,6 @@ export async function inviteNetworkAgent(email: string) {
                 .single()
 
             const { sendEmail } = await import("@/lib/services/email")
-            const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/join?token=${inviteToken}`
             
             const html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
@@ -145,6 +146,7 @@ export async function inviteNetworkAgent(email: string) {
     }
 
     revalidatePath("/agentes")
+    return { success: true, inviteLink }
 }
 
 export async function getNetworkStatus() {

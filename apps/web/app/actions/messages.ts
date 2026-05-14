@@ -469,11 +469,13 @@ export async function createGroupConversation(name: string, userIds: string[]): 
 export async function inviteAgentByEmail(email: string) {
     try {
         const { inviteNetworkAgent } = await import("./network")
-        await inviteNetworkAgent(email)
+        const res = await inviteNetworkAgent(email)
         
-        // El link ahora se maneja internamente o podemos recuperarlo si fuera necesario,
-        // pero por simplicidad para la UI actual (que espera un objeto success):
-        return { success: true }
+        return { 
+            success: true, 
+            inviteLink: res?.inviteLink,
+            warning: (res as any).warning
+        }
     } catch (error: any) {
         return { success: false, error: error.message }
     }
