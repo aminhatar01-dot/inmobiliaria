@@ -2,11 +2,19 @@
 
 import { useSearchParams, useRouter } from "next/navigation"
 import { CreditCard, Landmark, Banknote, ShieldCheck, ChevronRight, Loader2, ArrowLeft, Info } from "lucide-react"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
 type ViewState = 'selection' | 'card_form' | 'transfer_form'
 
 export default function MockCheckoutPage() {
+    return (
+        <Suspense fallback={<div className="p-8 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>}>
+            <CheckoutContent />
+        </Suspense>
+    )
+}
+
+function CheckoutContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const [loading, setLoading] = useState(false)

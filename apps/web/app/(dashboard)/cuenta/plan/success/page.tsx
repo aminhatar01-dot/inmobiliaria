@@ -1,12 +1,20 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { CheckCircle2, Loader2, Sparkles } from "lucide-react"
 import { initializeSubscription } from "@/app/actions/subscriptions"
 import { toast } from "sonner"
 
 export default function SuccessPage() {
+    return (
+        <Suspense fallback={<div className="min-h-[80vh] flex justify-center items-center"><Loader2 className="h-12 w-12 animate-spin text-blue-600" /></div>}>
+            <SuccessContent />
+        </Suspense>
+    )
+}
+
+function SuccessContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing')
