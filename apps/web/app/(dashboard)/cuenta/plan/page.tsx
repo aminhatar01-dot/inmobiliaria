@@ -27,7 +27,7 @@ const PLANS = [
     },
     {
         name: "Profesional",
-        price: "5",
+        price: "50.000",
         description: "Para agentes que buscan escalar su negocio.",
         features: [
             "Propiedades ilimitadas",
@@ -43,7 +43,7 @@ const PLANS = [
     },
     {
         name: "Agencia",
-        price: "5",
+        price: "90.000",
         description: "Potencia tu inmobiliaria con todo tu equipo.",
         features: [
             "Todo lo del plan Profesional",
