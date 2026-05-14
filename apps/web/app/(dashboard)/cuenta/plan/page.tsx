@@ -140,6 +140,10 @@ function PlanPageContent() {
                 if (pref.success && pref.init_point) {
                     window.location.href = pref.init_point
                     return // Stop further execution as we are redirecting
+                } else {
+                    toast.error("Error al procesar el pago", {
+                        description: pref.error || "Por favor, inténtalo de nuevo."
+                    })
                 }
             } else {
                 const result = await initializeSubscription(planName)

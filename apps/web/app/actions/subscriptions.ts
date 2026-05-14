@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -91,7 +91,13 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
 
     if (!user) throw new Error("Not authenticated")
 
-    const { data: subscription } = await supabase
+    const { data: invite } = await supabase
+        .from('subscription_invites')
+        .select('subscription_id')
+        .eq('invitee_id', user.id)
+        .single()
+
+    const subscriptionQuery = supabase
         .from('user_subscriptions')
         .select(`
             id,
@@ -104,8 +110,14 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
                 price_ars
             )
         `)
-        .eq('user_id', user.id)
-        .single()
+
+    if (invite) {
+        subscriptionQuery.eq('id', invite.subscription_id)
+    } else {
+        subscriptionQuery.eq('user_id', user.id)
+    }
+
+    const { data: subscription } = await subscriptionQuery.single()
 
     if (!subscription) {
         return {
@@ -440,8 +452,71 @@ export async function acceptInvitation(token: string) {
         })
         .eq('id', invite.id)
 
+    // 5. Add user to team group chats using Admin Client to bypass RLS during setup
+    const adminClient = await createAdminClient()
+    const { data: teamChats } = await adminClient
+        .from('conversations')
+        .select('id')
+        .eq('tenant_id', inviterProfile.tenant_id)
+        .eq('is_group', true)
+        .is('lead_id', null)
+
+    if (teamChats && teamChats.length > 0) {
+        const participants = teamChats.map(chat => ({
+            conversation_id: chat.id,
+            user_id: user.id
+        }))
+        // Insert ignoring duplicates if they somehow exist
+        await adminClient.from('conversation_participants').upsert(participants, { onConflict: 'conversation_id,user_id' })
+    }
+
+    // 6. Create a direct conversation with the inviter and send a welcome message
+    const { data: existingParticipations } = await adminClient
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', user.id)
+
+    let directConversationId = null
+    if (existingParticipations) {
+        for (const participation of existingParticipations) {
+            const { data: otherParticipation } = await adminClient
+                .from('conversation_participants')
+                .select('user_id')
+                .eq('conversation_id', participation.conversation_id)
+                .eq('user_id', sub.user_id)
+                .single()
+            if (otherParticipation) {
+                directConversationId = participation.conversation_id
+                break
+            }
+        }
+    }
+
+    if (!directConversationId) {
+        const { data: newConv } = await adminClient
+            .from('conversations')
+            .insert({ tenant_id: inviterProfile.tenant_id, is_group: false })
+            .select()
+            .single()
+
+        if (newConv) {
+            directConversationId = newConv.id
+            await adminClient.from('conversation_participants').insert([
+                { conversation_id: newConv.id, user_id: user.id },
+                { conversation_id: newConv.id, user_id: sub.user_id }
+            ])
+            // Send welcome message from the inviter
+            await adminClient.from('messages').insert({
+                conversation_id: newConv.id,
+                sender_id: sub.user_id,
+                content: '¡Hola! Te doy la bienvenida a nuestro equipo en InmoCMS. Aquí podremos comunicarnos directamente.'
+            })
+        }
+    }
+
     revalidatePath('/dashboard')
     revalidatePath('/cuenta/equipo')
+    revalidatePath('/mensajes')
 
     return { success: true }
 }
@@ -504,7 +579,7 @@ export async function createCheckoutPreference(planName: string, price: number) 
         
         if (!response.ok) {
             console.error("MP Preference Error Response:", JSON.stringify(data, null, 2))
-            throw new Error(data.message || data.error || "Error creating MP preference")
+            return { success: false, error: data.message || data.error || "Error creating MP preference" }
         }
 
         console.log("[MP] Preference created:", data.id, "init_point:", data.init_point)
@@ -515,7 +590,7 @@ export async function createCheckoutPreference(planName: string, price: number) 
         }
     } catch (error: any) {
         console.error("MP Preference Error:", error)
-        throw new Error("No se pudo generar el link de pago: " + error.message)
+        return { success: false, error: "No se pudo generar el link de pago: " + error.message }
     }
 }
 
@@ -528,8 +603,15 @@ export async function createRecurringSubscription(planName: string, price: numbe
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) throw new Error("Debes iniciar sesión para suscribirte.")
-    if (!accessToken) throw new Error("Servicio de pagos no configurado.")
+    if (!user) return { success: false, error: "Debes iniciar sesión para suscribirte." }
+    
+    if (!accessToken) {
+        console.warn("MERCADOPAGO_ACCESS_TOKEN not found. Using local mock checkout.")
+        return {
+            success: true,
+            init_point: `${siteUrl}/cuenta/plan/checkout?plan=${planName}&price=${price}`
+        }
+    }
 
     try {
         const response = await fetch('https://api.mercadopago.com/preapproval', {
@@ -559,7 +641,7 @@ export async function createRecurringSubscription(planName: string, price: numbe
         
         if (!response.ok) {
             console.error("MP Preapproval Error:", JSON.stringify(data, null, 2))
-            throw new Error(data.message || data.error || "Error al crear suscripción recurrente")
+            return { success: false, error: data.message || data.error || "Error al crear suscripción recurrente" }
         }
 
         return {
@@ -568,6 +650,6 @@ export async function createRecurringSubscription(planName: string, price: numbe
         }
     } catch (error: any) {
         console.error("MP Preapproval Error:", error)
-        throw new Error("No se pudo generar el link de débito automático: " + error.message)
+        return { success: false, error: "No se pudo generar el link de débito automático: " + error.message }
     }
 }
