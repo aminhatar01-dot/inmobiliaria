@@ -4,6 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { sendWhatsAppMessage, sendWhatsAppViaN8n, WhatsAppConfig } from '@/lib/services/whatsapp';
 import { sendEmail, SMTPConfig, buildReminderEmailHtml } from '@/lib/services/email';
 import { replaceTemplateVariables, TemplateVariables } from '@/lib/services/templates';
+import { GoogleGenAI } from '@google/genai';
+import fs from 'fs';
+import path from 'path';
 
 export type AutomationEvent = 'new_lead' | 'lead_status_change' | 'property_published' | 'task_assigned' | 'visit_scheduled';
 
@@ -60,24 +63,86 @@ export async function processAutomationRules(
 
                 // Preparar variables para el mensaje
                 const vars: TemplateVariables = {
-                    nombre: recipientProfile.name || recipientProfile.full_name || 'Cliente',
+                    nombre: recipientProfile.name || 'Cliente',
                     propiedad: context.property?.title || '',
-                    agente: context.agent?.full_name || '',
+                    agente: context.agent?.name || '',
                     inmobiliaria: settings?.smtp_from_name || 'Nuestra Inmobiliaria',
                     fecha: new Date().toLocaleDateString('es-AR'),
                     hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
                     ...(context.extraVars || {})
                 };
 
-                const template = actionConfig.message || (rule.templates && rule.templates[0]?.content) || '';
+                const template = actionConfig.message || actionConfig.message_template || (rule.templates && rule.templates[0]?.content) || '';
                 if (!template) continue;
 
-                const message = replaceTemplateVariables(template, vars);
+                let message = '';
+                
+                if (actionConfig.format === 'ai') {
+                    // Generate AI message based on configuration
+                    let finalKey = process.env.GEMINI_API_KEY;
+                    if (!finalKey) {
+                        try {
+                            const envPath = path.join(process.cwd(), '.env.local');
+                            if (fs.existsSync(envPath)) {
+                                const envContent = fs.readFileSync(envPath, 'utf8');
+                                const match = envContent.match(/GEMINI_API_KEY\s*=\s*["']?([^"'\s]+)["']?/);
+                                if (match) finalKey = match[1].trim();
+                            }
+                        } catch (e) {}
+                    }
+                    
+                    if (finalKey) {
+                        const ai = new GoogleGenAI({ apiKey: finalKey });
+                        let propertiesStr = "";
+                        if (actionConfig.include_portfolio) {
+                            const { data: properties } = await supabase
+                                .from('properties')
+                                .select('id, title, property_type, operation_type, price, currency, city')
+                                .eq('tenant_id', tenantId)
+                                .eq('status', 'published')
+                                .limit(5);
+                            if (properties && properties.length > 0) {
+                                propertiesStr = properties.map((p: any) => `- ${p.title}: ${p.currency} ${p.price}`).join("\\n");
+                            }
+                        }
+
+                        const systemPrompt = `
+Eres un asistente de WhatsApp. Rol: ${actionConfig.ai_role || 'asesor'}. Tono: ${actionConfig.ai_tone || 'amigable'}.
+Debes redactar un primer mensaje de contacto para el cliente ${vars.nombre}.
+${vars.propiedad ? `El cliente está interesado en: ${vars.propiedad}` : ''}
+Propiedades en portafolio:
+${propertiesStr}
+
+Reglas del agente:
+${template}
+
+Escribe solo el mensaje de WhatsApp a enviar.`;
+
+                        try {
+                            const response = await ai.models.generateContent({
+                                model: 'gemini-2.5-flash',
+                                contents: systemPrompt,
+                                config: { temperature: 0.7 }
+                            });
+                            message = response.text?.trim() || replaceTemplateVariables("Hola {{nombre}}.", vars);
+                        } catch(e) {
+                            message = replaceTemplateVariables("Hola {{nombre}}.", vars);
+                        }
+                    } else {
+                        message = replaceTemplateVariables("Hola {{nombre}}.", vars);
+                    }
+                } else {
+                    message = replaceTemplateVariables(template, vars);
+                }
+
                 const recipientPhone = recipientProfile.phone;
                 const recipientEmail = recipientProfile.email;
 
+                const isWhatsAppAction = actionType === 'whatsapp' || (actionType === 'lead_follow_up' && actionConfig.channel === 'whatsapp');
+                const isEmailAction = actionType === 'email' || (actionType === 'lead_follow_up' && actionConfig.channel === 'email');
+
                 // Ejecución directa según modo configurado
-                if (actionType === 'whatsapp' && recipientPhone) {
+                if (isWhatsAppAction && recipientPhone) {
                     if (settings?.whatsapp_mode === 'webhook') {
                         // Modo Centralizado (Evolution API)
                         const GLOBAL_URL = process.env.EVOLUTION_GLOBAL_API_URL || 'http://157.245.115.101:8080';
@@ -129,7 +194,7 @@ export async function processAutomationRules(
                         }
                     }
                 } 
-                else if (actionType === 'email' && recipientEmail && (settings?.smtp_host || settings?.resend_api_key || settings?.google_access_token)) {
+                else if (isEmailAction && recipientEmail && (settings?.smtp_host || settings?.resend_api_key || settings?.google_access_token)) {
                     const html = buildReminderEmailHtml({
                         title: rule.name || 'Notificación automática',
                         greeting: `Hola ${vars.nombre}`,

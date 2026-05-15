@@ -108,7 +108,7 @@ export async function inviteNetworkAgent(email: string) {
         if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host || commSettings.google_access_token)) {
             const { data: senderProfile } = await supabase
                 .from("profiles")
-                .select("full_name")
+                .select("name")
                 .eq("id", user.id)
                 .single()
 
@@ -117,7 +117,7 @@ export async function inviteNetworkAgent(email: string) {
             const html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
                     <h2 style="color: #4f46e5;">Hola de parte de InmoCMS Network</h2>
-                    <p><strong>${senderProfile?.full_name || 'Un agente'}</strong> te ha invitado a formar parte de su red de partners en InmoCMS.</p>
+                    <p><strong>${senderProfile?.name || 'Un agente'}</strong> te ha invitado a formar parte de su red de partners en InmoCMS.</p>
                     <p>Al ser partners, podrán compartir propiedades y colaborar en tiempo real para cerrar más ventas.</p>
                     <div style="margin: 30px 0; text-align: center;">
                         <a href="${inviteLink}" style="background: #4f46e5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">Unirme a la Red</a>

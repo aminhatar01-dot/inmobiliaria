@@ -79,9 +79,9 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     }
 
     // 4. Search Agents (Profiles)
-    let agentQuery = supabase.from("profiles").select("id, full_name, email").eq("tenant_id", tenantId)
+    let agentQuery = supabase.from("profiles").select("id, name, email").eq("tenant_id", tenantId)
     tokens.forEach(token => {
-        agentQuery = agentQuery.or(`full_name.ilike.%${token}%,email.ilike.%${token}%`)
+        agentQuery = agentQuery.or(`name.ilike.%${token}%,email.ilike.%${token}%`)
     })
     const { data: agents } = await agentQuery.limit(3)
 
@@ -89,7 +89,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
         agents.forEach(a => {
             searchResults.push({
                 id: a.id,
-                title: a.full_name || 'Agente del Equipo',
+                title: a.name || 'Agente del Equipo',
                 subtitle: a.email,
                 type: 'agent',
                 url: `/agentes`

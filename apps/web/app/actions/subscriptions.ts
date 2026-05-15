@@ -27,7 +27,7 @@ export async function getUserPlanLimits(): Promise<{ planName: string, limits: P
         .from('subscription_invites')
         .select('subscription_id')
         .eq('invitee_id', user.id)
-        .single()
+        .maybeSingle()
 
     const subscriptionQuery = supabase
         .from('user_subscriptions')
@@ -58,7 +58,7 @@ export async function getUserPlanLimits(): Promise<{ planName: string, limits: P
             .from('subscription_plans')
             .select('*')
             .eq('name', 'Gratuito')
-            .single()
+            .maybeSingle()
 
         return {
             planName: 'Gratuito',
@@ -95,7 +95,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
         .from('subscription_invites')
         .select('subscription_id')
         .eq('invitee_id', user.id)
-        .single()
+        .maybeSingle()
 
     const subscriptionQuery = supabase
         .from('user_subscriptions')
@@ -117,7 +117,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
         subscriptionQuery.eq('user_id', user.id)
     }
 
-    const { data: subscription } = await subscriptionQuery.single()
+    const { data: subscription } = await subscriptionQuery.maybeSingle()
 
     if (!subscription) {
         return {
@@ -189,7 +189,7 @@ export async function inviteToAgency(inviteeEmail: string) {
         .from('user_subscriptions')
         .select('id')
         .eq('user_id', user!.id)
-        .single()
+        .maybeSingle()
 
     if (!sub) throw new Error("No tienes una suscripción activa.")
 
@@ -203,7 +203,7 @@ export async function inviteToAgency(inviteeEmail: string) {
             status: 'pending'
         })
         .select('token')
-        .single()
+        .maybeSingle()
 
     if (error) {
         if (error.code === '23505') throw new Error("Ya existe una invitación pendiente para este correo.")
@@ -216,16 +216,16 @@ export async function inviteToAgency(inviteeEmail: string) {
     try {
         const { data: profile } = await supabase
             .from('profiles')
-            .select('tenant_id, full_name')
+            .select('tenant_id, name')
             .eq('id', user!.id)
-            .single()
+            .maybeSingle()
 
         if (profile?.tenant_id) {
             const { data: commSettings } = await supabase
                 .from("tenant_communication_settings")
                 .select("*")
                 .eq("tenant_id", profile.tenant_id)
-                .single()
+                .maybeSingle()
 
             if (commSettings && (commSettings.resend_api_key || commSettings.smtp_host || commSettings.google_access_token)) {
                 const { sendEmail } = await import("@/lib/services/email")
@@ -233,7 +233,7 @@ export async function inviteToAgency(inviteeEmail: string) {
                 const html = `
                     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
                         <h2 style="color: #4f46e5;">Invitación a Equipo en InmoCMS</h2>
-                        <p><strong>${profile.full_name || 'Tu administrador'}</strong> te ha invitado a formar parte de su equipo profesional en InmoCMS.</p>
+                        <p><strong>${profile.name || 'Tu administrador'}</strong> te ha invitado a formar parte de su equipo profesional en InmoCMS.</p>
                         <p>Al unirte al equipo, podrás gestionar propiedades, leads y automatizaciones de forma colaborativa.</p>
                         <div style="margin: 30px 0; text-align: center;">
                             <a href="${inviteLink}" style="background: #4f46e5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">Aceptar Invitación y Registrarme</a>
@@ -255,7 +255,7 @@ export async function inviteToAgency(inviteeEmail: string) {
                     googleAccessToken: commSettings.google_access_token,
                     googleRefreshToken: commSettings.google_refresh_token,
                     tenantId: profile.tenant_id
-                }, inviteeEmail, `Invitación a colaborar en el equipo de ${profile.full_name || 'InmoCMS'}`, html)
+                }, inviteeEmail, `Invitación a colaborar en el equipo de ${profile.name || 'InmoCMS'}`, html)
             }
         }
     } catch (emailErr) {
@@ -279,7 +279,7 @@ export async function initializeSubscription(planName: string) {
         .from('subscription_plans')
         .select('*')
         .eq('name', planName)
-        .single()
+        .maybeSingle()
 
     if (planError) {
         console.error("Plan fetch error:", planError)
@@ -291,7 +291,7 @@ export async function initializeSubscription(planName: string) {
         .from('profiles')
         .select('tenant_id, name')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     const userMetadata = user.user_metadata || {}
     const name = profile?.name || userMetadata.full_name || 'Agente'
@@ -314,7 +314,7 @@ export async function initializeSubscription(planName: string) {
                 slug: `${agency_name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Math.random().toString(36).substring(2, 7)}`
             })
             .select()
-            .single()
+            .maybeSingle()
 
         if (tenantError) throw new Error("Error al crear la inmobiliaria: " + tenantError.message)
         tenantId = tenant.id
@@ -386,7 +386,7 @@ export async function getInvitationByToken(token: string) {
             )
         `)
         .eq('token', token)
-        .single()
+        .maybeSingle()
 
     if (error || !invite) return null
 
@@ -414,7 +414,7 @@ export async function acceptInvitation(token: string) {
         .select('*')
         .eq('token', token)
         .eq('status', 'pending')
-        .single()
+        .maybeSingle()
 
     if (inviteError || !invite) throw new Error("Invitación no válida o ya aceptada.")
 
@@ -423,22 +423,36 @@ export async function acceptInvitation(token: string) {
         .from('user_subscriptions')
         .select('user_id')
         .eq('id', invite.subscription_id)
-        .single()
+        .maybeSingle()
 
     if (!sub) throw new Error("No se pudo encontrar la suscripción original.")
 
     const { data: inviterProfile } = await supabase
         .from('profiles')
         .select('tenant_id')
-        .eq('id', sub.user_id)
-        .single()
+                        .eq('id', sub.user_id)
+                        .maybeSingle()
 
     if (!inviterProfile?.tenant_id) throw new Error("No se pudo encontrar la inmobiliaria de origen.")
 
-    // 3. Update invitee's profile with tenant_id
+    // 3. Update invitee's profile with tenant_id and fix generic name
+    const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', user.id)
+        .maybeSingle()
+
+    let newName = currentProfile?.name
+    if (!newName || newName === 'Usuario') {
+        newName = user.email?.split('@')[0] || 'Agente'
+    }
+
     const { error: profileError } = await supabase
         .from('profiles')
-        .update({ tenant_id: inviterProfile.tenant_id })
+        .update({ 
+            tenant_id: inviterProfile.tenant_id,
+            name: newName
+        })
         .eq('id', user.id)
 
     if (profileError) throw new Error("Error al unirse a la inmobiliaria: " + profileError.message)
@@ -479,15 +493,23 @@ export async function acceptInvitation(token: string) {
     let directConversationId = null
     if (existingParticipations) {
         for (const participation of existingParticipations) {
-            const { data: otherParticipation } = await adminClient
-                .from('conversation_participants')
-                .select('user_id')
-                .eq('conversation_id', participation.conversation_id)
-                .eq('user_id', sub.user_id)
-                .single()
-            if (otherParticipation) {
-                directConversationId = participation.conversation_id
-                break
+            const { data: conv } = await adminClient
+                .from('conversations')
+                .select('is_group')
+                .eq('id', participation.conversation_id)
+                .maybeSingle()
+                
+            if (conv && !conv.is_group) {
+                const { data: otherParticipation } = await adminClient
+                    .from('conversation_participants')
+                    .select('user_id')
+                    .eq('conversation_id', participation.conversation_id)
+                    .eq('user_id', sub.user_id)
+                    .maybeSingle()
+                if (otherParticipation) {
+                    directConversationId = participation.conversation_id
+                    break
+                }
             }
         }
     }
@@ -497,7 +519,7 @@ export async function acceptInvitation(token: string) {
             .from('conversations')
             .insert({ tenant_id: inviterProfile.tenant_id, is_group: false })
             .select()
-            .single()
+            .maybeSingle()
 
         if (newConv) {
             directConversationId = newConv.id

@@ -283,7 +283,7 @@ export const VISIT_STATUS_LABELS: Record<keyof typeof VISIT_STATUSES, string> = 
 export type Profile = {
     id: string;
     email: string;
-    full_name?: string;
+    name?: string;
     avatar_url?: string;
 };
 

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, UserPlus, Users, MessageSquare, Loader2 } from "lucide-react"
-import { getTenantUsers, getLeadsForMessaging, getOrCreateConversation, getOrCreateLeadConversation, createGroupConversation } from "@/app/actions/messages"
+import { getTenantUsers, getLeadsForMessaging, getOrCreateConversation, getOrCreateLeadConversation, createGroupConversation, searchGlobalUsersByEmail } from "@/app/actions/messages"
 import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -22,6 +22,7 @@ export function NewChatDialog({ open, onOpenChange, onConversationCreated }: New
     const [activeTab, setActiveTab] = useState<"team" | "leads">("team")
     const [searchQuery, setSearchQuery] = useState("")
     const [teamUsers, setTeamUsers] = useState<any[]>([])
+    const [globalUsers, setGlobalUsers] = useState<any[]>([])
     const [leads, setLeads] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [isCreating, setIsCreating] = useState(false)
@@ -33,6 +34,20 @@ export function NewChatDialog({ open, onOpenChange, onConversationCreated }: New
             loadData()
         }
     }, [open])
+
+    useEffect(() => {
+        if (searchQuery.includes('@') && searchQuery.length > 3) {
+            const timer = setTimeout(async () => {
+                try {
+                    const res = await searchGlobalUsersByEmail(searchQuery)
+                    setGlobalUsers(res)
+                } catch (e) {}
+            }, 500)
+            return () => clearTimeout(timer)
+        } else {
+            setGlobalUsers([])
+        }
+    }, [searchQuery])
 
     const loadData = async () => {
         setIsLoading(true)
@@ -111,9 +126,11 @@ export function NewChatDialog({ open, onOpenChange, onConversationCreated }: New
     }
 
     const filteredTeam = teamUsers.filter(u =>
-        u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchQuery.toLowerCase())
     )
+
+    const combinedTeam = [...filteredTeam, ...globalUsers.filter(gu => !teamUsers.some(tu => tu.id === gu.id))]
 
     const filteredLeads = leads.filter(l =>
         l.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -164,8 +181,8 @@ export function NewChatDialog({ open, onOpenChange, onConversationCreated }: New
                                         <div className="flex items-center justify-center p-8">
                                             <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
                                         </div>
-                                    ) : filteredTeam.length > 0 ? (
-                                        filteredTeam.map(user => (
+                                    ) : combinedTeam.length > 0 ? (
+                                        combinedTeam.map(user => (
                                             <button
                                                 key={user.id}
                                                 disabled={isCreating}
@@ -174,11 +191,11 @@ export function NewChatDialog({ open, onOpenChange, onConversationCreated }: New
                                             >
                                                 <Avatar className="h-10 w-10">
                                                     <AvatarFallback className="bg-blue-100 text-blue-600 font-bold">
-                                                        {user.full_name?.[0] || user.email?.[0]}
+                                                        {user.name?.[0] || user.email?.[0]}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-bold text-gray-900 group-hover:text-blue-700">{user.full_name || 'Agente'}</p>
+                                                    <p className="text-sm font-bold text-gray-900 group-hover:text-blue-700">{user.name || 'Agente'}</p>
                                                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
                                                 </div>
                                             </button>
@@ -233,7 +250,7 @@ export function NewChatDialog({ open, onOpenChange, onConversationCreated }: New
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Seleccionar Integrantes ({selectedUsers.length})</Label>
                                     <div className="max-h-[200px] overflow-y-auto space-y-1 p-1">
-                                        {teamUsers.map(user => (
+                                        {combinedTeam.map(user => (
                                             <div 
                                                 key={user.id} 
                                                 onClick={() => toggleUser(user.id)}
@@ -245,10 +262,10 @@ export function NewChatDialog({ open, onOpenChange, onConversationCreated }: New
                                                 />
                                                 <Avatar className="h-8 w-8">
                                                     <AvatarFallback className="bg-blue-100 text-blue-600 font-bold text-[10px]">
-                                                        {user.full_name?.[0] || user.email?.[0]}
+                                                        {user.name?.[0] || user.email?.[0]}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <p className="text-xs font-bold text-gray-700">{user.full_name || user.email}</p>
+                                                <p className="text-xs font-bold text-gray-700">{user.name || user.email}</p>
                                             </div>
                                         ))}
                                     </div>

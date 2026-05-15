@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient, getTenantId } from "@/lib/supabase/server"
+import { createClient, createAdminClient, getTenantId } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import type { Conversation, Message, ConversationWithDetails, MessageWithSender } from "@inmocms/shared"
 import { sendEmail, buildReminderEmailHtml } from "@/lib/services/email"
@@ -57,7 +57,7 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
                 profiles (
                     id,
                     email,
-                    full_name,
+                    name,
                     avatar_url
                 )
             `)
@@ -76,7 +76,7 @@ export async function getConversations(): Promise<ConversationWithDetails[]> {
                 profiles:sender_id (
                     id,
                     email,
-                    full_name,
+                    name,
                     avatar_url
                 )
             `)
@@ -161,7 +161,7 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
             profiles:sender_id (
                 id,
                 email,
-                full_name,
+                name,
                 avatar_url
             )
         `)
@@ -312,12 +312,39 @@ export async function getTenantUsers() {
 
     const { data, error } = await supabase
         .from("profiles")
-        .select("id, email, full_name, avatar_url")
+        .select("id, email, name, avatar_url")
         .eq("tenant_id", tenantId)
         .neq("id", user.id) // Excluir al usuario actual
 
     if (error) {
         console.error("Error fetching tenant users:", error)
+        return []
+    }
+
+    return data
+}
+
+/**
+ * Buscar un usuario globalmente por correo (para iniciar conversaciones con cualquier agente de InmoCMS)
+ */
+export async function searchGlobalUsersByEmail(emailQuery: string) {
+    if (!emailQuery || emailQuery.trim().length < 3) return []
+    
+    const supabaseAdmin = await createAdminClient()
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    const { data, error } = await supabaseAdmin
+        .from("profiles")
+        .select("id, email, name, avatar_url")
+        .ilike("email", `%${emailQuery.trim()}%`)
+        .neq("id", user.id)
+        .limit(10)
+
+    if (error) {
+        console.error("Error fetching global users:", error)
         return []
     }
 

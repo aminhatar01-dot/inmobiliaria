@@ -28,7 +28,7 @@ export default async function DashboardLayout({
                 .from('profiles')
                 .select('is_superadmin')
                 .eq('id', user.id)
-                .single()
+                .maybeSingle()
             superadmin = profile?.is_superadmin === true
         }
     }

@@ -114,7 +114,7 @@ export default function InvitationPage() {
                             </CardTitle>
                         </div>
                         <CardDescription className="text-gray-500 font-medium text-lg px-8">
-                            {invite.profiles.full_name} quiere que formes parte de su equipo profesional en InmoCMS.
+                            {invite.profiles.name} quiere que formes parte de su equipo profesional en InmoCMS.
                         </CardDescription>
                     </CardHeader>
 

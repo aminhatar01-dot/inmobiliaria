@@ -103,7 +103,10 @@ export function AutomationForm({ leads = [], properties = [] }: AutomationFormPr
                     channel: formData.get('follow_up_channel'),
                     format: formData.get('follow_up_format'),
                     frequency: formData.get('follow_up_frequency'),
-                    message_template: formData.get('message_template') || suggestedMessage
+                    message_template: formData.get('message_template') || suggestedMessage,
+                    ai_role: formData.get('ai_role'),
+                    ai_tone: formData.get('ai_tone'),
+                    include_portfolio: formData.get('include_portfolio') === 'on'
                 }
             }
 
@@ -359,7 +362,7 @@ export function AutomationForm({ leads = [], properties = [] }: AutomationFormPr
                                                 <SelectTrigger className="h-11 bg-gray-50 border-transparent rounded-xl"><SelectValue /></SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="template">Plantilla Estándar</SelectItem>
-                                                    <SelectItem value="ai">Generado por IA</SelectItem>
+                                                    <SelectItem value="ai">Agente IA Inteligente</SelectItem>
                                                     <SelectItem value="manual">Manual con sugerencia</SelectItem>
                                                 </SelectContent>
                                             </Select>
@@ -377,20 +380,74 @@ export function AutomationForm({ leads = [], properties = [] }: AutomationFormPr
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="message_template" className="text-xs font-black uppercase tracking-widest text-gray-400">
-                                            {followUpFormat === 'ai' ? 'Instrucciones para la IA (System Prompt)' : 'Cuerpo del Mensaje'}
-                                        </Label>
-                                        {followUpFormat === 'ai' && (
-                                            <p className="text-xs text-gray-500 mb-2">Define cómo debe comportarse la IA, qué tono usar y qué estrategias de marketing aplicar.</p>
-                                        )}
-                                        <textarea
-                                            id="message_template" name="message_template" rows={5}
-                                            value={suggestedMessage} onChange={e => setSuggestedMessage(e.target.value)}
-                                            placeholder={followUpFormat === 'ai' ? "Ej: Actúa como un experto en bienes raíces..." : "Escribe el mensaje o selecciona una sugerencia a la derecha..."}
-                                            className="w-full p-4 bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-medium text-sm"
-                                        />
-                                    </div>
+
+                                    {followUpFormat === 'ai' && (
+                                        <div className="space-y-6 bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
+                                            <h4 className="text-sm font-bold text-blue-900 flex items-center gap-2">
+                                                <Sparkles className="h-4 w-4 text-blue-600" /> Configuración de Agente IA
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Rol del Agente IA</Label>
+                                                    <Select name="ai_role" defaultValue="asesor_comercial">
+                                                        <SelectTrigger className="h-11 bg-white border-transparent rounded-xl"><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="asesor_comercial">Asesor Comercial</SelectItem>
+                                                            <SelectItem value="experto_lujo">Experto en Lujo</SelectItem>
+                                                            <SelectItem value="asistente_virtual">Asistente Virtual</SelectItem>
+                                                            <SelectItem value="negociador">Negociador</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400">Tono de Respuesta</Label>
+                                                    <Select name="ai_tone" defaultValue="profesional_amigable">
+                                                        <SelectTrigger className="h-11 bg-white border-transparent rounded-xl"><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="profesional_amigable">Profesional y Amigable</SelectItem>
+                                                            <SelectItem value="persuasivo">Persuasivo y Directo</SelectItem>
+                                                            <SelectItem value="formal">Estrictamente Formal</SelectItem>
+                                                            <SelectItem value="entusiasta">Entusiasta y Cercano</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-center space-x-2 bg-white p-4 rounded-xl">
+                                                <input type="checkbox" id="include_portfolio" name="include_portfolio" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" defaultChecked />
+                                                <label htmlFor="include_portfolio" className="text-sm font-medium text-gray-700 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                    Que la IA conozca mis propiedades disponibles para recomendarlas
+                                                </label>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="message_template" className="text-xs font-black uppercase tracking-widest text-gray-400">
+                                                    Reglas Adicionales y Personalización
+                                                </Label>
+                                                <p className="text-xs text-gray-500 mb-2">Define cómo debe comportarse la IA, qué estrategias de marketing aplicar, o reglas estrictas a seguir.</p>
+                                                <textarea
+                                                    id="message_template" name="message_template" rows={4}
+                                                    value={suggestedMessage} onChange={e => setSuggestedMessage(e.target.value)}
+                                                    placeholder="Ej: Actúa como un experto en bienes raíces. Ofrece siempre una visita guiada. No menciones precios exactos si no están en el portafolio..."
+                                                    className="w-full p-4 bg-white border-transparent rounded-2xl focus:bg-gray-50 focus:ring-2 focus:ring-blue-100 transition-all font-medium text-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {followUpFormat !== 'ai' && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="message_template" className="text-xs font-black uppercase tracking-widest text-gray-400">
+                                                Cuerpo del Mensaje
+                                            </Label>
+                                            <textarea
+                                                id="message_template" name="message_template" rows={5}
+                                                value={suggestedMessage} onChange={e => setSuggestedMessage(e.target.value)}
+                                                placeholder="Escribe el mensaje o selecciona una sugerencia a la derecha..."
+                                                className="w-full p-4 bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-medium text-sm"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

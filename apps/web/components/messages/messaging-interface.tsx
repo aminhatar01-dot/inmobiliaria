@@ -103,12 +103,12 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
         const displayName = isGroup 
             ? (conv.name || 'Grupo sin nombre')
             : isClient
-                ? conv.lead?.name
+                ? (conv.lead?.name || 'Cliente')
                 : (conv.other_user?.full_name || conv.other_user?.email || 'Colega')
         
         const avatarInitial = isGroup 
             ? (conv.name?.[0] || 'G')
-            : (isClient ? conv.lead?.name?.[0] : (conv.other_user?.full_name?.[0] || conv.other_user?.email?.[0])) || '?'
+            : (isClient ? (conv.lead?.name?.[0]) : (conv.other_user?.full_name?.[0] || conv.other_user?.email?.[0])) || '?'
 
         return (
             <div
@@ -235,14 +235,14 @@ export function MessagingInterface({ initialConversations, currentUserId }: Mess
                                     : 'bg-gradient-to-br from-blue-500 to-purple-500'
                                     } text-white font-black`}>
                                     {(selectedConversation.lead_id
-                                        ? selectedConversation.lead?.name?.[0]
+                                        ? (selectedConversation.lead?.name?.[0])
                                         : (selectedConversation.other_user?.full_name?.[0] || selectedConversation.other_user?.email?.[0])) || '?'}
                                 </AvatarFallback>
                             </Avatar>
                             <div>
                                 <h3 className="text-sm font-black text-gray-900 leading-none">
                                     {selectedConversation.lead_id
-                                        ? selectedConversation.lead?.name
+                                        ? (selectedConversation.lead?.name)
                                         : (selectedConversation.other_user?.full_name || selectedConversation.other_user?.email || 'Usuario')}
                                 </h3>
                                 <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">

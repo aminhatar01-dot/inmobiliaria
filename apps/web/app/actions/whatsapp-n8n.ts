@@ -207,7 +207,7 @@ async function provisionUserFlow(userId: string) {
     // Verificar si ya tiene flujo
     const { data: profile } = await adminSupabase
         .from('profiles')
-        .select('n8n_webhook_url, full_name')
+        .select('n8n_webhook_url, name')
         .eq('id', userId)
         .single();
 
@@ -225,7 +225,7 @@ async function provisionUserFlow(userId: string) {
         const masterFlow = await masterRes.json();
 
         const newFlowData = {
-            name: `WhatsApp InmoCMS - ${profile?.full_name || userId}`,
+            name: `WhatsApp InmoCMS - ${profile?.name || userId}`,
             nodes: masterFlow.nodes,
             connections: masterFlow.connections,
             settings: masterFlow.settings,

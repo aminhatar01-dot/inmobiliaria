@@ -64,12 +64,12 @@ async function processTaskReminders(supabase: any, tenantId: string, settings: a
             // Get agent info for replacement
             const { data: agentProfile } = await supabase
                 .from('profiles')
-                .select('phone, full_name, email')
+                .select('phone, name, email')
                 .eq('id', task.assigned_to)
                 .single();
 
             const vars = buildTaskTemplateVars({
-                agentName: agentProfile?.full_name,
+                agentName: agentProfile?.name,
                 taskTitle: task.title,
                 dueDate: dateStr,
                 dueTime: timeStr
@@ -113,7 +113,7 @@ async function processTaskReminders(supabase: any, tenantId: string, settings: a
                 };
                 const html = buildReminderEmailHtml({
                     title: 'Recordatorio de Tarea',
-                    greeting: `Hola ${agentProfile.full_name}`,
+                    greeting: `Hola ${agentProfile?.name || 'Agente'}`,
                     body: message
                 });
                 await sendEmail(smtpConfig, agentProfile.email, 'Recordatorio de Tarea', html);
@@ -161,7 +161,7 @@ async function processVisitReminders(supabase: any, tenantId: string, settings: 
 
             const { data: agentProfile } = await supabase
                 .from('profiles')
-                .select('full_name, phone, email')
+                .select('name, phone, email')
                 .eq('id', visit.agent_id)
                 .single();
 
@@ -175,10 +175,10 @@ async function processVisitReminders(supabase: any, tenantId: string, settings: 
                     propertyTitle: visit.property?.title,
                     scheduledDate: dateStr,
                     scheduledTime: timeStr,
-                    agentName: agentProfile?.full_name
+                    agentName: agentProfile?.name
                 });
                 // Sobrescribimos nombre para que sea el agente
-                agentVars.nombre = agentProfile?.full_name || 'Agente';
+                agentVars.nombre = agentProfile?.name || 'Agente';
                 // Añadimos cliente como variable extra
                 agentVars.cliente = visit.lead?.name || 'Cliente';
 
@@ -213,7 +213,7 @@ async function processVisitReminders(supabase: any, tenantId: string, settings: 
                     propertyTitle: visit.property?.title,
                     scheduledDate: dateStr,
                     scheduledTime: timeStr,
-                    agentName: agentProfile?.full_name
+                    agentName: agentProfile?.name
                 });
                 // nombre ya es leadName por defecto en buildVisitTemplateVars
 
