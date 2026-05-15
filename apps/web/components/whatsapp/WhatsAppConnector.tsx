@@ -8,7 +8,8 @@ import {
   isSuperAdmin,
   saveSystemConfig,
   getLatestQR,
-  getSystemInfrastructureInfo
+  getSystemInfrastructureInfo,
+  enableAIWhatsAppReply
 } from '@/app/actions/whatsapp-n8n';
 import { 
   QrCode, 
@@ -20,7 +21,8 @@ import {
   Settings,
   Shield,
   Zap,
-  Power
+  Power,
+  Sparkles
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -45,6 +47,8 @@ export default function WhatsAppConnector() {
   const [isUserSuperAdmin, setIsUserSuperAdmin] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [infraInfo, setInfraInfo] = useState<any>(null);
+  const [isAiEnabled, setIsAiEnabled] = useState(false);
+  const [aiWebhookUrl, setAiWebhookUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadStatus();
@@ -85,6 +89,14 @@ export default function WhatsAppConnector() {
     setStatus('loading');
     const result = await getWhatsAppServiceStatus();
     setStatus(result.status as any);
+    
+    // Detect if AI is enabled based on webhook URL
+    if (result.webhookUrl?.includes('/api/ai/whatsapp-reply')) {
+      setIsAiEnabled(true);
+    } else {
+      setIsAiEnabled(false);
+    }
+    setAiWebhookUrl(result.webhookUrl || null);
   };
 
   const handleStartBinding = async () => {
@@ -110,6 +122,31 @@ export default function WhatsAppConnector() {
       toast.success('Cuenta desconectada correctamente.');
     }
     setIsSubmitting(false);
+  };
+
+  const handleToggleAI = async () => {
+    setIsSubmitting(true);
+    try {
+      if (isAiEnabled) {
+        // Switch back to n8n flow
+        toast.info('Para volver al flujo estándar, por favor reconecta tu cuenta.');
+        // In a real scenario, we would store the original n8n URL and restore it.
+        // For now, we just inform the user.
+      } else {
+        const result = await enableAIWhatsAppReply();
+        if (result.success) {
+          setIsAiEnabled(true);
+          setAiWebhookUrl(result.url || null);
+          toast.success('Agente de IA activado para este número.');
+        } else {
+          toast.error(result.error || 'Error al activar la IA.');
+        }
+      }
+    } catch (error) {
+      toast.error('Error al procesar la solicitud.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSaveConfig = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -238,6 +275,35 @@ export default function WhatsAppConnector() {
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Power className="w-4 h-4 mr-2" />}
                 Desconectar Cuenta
               </Button>
+            </div>
+
+            <div className="w-full space-y-3 pt-2">
+              <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-green-100 shadow-sm">
+                <div className="flex items-center gap-3 text-left">
+                  <div className={`p-2 rounded-lg ${isAiEnabled ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">Agente de IA</p>
+                    <p className="text-[10px] text-slate-500">{isAiEnabled ? 'Respondiendo con IA' : 'Flujo estándar n8n'}</p>
+                  </div>
+                </div>
+                <Button 
+                  size="sm" 
+                  variant={isAiEnabled ? "default" : "outline"}
+                  onClick={handleToggleAI}
+                  disabled={isSubmitting}
+                  className={isAiEnabled ? "bg-blue-600 hover:bg-blue-700 h-8 text-xs" : "h-8 text-xs border-slate-200"}
+                >
+                  {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : isAiEnabled ? 'Desactivar' : 'Activar IA'}
+                </Button>
+              </div>
+              
+              {isAiEnabled && (
+                <p className="text-[10px] text-slate-400 italic">
+                  La IA responderá automáticamente basándose en tus reglas de marketing.
+                </p>
+              )}
             </div>
           </div>
         )}

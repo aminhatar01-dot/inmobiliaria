@@ -8,7 +8,7 @@ import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
 
-export type AutomationEvent = 'new_lead' | 'lead_status_change' | 'property_published' | 'task_assigned' | 'visit_scheduled';
+export type AutomationEvent = 'new_lead' | 'lead_created' | 'lead_status_change' | 'property_published' | 'property_status_change' | 'task_assigned' | 'visit_scheduled';
 
 /**
  * Procesa las reglas de automatización para cualquier evento del sistema.
@@ -116,6 +116,7 @@ ${propertiesStr}
 Reglas del agente:
 ${template}
 
+Si tu mensaje confirma una cita específica, añade al final: [SCHEDULE_VISIT: YYYY-MM-DD HH:MM].
 Escribe solo el mensaje de WhatsApp a enviar.`;
 
                         try {
@@ -125,6 +126,28 @@ Escribe solo el mensaje de WhatsApp a enviar.`;
                                 config: { temperature: 0.7 }
                             });
                             message = response.text?.trim() || replaceTemplateVariables("Hola {{nombre}}.", vars);
+                            
+                            // Check for SCHEDULE_VISIT in the first outreach too
+                            if (message.includes('[SCHEDULE_VISIT:')) {
+                                const visitMatch = message.match(/\[SCHEDULE_VISIT:\s*([^\]]+)\]/);
+                                if (visitMatch) {
+                                    const scheduledAt = visitMatch[1].trim();
+                                    message = message.replace(/\[SCHEDULE_VISIT:\s*([^\]]+)\]/, "").trim();
+                                    
+                                    // Create task
+                                    await supabase.from('tasks').insert({
+                                        tenant_id: tenantId,
+                                        title: `Visita programada por IA: ${context.lead?.name || 'Cliente'}`,
+                                        description: `Cita confirmada en el primer contacto para el ${scheduledAt}.`,
+                                        status: 'pending',
+                                        priority: 'high',
+                                        category: 'visit',
+                                        due_date: new Date(scheduledAt).toISOString(),
+                                        lead_id: context.lead?.id,
+                                        assigned_to: context.agent?.id || rule.created_by
+                                    });
+                                }
+                            }
                         } catch(e) {
                             message = replaceTemplateVariables("Hola {{nombre}}.", vars);
                         }

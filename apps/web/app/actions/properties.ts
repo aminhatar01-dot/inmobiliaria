@@ -113,6 +113,17 @@ export async function createProperty(formData: Partial<Property>, images: string
     }
 
     revalidatePath("/propiedades")
+    
+    // Trigger automation rules
+    try {
+        const { processAutomationRules } = await import("./automations-engine");
+        processAutomationRules('property_published', tenantId, { property }).catch(err => {
+            console.error("[PROPERTIES] Automation trigger failed:", err);
+        });
+    } catch (autoErr) {
+        console.error("[PROPERTIES] Could not trigger automation:", autoErr);
+    }
+
     return property
 }
 
@@ -185,6 +196,19 @@ export async function updateProperty(id: string, formData: Partial<Property>, im
 
     revalidatePath("/propiedades")
     revalidatePath(`/propiedades/${id}`)
+
+    // Trigger automation rules for status change
+    if (formData.status) {
+        try {
+            const { processAutomationRules } = await import("./automations-engine");
+            processAutomationRules('property_status_change', tenantId, { property }).catch(err => {
+                console.error("[PROPERTIES] Status change automation failed:", err);
+            });
+        } catch (autoErr) {
+            console.error("[PROPERTIES] Could not trigger status change automation:", autoErr);
+        }
+    }
+
     return property
 }
 

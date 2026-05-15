@@ -76,9 +76,11 @@ ${customRules}
 Portafolio de propiedades disponibles de la agencia:
 ${propertiesStr}
 
-Tu objetivo es atender al cliente, responder a su mensaje de manera concisa y natural (como si fueras un humano por WhatsApp, usa emojis pero no abuses), e intentar avanzar en el proceso de venta o alquiler ofreciendo las propiedades disponibles si encajan con lo que busca. Nunca inventes propiedades que no estén en el portafolio.
+Tu objetivo es atender al cliente de manera natural y concisa.
+Si el cliente muestra interés claro en visitar una propiedad y propone o acepta una fecha/hora, debes confirmar la cita en tu mensaje Y ADEMÁS incluir al final de tu respuesta (en una nueva línea) el comando: [SCHEDULE_VISIT: YYYY-MM-DD HH:MM].
+Si no hay una fecha clara, sigue conversando para obtenerla.
 
-Solo debes devolver el texto exacto del mensaje que enviarás por WhatsApp, sin comillas, sin formato extra.
+Solo debes devolver el texto del mensaje. Si incluyes el comando [SCHEDULE_VISIT], que sea lo último en el texto.
 `;
 
         // 4. Initialize Gemini
@@ -91,14 +93,10 @@ Solo debes devolver el texto exacto del mensaje que enviarás por WhatsApp, sin 
                     const match = envContent.match(/GEMINI_API_KEY\s*=\s*["']?([^"'\s]+)["']?/);
                     if (match) finalKey = match[1].trim();
                 }
-            } catch (e) {
-                console.error("No se pudo leer .env.local de forma dinámica:", e);
-            }
+            } catch (e) {}
         }
 
-        if (!finalKey) {
-            throw new Error("Clave de Gemini no configurada.");
-        }
+        if (!finalKey) throw new Error("Clave de Gemini no configurada.");
 
         const ai = new GoogleGenAI({ apiKey: finalKey });
         
@@ -107,14 +105,47 @@ Solo debes devolver el texto exacto del mensaje que enviarás por WhatsApp, sin 
             model: 'gemini-2.5-flash',
             contents: [
                 { role: 'user', parts: [{ text: systemPrompt }] },
-                { role: 'user', parts: [{ text: `Mensaje del cliente: "${message}"\n\nRespuesta:` }] }
+                { role: 'user', parts: [{ text: `Mensaje del cliente (${phone}): "${message}"\n\nRespuesta:` }] }
             ],
-            config: {
-                temperature: 0.7,
-            }
+            config: { temperature: 0.7 }
         });
 
-        const textResponse = response.text?.trim() || "Lo siento, no pude procesar tu mensaje en este momento.";
+        let textResponse = response.text?.trim() || "Lo siento, no pude procesar tu mensaje.";
+
+        // 6. Post-processing: Check for [SCHEDULE_VISIT: ...]
+        const visitMatch = textResponse.match(/\[SCHEDULE_VISIT:\s*([^\]]+)\]/);
+        if (visitMatch) {
+            const scheduledAt = visitMatch[1].trim();
+            // Remove the command from the final message sent to user
+            textResponse = textResponse.replace(/\[SCHEDULE_VISIT:\s*([^\]]+)\]/, "").trim();
+
+            try {
+                // Find lead by phone
+                const { data: lead } = await supabase
+                    .from('leads')
+                    .select('id, name')
+                    .eq('tenant_id', tenant_id)
+                    .ilike('phone', `%${phone.replace(/\D/g, '')}%`)
+                    .single();
+
+                if (lead) {
+                    // Create a task for the agent
+                    await supabase.from('tasks').insert({
+                        tenant_id,
+                        title: `Visita programada por IA: ${lead.name}`,
+                        description: `El cliente confirmó una visita para el ${scheduledAt}. Confirmar con el cliente.`,
+                        status: 'pending',
+                        priority: 'high',
+                        category: 'visit',
+                        due_date: new Date(scheduledAt).toISOString(),
+                        lead_id: lead.id,
+                        assigned_to: agent_id || (rules && rules[0]?.created_by)
+                    });
+                }
+            } catch (err) {
+                console.error("Error creating AI task:", err);
+            }
+        }
 
         return NextResponse.json({ 
             success: true,

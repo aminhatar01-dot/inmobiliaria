@@ -296,6 +296,46 @@ export async function getWhatsAppServiceStatus() {
 }
 
 /**
+ * Configura el webhook de Evolution API para que apunte directamente al endpoint de IA de InmoCMS
+ */
+export async function enableAIWhatsAppReply() {
+    try {
+        const supabase = await createClient();
+        const tenantId = await getTenantId(supabase);
+        if (!tenantId) throw new Error('No autorizado');
+
+        const evolutionUrl = await getConfig('EVOLUTION_API_URL', GLOBAL_URL);
+        const evolutionKey = await getConfig('EVOLUTION_API_KEY', GLOBAL_KEY);
+        const instanceName = `inmocms_${tenantId.substring(0, 8)}`;
+
+        // Obtener la URL base de la aplicación (usar VERCEL_URL si está disponible)
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+        const aiWebhookUrl = `${appUrl}/api/ai/whatsapp-reply`;
+
+        if (!evolutionUrl || !evolutionKey) throw new Error('Infraestructura no configurada');
+
+        const response = await fetch(`${evolutionUrl}/webhook/set/${instanceName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': evolutionKey
+            },
+            body: JSON.stringify({
+                url: aiWebhookUrl,
+                enabled: true
+            })
+        });
+
+        if (!response.ok) throw new Error('Error al configurar el webhook de IA');
+
+        return { success: true, url: aiWebhookUrl };
+    } catch (error: any) {
+        console.error('[AI_WEBHOOK] Error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Desconecta el servicio (Logout)
  */
 export async function disconnectWhatsAppService() {

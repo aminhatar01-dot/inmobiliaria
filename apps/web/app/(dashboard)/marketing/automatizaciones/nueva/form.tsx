@@ -35,6 +35,22 @@ export function AutomationForm({ leads = [], properties = [] }: AutomationFormPr
     const [actionType, setActionType] = useState("")
     const [followUpFormat, setFollowUpFormat] = useState("template")
     const [suggestedMessage, setSuggestedMessage] = useState("")
+    const [aiPromptTemplate, setAiPromptTemplate] = useState("")
+
+    const AI_PROMPT_TEMPLATES = {
+        follower: "Actúa como un gestor de relaciones dedicado. Tu objetivo es mantener el interés del lead, respondiendo dudas de forma amigable y persistente sin ser invasivo. Siempre intenta calificar el interés del cliente.",
+        closer: "Tu único objetivo es cerrar una cita presencial o una llamada telefónica. Sé persuasivo, destaca la urgencia de las oportunidades y ofrece horarios disponibles para coordinar una visita.",
+        scheduler: "Actúa como un agendador de visitas. Pregunta al cliente qué día y hora le queda mejor para visitar la propiedad. Cuando el cliente proponga una fecha, confirma que la agendarás y despídete amablemente.",
+        info_sender: "Enfócate en proporcionar detalles técnicos y de valor sobre las propiedades. Resalta las características únicas y los beneficios de la zona. Si hay cambios de precio, explica por qué es una gran oportunidad ahora.",
+        support: "Actúa como un asistente de soporte inicial. Resuelve dudas básicas sobre procesos, requisitos y documentación necesaria para alquilar o comprar."
+    }
+
+    const handlePromptTemplateSelect = (value: string) => {
+        setAiPromptTemplate(value)
+        if (value && AI_PROMPT_TEMPLATES[value as keyof typeof AI_PROMPT_TEMPLATES]) {
+            setSuggestedMessage(AI_PROMPT_TEMPLATES[value as keyof typeof AI_PROMPT_TEMPLATES])
+        }
+    }
 
     // Target scoping
     const [targetType, setTargetType] = useState<"all" | "lead" | "property">("all")
@@ -421,8 +437,26 @@ export function AutomationForm({ leads = [], properties = [] }: AutomationFormPr
                                             </div>
 
                                             <div className="space-y-2">
+                                                <Label className="text-xs font-black uppercase tracking-widest text-gray-400">
+                                                    Plantillas de Instrucciones Rápidas
+                                                </Label>
+                                                <Select value={aiPromptTemplate} onValueChange={handlePromptTemplateSelect}>
+                                                    <SelectTrigger className="h-11 bg-white border-transparent rounded-xl">
+                                                        <SelectValue placeholder="Seleccionar una estrategia predefinida..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="follower">Seguidor de Leads (Persistencia)</SelectItem>
+                                                        <SelectItem value="closer">Cerrador de Citas (Conversión)</SelectItem>
+                                                        <SelectItem value="scheduler">Agendador de Visitas (Gestión)</SelectItem>
+                                                        <SelectItem value="info_sender">Informador de Propiedades (Detalles)</SelectItem>
+                                                        <SelectItem value="support">Soporte y Requisitos (Atención)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            <div className="space-y-2">
                                                 <Label htmlFor="message_template" className="text-xs font-black uppercase tracking-widest text-gray-400">
-                                                    Reglas Adicionales y Personalización
+                                                    Instrucciones Personalizadas (Prompt)
                                                 </Label>
                                                 <p className="text-xs text-gray-500 mb-2">Define cómo debe comportarse la IA, qué estrategias de marketing aplicar, o reglas estrictas a seguir.</p>
                                                 <textarea

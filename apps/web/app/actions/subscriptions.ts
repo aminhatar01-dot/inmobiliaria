@@ -210,6 +210,8 @@ export async function inviteToAgency(inviteeEmail: string) {
         throw error
     }
 
+    if (!invite) throw new Error("No se pudo generar la invitación.");
+
     const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/invitacion/${invite.token}`
 
     // 3. Enviar correo de invitación
